@@ -31,6 +31,7 @@ class CargadorRoto:
         (ErrorDatos("sesion_no_terminada"), 409),
         (ErrorOpenF1("limite_peticiones"), 429),
         (ErrorOpenF1("fallo_openf1"), 503),
+        (ErrorOpenF1("openf1_en_vivo"), 503),
     ],
 )
 def test_cada_codigo_de_error_tiene_su_estado_http(error, estado):

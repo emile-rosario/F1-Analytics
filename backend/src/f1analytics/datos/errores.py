@@ -4,7 +4,8 @@
 class ErrorOpenF1(Exception):
     """OpenF1 no respondió como se esperaba.
 
-    Códigos: ``limite_peticiones`` (429 agotando reintentos) y ``fallo_openf1``
+    Códigos: ``limite_peticiones`` (429 agotando reintentos), ``openf1_en_vivo`` (hay una
+    sesión en vivo y OpenF1 bloquea el acceso sin clave hasta que termine) y ``fallo_openf1``
     (caído, error 5xx, sin conexión o respuesta inesperada).
     """
 

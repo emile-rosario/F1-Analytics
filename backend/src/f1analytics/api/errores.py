@@ -20,6 +20,7 @@ ESTADO_POR_CODIGO = {
     "limite_peticiones": 429,
     # 503 y no 502: el frontend reintenta los 502 porque Render los da al despertar.
     "fallo_openf1": 503,
+    "openf1_en_vivo": 503,
 }
 
 

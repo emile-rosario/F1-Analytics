@@ -212,3 +212,43 @@ def test_una_tabla_mas_grande_que_el_tope_no_entra_en_memoria(esperas):
     cliente.obtener("laps", cachear=True)
 
     assert ruta.call_count == 2
+
+
+EN_VIVO = {
+    "detail": "Live F1 session in progress. Global API access (including past sessions) is "
+    "restricted to authenticated users until the session ends."
+}
+
+
+@respx.mock
+def test_una_sesion_en_vivo_lanza_openf1_en_vivo_sin_reintentar(cliente, esperas):
+    ruta = respx.get(URL).mock(return_value=httpx.Response(401, json=EN_VIVO))
+
+    with pytest.raises(ErrorOpenF1) as error:
+        cliente.obtener("laps")
+
+    assert error.value.codigo == "openf1_en_vivo"
+    assert ruta.call_count == 1
+    assert esperas == []
+
+
+@respx.mock
+def test_un_401_por_otro_motivo_es_fallo_openf1(cliente):
+    respx.get(URL).mock(return_value=httpx.Response(401, json={"detail": "Invalid key"}))
+
+    with pytest.raises(ErrorOpenF1) as error:
+        cliente.obtener("laps")
+
+    assert error.value.codigo == "fallo_openf1"
+    assert error.value.estado_http == 401
+
+
+@respx.mock
+def test_con_openf1_en_vivo_lo_que_ya_esta_en_cache_sigue_sirviendo(cliente):
+    respx.get(URL).mock(return_value=httpx.Response(200, json=FILAS))
+    cliente.obtener("laps", {"session_key": 1}, cachear=True)
+    respx.get(URL).mock(return_value=httpx.Response(401, json=EN_VIVO))
+
+    tabla = cliente.obtener("laps", {"session_key": 1}, cachear=True)
+
+    assert len(tabla) == 2

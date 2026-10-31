@@ -15,6 +15,10 @@ from f1analytics.datos.errores import ErrorOpenF1
 
 ESPERA_MAXIMA_S = 30.0
 
+# Durante una sesión de F1 en vivo OpenF1 bloquea a todos los que no tienen clave,
+# también para las sesiones pasadas, hasta que termina.
+MENSAJE_EN_VIVO = "Live F1 session in progress"
+
 
 def _espera_retry_after(respuesta: httpx.Response) -> float | None:
     """Segundos que pide esperar el servidor en un 429, si los indica."""
@@ -97,6 +101,8 @@ class ClienteOpenF1:
                     codigo, espera = "limite_peticiones", _espera_retry_after(respuesta)
                 elif respuesta.status_code >= 500:
                     codigo = "fallo_openf1"
+                elif respuesta.status_code == 401 and MENSAJE_EN_VIVO in respuesta.text:
+                    raise ErrorOpenF1("openf1_en_vivo", 401)
                 else:
                     raise ErrorOpenF1("fallo_openf1", respuesta.status_code)
 
