@@ -297,7 +297,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Fuente de datos: OpenF1, probada el 2026-10-29.
 - [x] Hosting: Vercel + Render gratis.
 - [x] Diseño visual aprobado.
-- [ ] Crear el repo en GitHub (`emile-rosario/f1-analytics`, público) y conectarlo a `C:\dev\F1-Analytics`.
+- [ ] Crear el repo en GitHub (`emile-rosario/F1-Analytics`, público) y conectarlo a `C:\dev\F1-Analytics`.
 - [ ] Proteger `main`: solo merge por PR. Exigir CI en verde después del PR 0.
 - [ ] Confirmar el nombre del paquete Python: se cambió `f1lab` (resto de un nombre anterior) por `f1analytics` el 2026-10-30. Decidirlo antes del PR 0, porque después cuesta más cambiarlo.
 - [x] Mantener «F1» en el nombre del producto (decidido el 2026-10-30).
