@@ -97,28 +97,30 @@ backend/
 ### 4.2 `datos/`
 
 **`cliente.py`**: cliente HTTP de OpenF1.
-- `ClienteOpenF1(base_url, timeout=60, reintentos=4)` con `httpx`.
-- `obtener(endpoint, **filtros) -> pd.DataFrame`, que soporta los filtros de OpenF1 (`date>`, `date<`, `driver_number`, …).
-- Reintenta con backoff en 429 y 5xx. Ante otros errores lanza `ErrorOpenF1` con un código (`no_encontrado`, `limite_peticiones`, `fallo_openf1`). La capa `api/` los traduce a los códigos públicos de 4.6 (`no_encontrado` → `sesion_no_encontrada`; los otros dos pasan igual).
-- **Caché en dos niveles:**
+- `ClienteOpenF1(base_url, timeout=60, reintentos=4, dir_cache, max_bytes_memoria, ...)` con `httpx`.
+- `obtener(endpoint, filtros=None, *, cachear=False) -> pd.DataFrame`. Los filtros van en un diccionario porque sus nombres no siempre son identificadores válidos (`{"date>": "...", "driver_number": 16}`).
+- **OpenF1 responde 404 cuando una consulta no tiene resultados.** El cliente lo devuelve como un DataFrame vacío y es el cargador quien decide si eso es un error.
+- Reintenta (máximo 4 veces) en 429, 5xx y errores de red, con espera creciente de 1, 2, 4 y 8 s; si el 429 trae `Retry-After`, espera eso (hasta 30 s). Otros 4xx no se reintentan. Al agotar los reintentos lanza `ErrorOpenF1` con el código `limite_peticiones` o `fallo_openf1`.
+- **Caché en dos niveles**, solo cuando el llamador pasa `cachear=True`:
   - En memoria (LRU, ~100 MB máximo) para las peticiones repetidas mientras el servidor está despierto.
-  - En disco (`DIR_CACHE`, parquet), útil en local y en notebooks. En Render gratis el disco se borra al dormirse, y es aceptable porque bajar una sesión de nuevo tarda 5–8 s.
-  - Solo se cachean sesiones **terminadas**. Si `date_end` es futura, no se guarda.
+  - En disco (`DIR_CACHE`, parquet), útil en local y en notebooks. En Render gratis el disco se borra al dormirse, y es aceptable porque bajar una sesión de nuevo tarda 5–8 s. Si el disco no es escribible, se sigue solo con memoria.
+  - El cargador pasa `cachear=True` **solo en sesiones terminadas**, así una sesión en curso nunca queda congelada. Las respuestas vacías no se guardan.
 
-**`cargador.py`**: traduce OpenF1 a DataFrames en español.
-- `calendario(anio) -> pd.DataFrame`
-- `sesiones(anio, evento) -> pd.DataFrame`
-- `buscar_sesion(anio, evento, tipo) -> int` (`session_key`)
-- `pilotos(sesion) -> pd.DataFrame`: `numero`, `codigo`, `nombre`, `equipo`, `color`.
-- `vueltas(sesion, piloto=None) -> pd.DataFrame`: `piloto`, `vuelta`, `inicio`, `tiempo_vuelta_s`, `sector_1_s`…, `salida_pits`.
-- `stints(sesion) -> pd.DataFrame`: `piloto`, `stint`, `compuesto`, `vuelta_inicio`, `vuelta_fin`, `edad_inicial`.
-- `paradas(sesion) -> pd.DataFrame`
-- `direccion_carrera(sesion) -> pd.DataFrame`
+**`cargador.py`**: la clase `Cargador(cliente)` traduce OpenF1 a DataFrames en español. Recibe el cliente (y un reloj, para los tests), así que no hay estado global.
+- `calendario(anio)`: GP del año sin las pruebas de pretemporada. Columnas `evento` (el `meeting_key`), `nombre`, `nombre_oficial`, `pais`, `circuito`, `circuito_clave`, `inicio`.
+- `sesiones(anio, evento)`: solo las analizables (Practice 1–3, Qualifying, Sprint Qualifying/Shootout, Sprint, Race), sin las canceladas y con `terminada`.
+- `info_sesion(sesion)` y `buscar_sesion(anio, evento, nombre) -> int` (`session_key`): lanzan `ErrorDatos("sesion_no_encontrada")` si no existe.
+- `pilotos(sesion)`: `numero`, `codigo`, `nombre`, `equipo`, `color` (con `#`).
+- `vueltas(sesion, piloto=None)`: `piloto`, `vuelta`, `inicio`, `tiempo_vuelta_s`, `sector_1_s`…, `salida_pits`.
+- `stints(sesion)`: `piloto`, `stint`, `compuesto`, `vuelta_inicio`, `vuelta_fin`, `edad_inicial`.
+- `paradas(sesion)`: `piloto`, `vuelta`, `fecha`, `duracion_s` (OpenF1 solo la mide desde el GP de EE. UU. 2024).
+- `direccion_carrera(sesion)`: incluye `fase_clasificacion` (1, 2 o 3), que usa `vuelta_rapida` para recortar Q1/Q2/Q3.
 
-**`telemetria_vuelta.py`**
-- `telemetria_de_vuelta(sesion, piloto, vuelta) -> pd.DataFrame`: baja `car_data` y `location` solo para el rango de tiempo de esa vuelta, los une con `merge_asof` y agrega `tiempo_s` (desde el inicio de la vuelta) y `distancia_m` (integrando la velocidad). Columnas: `tiempo_s`, `distancia_m`, `x`, `y`, `velocidad`, `acelerador`, `freno`, `marcha`, `rpm`, `drs`.
-- `vuelta_rapida(sesion, piloto, segmento=None) -> int`, donde `segmento` es `None` (toda la sesión), `"Q1"`, `"Q2"` o `"Q3"` en clasificación, o `"SQ1"`, `"SQ2"` o `"SQ3"` en la clasificación sprint. Un segmento en otro tipo de sesión lanza `ErrorDatos("analisis_no_disponible")`.
-- Valida que la vuelta tenga suficientes muestras y lanza `ErrorDatos("telemetria_incompleta")` si no.
+**`telemetria_vuelta.py`**: las funciones reciben el `Cargador` como primer argumento.
+- `telemetria_de_vuelta(cargador, sesion, piloto, vuelta) -> pd.DataFrame`: baja `car_data` y `location` solo para el rango de tiempo de esa vuelta, los une con `merge_asof` y agrega `tiempo_s` (desde el inicio de la vuelta) y `distancia_m` (integrando la velocidad). Columnas: `tiempo_s`, `distancia_m`, `x`, `y`, `velocidad`, `acelerador`, `freno`, `marcha`, `rpm`, `drs`.
+- `vuelta_rapida(cargador, sesion, piloto, segmento=None) -> int`, donde `segmento` es `None` (toda la sesión), `"Q1"`, `"Q2"` o `"Q3"` en clasificación, o `"SQ1"`, `"SQ2"` o `"SQ3"` en la clasificación sprint. Un segmento en otro tipo de sesión lanza `ErrorDatos("analisis_no_disponible")`. Las fases salen de los mensajes `SESSION STARTED` / `SESSION FINISHED` de la dirección de carrera, y una vuelta pertenece a la fase en la que **empezó**. Las salidas de pits no cuentan.
+- Valida que la vuelta tenga al menos 2 muestras por segundo y ningún hueco de más de 2 s; si no, lanza `ErrorDatos("telemetria_incompleta")`. Sin ninguna muestra, `ErrorDatos("sin_telemetria")`.
+- Medido con datos reales: la distancia integrada de la mejor vuelta de Monza 2024 da 5752 m contra 5793 m oficiales (−0,7 %), y la de Bahréin queda también dentro del ±2 %.
 
 **`limpieza.py`**
 - `estado_pista_por_vuelta(direccion_carrera, n_vueltas) -> pd.Series`: `verde`, `amarilla`, `sc`, `vsc` o `roja`.
