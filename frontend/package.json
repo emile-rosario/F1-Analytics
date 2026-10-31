@@ -9,7 +9,8 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "tipos": "openapi-typescript ../backend/openapi.json -o src/lib/tipos-api.ts"
   },
   "dependencies": {
     "next": "16.4.3",
@@ -30,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "jsdom": "^29.1.1",
+    "openapi-typescript": "^7.13.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.5"
