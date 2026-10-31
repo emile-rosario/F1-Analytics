@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: f1-analytics-api
+    runtime: docker
+    plan: free
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/salud
+    envVars:
+      - key: PORT
+        value: "8000"
+      # Dominio de producción de Vercel, por ejemplo https://f1-analytics.vercel.app
+      - key: ORIGENES_PERMITIDOS
+        sync: false
+      # Regex de las URLs de preview de Vercel (cambian en cada PR)
+      - key: ORIGEN_PREVIEW_REGEX
+        sync: false
