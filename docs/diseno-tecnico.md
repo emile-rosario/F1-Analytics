@@ -258,7 +258,7 @@ Casos clave:
 
 ## 7. Calidad, CI y deploy
 
-**CI (GitHub Actions)**, que corre solo cuando cambian archivos de su carpeta:
+**CI (GitHub Actions)**, que corre siempre en cada PR (los 4 checks son obligatorios para mergear, así que un filtro por carpeta dejaría PR bloqueados esperando checks que nunca corren):
 - `backend.yml`: `ruff check`, `ruff format --check`, `pytest` (sin integración), en Ubuntu y Windows.
 - `frontend.yml`: `eslint`, `tsc --noEmit`, `vitest`, `next build` y Playwright, en Ubuntu y Windows.
 
