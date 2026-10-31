@@ -1,0 +1,19 @@
+{
+  "Meta": {
+    "titulo": "F1 Analytics",
+    "descripcion": "Understand a Formula 1 session with real data: speed around the circuit, tyre wear and telemetry comparison."
+  },
+  "Inicio": {
+    "titulo": "Every lap, meter by meter.",
+    "subtitulo": "Analyze a Formula 1 session with real data and understand what happened on track."
+  },
+  "Idioma": {
+    "etiqueta": "Language",
+    "es": "Español",
+    "en": "English"
+  },
+  "Pie": {
+    "aviso": "Data from OpenF1. Independent project, not affiliated with Formula 1 or the FIA.",
+    "autor": "Made by Emile Rosario"
+  }
+}
