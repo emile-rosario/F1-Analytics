@@ -1,0 +1,19 @@
+{
+  "Meta": {
+    "titulo": "F1 Analytics",
+    "descripcion": "Entiende una sesión de Fórmula 1 con datos reales: velocidad por el circuito, desgaste de gomas y comparación de telemetría."
+  },
+  "Inicio": {
+    "titulo": "Cada vuelta, metro a metro.",
+    "subtitulo": "Analiza una sesión de Fórmula 1 con datos reales y entiende qué pasó en la pista."
+  },
+  "Idioma": {
+    "etiqueta": "Idioma",
+    "es": "Español",
+    "en": "English"
+  },
+  "Pie": {
+    "aviso": "Datos de OpenF1. Proyecto independiente, sin relación con la Fórmula 1 ni la FIA.",
+    "autor": "Hecho por Emile Rosario"
+  }
+}

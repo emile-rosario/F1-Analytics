@@ -183,7 +183,7 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 frontend/
 ├── messages/ es.json, en.json
 ├── src/
-│   ├── i18n/, middleware.ts
+│   ├── i18n/, proxy.ts        # en Next.js 16 el middleware se llama proxy
 │   ├── app/[locale]/  layout.tsx, page.tsx, circuito/, gomas/, telemetria/, estado/
 │   ├── components/
 │   │   ├── SelectorSesion.tsx, SelectorIdioma.tsx, Conclusion.tsx
