@@ -51,8 +51,9 @@ Conclusiones:
 | Recortar la telemetría a una vuelta | Filtro por `date_start` y `date_start + lap_duration` de `laps` |
 | Estado de pista por vuelta (verde, SC, VSC) | Reconstruirlo desde `race_control` |
 | Vueltas de entrada a pits | Desde `pit.lap_number` |
-| Rotación del mapa como en la TV | Sin dato oficial: se rota con PCA para dejar la recta más larga horizontal |
-| Números de curva | OpenF1 no los trae. Se guarda un archivo propio `datos/circuitos.json` con la posición de cada curva numerada por circuito (curva 1, 2, …), en metros desde la línea de meta, y se ubican sobre la vuelta por distancia. En el PR 2 se revisa si alguna API pública los da (por ejemplo MultiViewer, que usaba FastF1); si no, se arma a mano para los circuitos del calendario desde 2023 (~25 circuitos) |
+| Rotación del mapa como en la TV | `datos/circuitos.json` trae la rotación que usa la transmisión (por ejemplo 95° en Monza). Solo en los circuitos que ese archivo no tiene (ver abajo) se rota con PCA, dejando la recta más larga horizontal |
+| Números de curva | OpenF1 no los trae. `datos/circuitos.json` es una **copia estática** de la API pública de [MultiViewer](https://multiviewer.app), generada una sola vez con `scripts/generar_circuitos.py`: cada curva con su número, su letra (la 1A de Hungaroring), su posición X/Y y su distancia desde la meta. La app nunca consulta a MultiViewer mientras corre. Las coordenadas son las mismas de `location` de OpenF1 (décimas de metro): en Monza la muestra de telemetría más cercana a cada curva está a menos de 13 m. Cubre 24 de los 26 circuitos desde 2023; **faltan Kuala Lumpur y Madring**, nuevos en 2026, para los que el mapa se dibuja sin curvas numeradas (`circuito()` lanza `analisis_no_disponible`) |
+| Minisectores | MultiViewer trae minisectores oficiales, pero su cantidad varía entre 21 y 28 y casi la mitad de los circuitos no tiene ninguno. Por eso se descartan: los 25 minisectores del análisis son tramos de igual longitud, iguales para todos los circuitos |
 
 Riesgo: OpenF1 no publica límites de peticiones. El cliente reintenta con backoff si recibe 429, y la caché evita repetir llamadas.
 
@@ -82,7 +83,7 @@ backend/
 ├── pyproject.toml, uv.lock, Dockerfile
 ├── src/f1analytics/
 │   ├── config.py
-│   ├── datos/        cliente.py, cargador.py, limpieza.py, telemetria_vuelta.py, circuitos.json
+│   ├── datos/        cliente.py, cargador.py, limpieza.py, telemetria_vuelta.py, circuitos.py, circuitos.json, errores.py
 │   ├── analisis/     circuito.py, gomas.py, telemetria.py
 │   ├── graficos/     estilo.py, circuito.py, gomas.py, telemetria.py
 │   └── api/
@@ -129,7 +130,7 @@ backend/
 - `agregar_correccion_combustible(vueltas, segundos_por_vuelta=0.06) -> pd.DataFrame`, que agrega `tiempo_corregido_s`.
 
 ### 4.3 `analisis/circuito.py` (Proyecto 1)
-- `orientar_circuito(tel) -> pd.DataFrame`: rotación con PCA.
+- `orientar_circuito(tel, rotacion=None) -> pd.DataFrame`: gira el mapa con la rotación de `circuitos.json`; si el circuito no la tiene (`rotacion=None`), con PCA.
 - `zonas_frenado(tel, curvas, longitud_min_m=20) -> pd.DataFrame`: `curva` (el número de la curva más cercana, de `circuitos.json`), inicio, fin, velocidad de entrada y de salida, x/y del punto de frenada.
 - `posicion_curvas(tel, curvas) -> pd.DataFrame`: x/y de cada curva sobre el mapa, para dibujar los números.
 - `zonas_alta_velocidad(tel, percentil=90) -> pd.DataFrame`
@@ -296,7 +297,8 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 |----|------|-----------|-------------------------------------------|
 | 0 | `chore/setup` | Monorepo, uv, ruff, pytest, Next.js + Tailwind, ESLint, Vitest, CI, Docker Compose, PR template, docs, `CLAUDE.md`. API mínima con `/api/salud`. Home mínima con i18n ES/EN | Nada todavía (corre local) |
 | 1 | `chore/deploy` | `render.yaml`, Vercel, variables de entorno, CORS, página `/estado`, llamada a `/api/salud` en segundo plano y reintento ante 502 (el semáforo llega en el PR 4). Desde aquí cada PR trae su preview de Vercel | **Link público**: home ES/EN + API viva |
-| 2 | `feat/datos-openf1` | `cliente`, `cargador`, `telemetria_vuelta`, `config`, `estilo`, `circuitos.json`, fixtures | Igual (backend interno) |
+| 2a | `feat/datos-openf1` | `cliente`, `cargador`, `telemetria_vuelta`, `config`, fixtures | Igual (backend interno) |
+| 2b | `feat/circuitos-estilo` | `circuitos.json` (copia de MultiViewer), `datos/circuitos.py`, `estilo` | Igual (backend interno) |
 | 3 | `feat/api-base` | `/calendario`, `/sesiones`, `/pilotos`, generación de tipos TS | API con calendario real |
 | 4 | `feat/web-base` | Layout, tema visual, `SelectorIdioma`, `SelectorSesion`, `EstadoCarga` con el semáforo, cliente API, test de claves i18n | Ya se puede elegir GP y sesión |
 | 5 | `feat/analisis-circuito` | `analisis/circuito` (velocidad, frenadas y mapa de marchas), `graficos/circuito`, notebook 01 | Igual (notebook) |
@@ -350,7 +352,8 @@ Piezas, si se hace: cliente de tiempo real, estado de la sesión, WebSockets en 
 | Primera visita lenta (servidor dormido) | Despertar la API al abrir la web, mensaje claro, reintento; ping opcional |
 | Caché perdida al dormirse | Aceptable (5–8 s por sesión) |
 | Telemetría a ~3.7 Hz poco precisa | Interpolación por distancia, delta ajustado al tiempo oficial y aclaración en la UI |
-| Sin rotación oficial ni números de curva | PCA para rotar; `circuitos.json` propio con las curvas |
+| OpenF1 no trae números de curva ni rotación | `circuitos.json`, copia estática de MultiViewer (sin dependencia en producción); PCA y mapa sin números en los 2 circuitos nuevos que MultiViewer no tiene |
+| MultiViewer es un servicio de terceros y no encontré sus términos de uso | Solo se usa una copia estática, con atribución en el README y en el propio JSON; si desaparece, la app sigue igual |
 | Una carrera sin alguno de los compuestos | La UI muestra solo los compuestos que se usaron y la leyenda se adapta (incluye intermedia y lluvia cuando aparecen) |
 | Vuelta más lenta ≠ degradación | Limpieza + corrección de combustible + sección de limitaciones |
 | Textos sin traducir | Test de claves en CI; la API solo manda códigos |

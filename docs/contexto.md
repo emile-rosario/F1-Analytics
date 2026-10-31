@@ -216,7 +216,7 @@ No hay base de datos. Todo sale de OpenF1 y se guarda en caché.
 
 - **Caché:** en memoria mientras el servidor está despierto, y en disco en local y en notebooks. En Render se borra al dormirse, y es aceptable porque bajar una sesión tarda 5–8 s.
 - Solo se cachean sesiones **terminadas**.
-- Los **números de curva** no vienen en OpenF1: se guardan en un archivo propio con todos los circuitos (`backend/src/f1analytics/datos/circuitos.json`), que se arma en la Fase 5 (PR 2).
+- Los **números de curva** y la rotación del mapa no vienen en OpenF1: se guardan en `backend/src/f1analytics/datos/circuitos.json`, una copia estática de [MultiViewer](https://multiviewer.app) (24 de los 26 circuitos; faltan los dos nuevos de 2026).
 
 Detalle en [`diseno-tecnico.md`](diseno-tecnico.md).
 
@@ -306,6 +306,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Ping para que la API no se duerma: **no se agrega** (decidido el 2026-10-31). La web despierta la API al abrir y muestra «Despertando el servidor». Se puede reabrir si la primera visita resulta muy molesta; un monitor externo gratis sería más confiable que un cron de GitHub Actions, que se atrasa y se desactiva a los 60 días sin actividad.
 - [ ] Revisar `npm audit`: 16 vulnerabilidades moderadas, solo en herramientas de desarrollo (0 en producción).
 - [ ] Reemplazar `httpx` por `httpx2` en los tests del backend cuando se pueda verificar (Starlette avisa que `httpx` está en desuso para `TestClient`).
-- [ ] Buscar una fuente pública de números de curva; si no hay, armar `circuitos.json` a mano (Fase 5).
+- [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
+- [ ] Armar a mano las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026 que MultiViewer no tiene), o revisar de nuevo MultiViewer más adelante. Mientras tanto, esos mapas salen sin curvas numeradas.
 - [ ] Elegir la carrera destacada de gomas: seca y con blanda, media y dura (Bahréin 2024 no sirve, solo usó blanda y dura) (Fase 7).
 - [ ] Verificar si OpenF1 tiene límites de peticiones no documentados (Fase 5).
