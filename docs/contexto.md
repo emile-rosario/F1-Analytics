@@ -1,7 +1,7 @@
 # F1 Analytics — Contexto del proyecto
 
 > Referencia principal del proyecto para Emile Rosario y para Claude Code.
-> **Estado:** diseño funcional, técnico y visual aprobado por Emile el 2026-10-29. Auditado y corregido el 2026-10-30. Siguiente: Fase 4. Aún no se ha escrito código.
+> **Estado:** diseño funcional, técnico y visual aprobado por Emile el 2026-10-29. Auditado y corregido el 2026-10-30. Fase 4 terminada el 2026-10-31: la app está en internet ([web](https://f1-analytics-eta.vercel.app) y [API](https://f1-analytics-api-a6xc.onrender.com/api/salud)). Siguiente: Fase 5.
 > Nombre del producto: **F1 Analytics**.
 
 ### Prioridad entre documentos
@@ -281,8 +281,8 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 | 1. Análisis | Análisis posibles, fuente de datos, prueba de OpenF1 y RAM en la PC de Emile, hosting gratis | — | ✅ |
 | 2. Diseño técnico y visual | Arquitectura, API, tests, roadmap, prototipo en canvas | — | ✅ |
 | 3. Aprobación | Revisión de Emile | — | ✅ (2026-10-29) |
-| 4. Fundamentos y despliegue | Monorepo, CI, Docker, FastAPI con `/api/salud`, Next.js con i18n, `CLAUDE.md`, deploy en Vercel + Render, CORS, página `/estado`, despertar la API en segundo plano con reintento | 0, 1 | Siguiente |
-| 5. Datos y base de la web | Cliente de OpenF1, carga y caché, `circuitos.json`, calendario y pilotos, tema visual, selector de sesión, panel de carga con el semáforo | 2, 3, 4 | |
+| 4. Fundamentos y despliegue | Monorepo, CI, Docker, FastAPI con `/api/salud`, Next.js con i18n, `CLAUDE.md`, deploy en Vercel + Render, CORS, página `/estado`, despertar la API en segundo plano con reintento | 0, 1 | ✅ (2026-10-31) |
+| 5. Datos y base de la web | Cliente de OpenF1, carga y caché, `circuitos.json`, calendario y pilotos, tema visual, selector de sesión, panel de carga con el semáforo | 2, 3, 4 | Siguiente |
 | 6. Circuito | Análisis, notebook 01, página `/circuito` | 5, 6 | |
 | 7. Gomas | Limpieza, análisis, notebook 02, página `/gomas` | 7, 8 | |
 | 8. Telemetría | Análisis, notebook 03, página `/telemetria` | 9, 10 | |
@@ -297,13 +297,15 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Fuente de datos: OpenF1, probada el 2026-10-29.
 - [x] Hosting: Vercel + Render gratis.
 - [x] Diseño visual aprobado.
-- [ ] Crear el repo en GitHub (`emile-rosario/F1-Analytics`, público) y conectarlo a `C:\dev\F1-Analytics`.
-- [ ] Proteger `main`: solo merge por PR. Exigir CI en verde después del PR 0.
-- [ ] Confirmar el nombre del paquete Python: se cambió `f1lab` (resto de un nombre anterior) por `f1analytics` el 2026-10-30. Decidirlo antes del PR 0, porque después cuesta más cambiarlo.
+- [x] Repo en GitHub (`emile-rosario/F1-Analytics`, público) conectado a `C:\dev\F1-Analytics` (2026-10-30).
+- [x] `main` protegida: solo merge por PR y los 4 checks del CI en verde (2026-10-31).
+- [x] Nombre del paquete Python: `f1analytics` (antes `f1lab`, resto de un nombre anterior), decidido el 2026-10-30.
 - [x] Mantener «F1» en el nombre del producto (decidido el 2026-10-30).
 - [x] Link del canvas del prototipo en §2 y en `design.md` (2026-10-30).
-- [ ] Crear las cuentas de Vercel y Render conectadas al GitHub de Emile (Fase 4).
-- [ ] Decidir si se agrega un ping cada 14 min para que la API no se duerma (Fase 4). Ojo: el cron de GitHub Actions puede atrasarse más de 15 min y se desactiva solo tras 60 días sin actividad en el repo; un monitor externo gratis puede ser más confiable.
+- [x] Cuentas de Vercel y Render conectadas al GitHub de Emile, con la app desplegada (2026-10-31).
+- [x] Ping para que la API no se duerma: **no se agrega** (decidido el 2026-10-31). La web despierta la API al abrir y muestra «Despertando el servidor». Se puede reabrir si la primera visita resulta muy molesta; un monitor externo gratis sería más confiable que un cron de GitHub Actions, que se atrasa y se desactiva a los 60 días sin actividad.
+- [ ] Revisar `npm audit`: 16 vulnerabilidades moderadas, solo en herramientas de desarrollo (0 en producción).
+- [ ] Reemplazar `httpx` por `httpx2` en los tests del backend cuando se pueda verificar (Starlette avisa que `httpx` está en desuso para `TestClient`).
 - [ ] Buscar una fuente pública de números de curva; si no hay, armar `circuitos.json` a mano (Fase 5).
 - [ ] Elegir la carrera destacada de gomas: seca y con blanda, media y dura (Bahréin 2024 no sirve, solo usó blanda y dura) (Fase 7).
 - [ ] Verificar si OpenF1 tiene límites de peticiones no documentados (Fase 5).

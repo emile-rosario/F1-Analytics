@@ -2,7 +2,9 @@
 
 Aplicación web para entender una sesión de Fórmula 1 con datos reales de [OpenF1](https://openf1.org): mapa de velocidad del circuito, desgaste de gomas y comparación de telemetría entre dos pilotos. En español e inglés.
 
-> **Estado:** en construcción. Todavía no hay link público. El README completo, con capturas y conclusiones, llega en el PR 11.
+> **Estado:** en construcción. La base ya está en internet: [web](https://f1-analytics-eta.vercel.app) · [estado del servicio](https://f1-analytics-eta.vercel.app/es/estado) · [API](https://f1-analytics-api-a6xc.onrender.com/api/salud). Los análisis llegan de a uno. El README completo, con capturas y conclusiones, llega en el PR 11.
+>
+> La API gratuita se duerme tras 15 minutos sin tráfico: la primera visita puede tardar hasta un minuto en responder.
 
 ## Documentación
 
