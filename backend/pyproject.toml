@@ -1,0 +1,38 @@
+[project]
+name = "f1analytics"
+version = "0.1.0"
+description = "Backend de F1 Analytics: análisis de sesiones de Fórmula 1 con datos de OpenF1."
+authors = [
+    { name = "Emile Rosario" }
+]
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+]
+
+[build-system]
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integracion: pruebas contra la API real de OpenF1 (no corren en CI)",
+]
+addopts = "-m 'not integracion'"
