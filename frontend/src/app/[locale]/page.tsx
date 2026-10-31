@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 
 import SelectorIdioma from "@/components/SelectorIdioma";
+import { Link } from "@/i18n/navigation";
 
 export default function Inicio({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -22,6 +23,9 @@ export default function Inicio({ params }: { params: Promise<{ locale: string }>
       <footer className="mx-auto w-full max-w-[1240px] px-6 py-8 text-sm">
         <p>{pie("aviso")}</p>
         <p>{pie("autor")}</p>
+        <Link href="/estado" className="underline">
+          {pie("estado")}
+        </Link>
       </footer>
     </>
   );

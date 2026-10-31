@@ -32,6 +32,14 @@ npm ci
 npm run dev
 ```
 
+## Variables de entorno
+
+| Variable | Dónde | Para qué |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | Frontend (Vercel) | URL de la API. En local, `http://localhost:8000` (ver `frontend/.env.example`) |
+| `ORIGENES_PERMITIDOS` | API (Render) | Dominios del frontend con permiso CORS, separados por comas. Por defecto `http://localhost:3000` |
+| `ORIGEN_PREVIEW_REGEX` | API (Render) | Expresión regular de las URLs de preview de Vercel |
+
 ## Licencia
 
 [MIT](LICENSE). Proyecto independiente, sin relación con la Fórmula 1 ni la FIA.

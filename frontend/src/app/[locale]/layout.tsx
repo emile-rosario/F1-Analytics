@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import DespertarApi from "@/components/DespertarApi";
 import { routing } from "@/i18n/routing";
 
 import "../globals.css";
@@ -36,7 +37,10 @@ export default async function LayoutIdioma({
   return (
     <html lang={locale} className="h-full antialiased">
       <body className="min-h-full flex flex-col">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <DespertarApi />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );
