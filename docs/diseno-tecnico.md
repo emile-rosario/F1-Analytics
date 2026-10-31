@@ -101,7 +101,7 @@ backend/
 - `ClienteOpenF1(base_url, timeout=60, reintentos=4, dir_cache, max_bytes_memoria, ...)` con `httpx`.
 - `obtener(endpoint, filtros=None, *, cachear=False) -> pd.DataFrame`. Los filtros van en un diccionario porque sus nombres no siempre son identificadores válidos (`{"date>": "...", "driver_number": 16}`).
 - **OpenF1 responde 404 cuando una consulta no tiene resultados.** El cliente lo devuelve como un DataFrame vacío y es el cargador quien decide si eso es un error.
-- Reintenta (máximo 4 veces) en 429, 5xx y errores de red, con espera creciente de 1, 2, 4 y 8 s; si el 429 trae `Retry-After`, espera eso (hasta 30 s). Otros 4xx no se reintentan. Al agotar los reintentos lanza `ErrorOpenF1` con el código `limite_peticiones` o `fallo_openf1`.
+- Reintenta (máximo 4 veces) en 429, 5xx y errores de red, con espera creciente de 1, 2, 4 y 8 s; si el 429 trae `Retry-After`, espera eso (hasta 30 s). Otros 4xx no se reintentan. Al agotar los reintentos lanza `ErrorOpenF1` con el código `limite_peticiones` o `fallo_openf1`. Un 401 con el mensaje «Live F1 session in progress» (OpenF1 bloquea el acceso sin clave mientras hay una sesión en vivo, también al histórico) lanza `ErrorOpenF1("openf1_en_vivo")` de inmediato, sin reintentos. Lo que ya esté en caché sigue sirviéndose.
 - **Caché en dos niveles**, solo cuando el llamador pasa `cachear=True`:
   - En memoria (LRU, ~100 MB máximo) para las peticiones repetidas mientras el servidor está despierto.
   - En disco (`DIR_CACHE`, parquet), útil en local y en notebooks. En Render gratis el disco se borra al dormirse, y es aceptable porque bajar una sesión de nuevo tarda 5–8 s. Si el disco no es escribible, se sigue solo con memoria.
@@ -171,7 +171,9 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 
 - Las sesiones se identifican con el `session_key` de OpenF1, que es estable y corto.
 - Los modelos van en `esquemas.py`, y los tipos TS del frontend se generan desde el OpenAPI con `openapi-typescript`.
-- Errores con código (cuándo sale cada uno: `contexto.md` §5.2): `parametro_invalido`, `sesion_no_encontrada`, `sesion_no_terminada`, `piloto_no_encontrado`, `analisis_no_disponible`, `sin_telemetria`, `telemetria_incompleta`, `limite_peticiones`, `fallo_openf1`.
+- Errores con código (cuándo sale cada uno: `contexto.md` §5.2): `parametro_invalido`, `sesion_no_encontrada`, `sesion_no_terminada`, `piloto_no_encontrado`, `analisis_no_disponible`, `sin_telemetria`, `telemetria_incompleta`, `limite_peticiones`, `fallo_openf1`, `openf1_en_vivo`.
+- Estado HTTP de cada código: `parametro_invalido`, `analisis_no_disponible` y `telemetria_incompleta` → 422; `sesion_no_encontrada`, `piloto_no_encontrado` y `sin_telemetria` → 404; `sesion_no_terminada` → 409; `limite_peticiones` → 429; `fallo_openf1` y `openf1_en_vivo` → 503. Se usa 503 y no 502 porque el frontend reintenta los 502 como señal de «servidor dormido». Todo error responde `{"codigo": "..."}`, también la validación de FastAPI.
+- Los tipos TypeScript del frontend se generan del OpenAPI: `uv run python scripts/exportar_openapi.py` escribe `backend/openapi.json` y `npm run tipos` genera `frontend/src/lib/tipos-api.ts`. Un test del backend y un paso del CI del frontend fallan si alguno quedó desactualizado.
 - Validación: año entre 2023 y el actual, tipo de sesión y segmento de listas cerradas, pilotos que existan en la sesión, el análisis de gomas solo en carreras y sprints, y los segmentos Q/SQ solo en clasificaciones.
 - **Limitador de concurrencia** (semáforo, máximo 2 análisis sin caché a la vez), para no saturar OpenF1 ni el servidor.
 - **Límite por IP:** máximo 10 análisis sin caché por minuto por IP (las respuestas en caché no cuentan), leyendo la IP de `X-Forwarded-For` porque en Render la API está detrás de un proxy. Al pasarlo responde 429 con `limite_peticiones`.
@@ -347,6 +349,7 @@ Piezas, si se hace: cliente de tiempo real, estado de la sesión, WebSockets en 
 | Riesgo | Mitigación |
 |--------|------------|
 | OpenF1 cambia, se cae o empieza a cobrar lo histórico | Capa `datos/` aislada (solo hay que cambiar ahí); fixtures para tests; caché |
+| OpenF1 bloquea todo acceso sin clave durante una sesión de F1 en vivo (verificado el 2026-10-31) | Código `openf1_en_vivo` con mensaje claro en la web; la caché sirve lo ya consultado. Opciones para la demo: sesiones destacadas como archivos estáticos o una clave de pago (`contexto.md` §11) |
 | OpenF1 limita las peticiones (429) | Reintentos con backoff, caché, máximo 2 análisis sin caché a la vez |
 | Alguien abusa de la API pública y la deja ocupada para todos | Límite de 10 análisis sin caché por minuto por IP (4.6) |
 | Primera visita lenta (servidor dormido) | Despertar la API al abrir la web, mensaje claro, reintento; ping opcional |
