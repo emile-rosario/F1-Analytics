@@ -42,6 +42,11 @@ npm run dev
 | `ORIGENES_PERMITIDOS` | API (Render) | Dominios del frontend con permiso CORS, separados por comas. Por defecto `http://localhost:3000` |
 | `ORIGEN_PREVIEW_REGEX` | API (Render) | Expresión regular de las URLs de preview de Vercel |
 
+## Fuentes de datos
+
+- Telemetría, vueltas y sesiones: [OpenF1](https://openf1.org), consultado en vivo.
+- Números de curva y rotación de los mapas: copia estática de la API pública de [MultiViewer](https://multiviewer.app) (`backend/src/f1analytics/datos/circuitos.json`), generada una sola vez. La app no depende de MultiViewer mientras corre.
+
 ## Licencia
 
 [MIT](LICENSE). Proyecto independiente, sin relación con la Fórmula 1 ni la FIA.
