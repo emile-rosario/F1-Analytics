@@ -14,6 +14,23 @@
   },
   "Pie": {
     "aviso": "Data from OpenF1. Independent project, not affiliated with Formula 1 or the FIA.",
-    "autor": "Made by Emile Rosario"
+    "autor": "Made by Emile Rosario",
+    "estado": "Service status"
+  },
+  "Estado": {
+    "titulo": "Service status",
+    "versionFrontend": "Frontend version",
+    "versionApi": "API version",
+    "api": "API",
+    "consultando": "Checking the API…",
+    "despertando": "Waking up the server, it can take up to a minute…",
+    "responde": "Responding",
+    "noResponde": "The API is not responding.",
+    "reintentar": "Try again"
+  },
+  "Errores": {
+    "tiempo_agotado": "It took too long to respond.",
+    "sin_conexion": "Could not connect to the server.",
+    "fallo_api": "The server responded with an error."
   }
 }

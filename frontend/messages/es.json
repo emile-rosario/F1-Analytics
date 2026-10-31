@@ -14,6 +14,23 @@
   },
   "Pie": {
     "aviso": "Datos de OpenF1. Proyecto independiente, sin relación con la Fórmula 1 ni la FIA.",
-    "autor": "Hecho por Emile Rosario"
+    "autor": "Hecho por Emile Rosario",
+    "estado": "Estado del servicio"
+  },
+  "Estado": {
+    "titulo": "Estado del servicio",
+    "versionFrontend": "Versión del frontend",
+    "versionApi": "Versión de la API",
+    "api": "API",
+    "consultando": "Consultando la API…",
+    "despertando": "Despertando el servidor, puede tardar hasta un minuto…",
+    "responde": "Responde",
+    "noResponde": "La API no responde.",
+    "reintentar": "Reintentar"
+  },
+  "Errores": {
+    "tiempo_agotado": "Tardó demasiado en responder.",
+    "sin_conexion": "No se pudo conectar con el servidor.",
+    "fallo_api": "El servidor respondió con un error."
   }
 }
