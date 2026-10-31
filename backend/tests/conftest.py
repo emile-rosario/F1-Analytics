@@ -8,7 +8,10 @@ import httpx
 import pandas as pd
 import pytest
 import respx
+from fastapi.testclient import TestClient
 
+from f1analytics.api.dependencias import obtener_cargador
+from f1analytics.api.main import crear_app
 from f1analytics.datos.cargador import Cargador
 from f1analytics.datos.cliente import ClienteOpenF1
 
@@ -86,3 +89,16 @@ def crear_cargador(directorio: Path, ahora: datetime) -> Cargador:
 def cargador(openf1, tmp_path):
     """Cargador con el reloj en 2026: todas las sesiones de 2024 están terminadas."""
     return crear_cargador(tmp_path, datetime(2026, 1, 1, tzinfo=UTC))
+
+
+def crear_cliente(cargador: Cargador) -> TestClient:
+    """Cliente de la API que usa el cargador indicado en vez del real."""
+    app = crear_app(["http://localhost:3000"])
+    app.dependency_overrides[obtener_cargador] = lambda: cargador
+    return TestClient(app)
+
+
+@pytest.fixture
+def cliente(cargador):
+    """Cliente de la API conectado al OpenF1 falso de los fixtures de Monza 2024."""
+    return crear_cliente(cargador)
