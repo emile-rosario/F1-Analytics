@@ -302,7 +302,7 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 2a | `feat/datos-openf1` | `cliente`, `cargador`, `telemetria_vuelta`, `config`, fixtures | Igual (backend interno) |
 | 2b | `feat/circuitos-estilo` | `circuitos.json` (copia de MultiViewer), `datos/circuitos.py`, `estilo` | Igual (backend interno) |
 | 3 | `feat/api-base` | `/calendario`, `/sesiones`, `/pilotos`, generación de tipos TS | API con calendario real |
-| 4 | `feat/web-base` | Layout, tema visual, `SelectorIdioma`, `SelectorSesion`, `EstadoCarga` con el semáforo, cliente API, test de claves i18n | Ya se puede elegir GP y sesión |
+| 4 | `feat/web-base` | Layout, tema visual, `SelectorIdioma`, `SelectorSesion`, `EstadoCarga` con el semáforo, cliente API, test de claves i18n | Ya se puede elegir GP y sesión (hecho; la búsqueda de GP y las listas propias del diseño quedan para después) |
 | 5 | `feat/analisis-circuito` | `analisis/circuito` (velocidad, frenadas y mapa de marchas), `graficos/circuito`, notebook 01 | Igual (notebook) |
 | 6 | `feat/web-circuito` | Endpoint + página `/circuito` | **Proyecto 1 vivo** |
 | 7 | `feat/analisis-gomas` | `limpieza`, `analisis/gomas`, `graficos/gomas`, notebook 02 | Igual (notebook) |
