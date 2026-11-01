@@ -1,6 +1,6 @@
 import type { components } from "./tipos-api";
 
-export const URL_API =process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export const URL_API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /** Render gratis se duerme y la primera respuesta puede tardar cerca de un minuto. */
 const TIMEOUT_MS = 90_000;
@@ -68,3 +68,16 @@ export type RespuestaSalud = components["schemas"]["Salud"];
 
 export const pedirSalud = (opciones?: OpcionesPedir) =>
   pedir<RespuestaSalud>("/api/salud", opciones);
+
+export type Evento = components["schemas"]["Evento"];
+export type Sesion = components["schemas"]["Sesion"];
+export type Piloto = components["schemas"]["Piloto"];
+
+export const pedirCalendario = (anio: number, opciones?: OpcionesPedir) =>
+  pedir<Evento[]>(`/api/calendario/${anio}`, opciones);
+
+export const pedirSesiones = (anio: number, evento: number, opciones?: OpcionesPedir) =>
+  pedir<Sesion[]>(`/api/sesiones/${anio}/${evento}`, opciones);
+
+export const pedirPilotos = (sesion: number, opciones?: OpcionesPedir) =>
+  pedir<Piloto[]>(`/api/sesiones/${sesion}/pilotos`, opciones);
