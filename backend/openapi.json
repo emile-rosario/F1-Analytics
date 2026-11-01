@@ -1,0 +1,434 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "F1 Analytics API",
+    "version": "1"
+  },
+  "paths": {
+    "/api/calendario/{anio}": {
+      "get": {
+        "summary": "Calendario",
+        "description": "Grandes Premios del año, sin las pruebas de pretemporada.",
+        "operationId": "calendario_api_calendario__anio__get",
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Anio"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Evento"
+                  },
+                  "title": "Response Calendario Api Calendario  Anio  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/sesiones/{anio}/{evento}": {
+      "get": {
+        "summary": "Sesiones",
+        "description": "Sesiones de un Gran Premio. Lista vacía si el evento no existe.",
+        "operationId": "sesiones_api_sesiones__anio___evento__get",
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Anio"
+            }
+          },
+          {
+            "name": "evento",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Evento"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sesion"
+                  },
+                  "title": "Response Sesiones Api Sesiones  Anio   Evento  Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/sesiones/{sesion}/pilotos": {
+      "get": {
+        "summary": "Pilotos",
+        "description": "Pilotos que corrieron la sesión, con su equipo y color.",
+        "operationId": "pilotos_api_sesiones__sesion__pilotos_get",
+        "parameters": [
+          {
+            "name": "sesion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Sesion"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Piloto"
+                  },
+                  "title": "Response Pilotos Api Sesiones  Sesion  Pilotos Get"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/api/salud": {
+      "get": {
+        "summary": "Salud",
+        "description": "Indica que la API responde y qué versión está desplegada.",
+        "operationId": "salud_api_salud_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Salud"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorApi": {
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codigo"
+        ],
+        "title": "ErrorApi",
+        "description": "Todo error de la API. La web lo traduce según el código; la API no manda textos."
+      },
+      "Evento": {
+        "properties": {
+          "evento": {
+            "type": "integer",
+            "title": "Evento"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "nombre_oficial": {
+            "type": "string",
+            "title": "Nombre Oficial"
+          },
+          "pais": {
+            "type": "string",
+            "title": "Pais"
+          },
+          "circuito": {
+            "type": "string",
+            "title": "Circuito"
+          },
+          "circuito_clave": {
+            "type": "integer",
+            "title": "Circuito Clave"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evento",
+          "nombre",
+          "nombre_oficial",
+          "pais",
+          "circuito",
+          "circuito_clave",
+          "inicio"
+        ],
+        "title": "Evento",
+        "description": "Un Gran Premio del calendario."
+      },
+      "Piloto": {
+        "properties": {
+          "numero": {
+            "type": "integer",
+            "title": "Numero"
+          },
+          "codigo": {
+            "type": "string",
+            "title": "Codigo"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "equipo": {
+            "type": "string",
+            "title": "Equipo"
+          },
+          "color": {
+            "type": "string",
+            "title": "Color"
+          }
+        },
+        "type": "object",
+        "required": [
+          "numero",
+          "codigo",
+          "nombre",
+          "equipo",
+          "color"
+        ],
+        "title": "Piloto"
+      },
+      "Salud": {
+        "properties": {
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "estado",
+          "version"
+        ],
+        "title": "Salud"
+      },
+      "Sesion": {
+        "properties": {
+          "sesion": {
+            "type": "integer",
+            "title": "Sesion"
+          },
+          "nombre": {
+            "type": "string",
+            "title": "Nombre"
+          },
+          "tipo": {
+            "type": "string",
+            "title": "Tipo"
+          },
+          "inicio": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Inicio"
+          },
+          "fin": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Fin"
+          },
+          "evento": {
+            "type": "integer",
+            "title": "Evento"
+          },
+          "anio": {
+            "type": "integer",
+            "title": "Anio"
+          },
+          "terminada": {
+            "type": "boolean",
+            "title": "Terminada"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sesion",
+          "nombre",
+          "tipo",
+          "inicio",
+          "fin",
+          "evento",
+          "anio",
+          "terminada"
+        ],
+        "title": "Sesion",
+        "description": "Una sesión de un Gran Premio (libres, clasificación, sprint o carrera)."
+      }
+    }
+  }
+}

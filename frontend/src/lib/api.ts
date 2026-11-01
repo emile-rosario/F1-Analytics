@@ -1,4 +1,6 @@
-export const URL_API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import type { components } from "./tipos-api";
+
+export const URL_API =process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 /** Render gratis se duerme y la primera respuesta puede tardar cerca de un minuto. */
 const TIMEOUT_MS = 90_000;
@@ -62,7 +64,7 @@ export async function pedir<T>(ruta: string, opciones: OpcionesPedir = {}): Prom
   return (await respuesta.json()) as T;
 }
 
-export type RespuestaSalud = { estado: string; version: string };
+export type RespuestaSalud = components["schemas"]["Salud"];
 
 export const pedirSalud = (opciones?: OpcionesPedir) =>
   pedir<RespuestaSalud>("/api/salud", opciones);

@@ -58,7 +58,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 
 | Tema | Decisión |
 |---|---|
-| Fuente de datos | **OpenF1**, datos históricos gratis y sin cuenta, **desde 2023**. Probado el 2026-10-29: los 3 casos funcionan en 5–8 s y usan ~80 MB de RAM |
+| Fuente de datos | **OpenF1**, datos históricos gratis y sin cuenta, **desde 2023**. Probado el 2026-10-29: los 3 casos funcionan en 5–8 s y usan ~80 MB de RAM. **Excepción verificada el 2026-10-31:** mientras hay una sesión de F1 en vivo, OpenF1 bloquea con 401 a todos los que no tienen clave, también para sesiones pasadas, hasta que la sesión termina (ver §11) |
 | Sesiones | Cualquier sesión **terminada** desde 2023, elegida por el usuario. No hay datos en vivo |
 | Sesiones por defecto | Las que abre la web sin selección: **circuito**, Monza 2024 Clasificación, pole; **gomas**, a definir en la Fase 7 (carrera seca con blanda, media y dura); **telemetría**, Bahréin 2024 Clasificación, VER vs LEC, Q3 |
 | Backend | **Python 3.12 + FastAPI**, entorno con **uv** |
@@ -188,6 +188,7 @@ Render gratis no tiene previews del backend: los cambios de API se prueban en lo
 | `sin_telemetria` | OpenF1 no tiene telemetría de esa vuelta |
 | `telemetria_incompleta` | Hay telemetría, pero con muy pocas muestras |
 | `limite_peticiones` | OpenF1 respondió 429, o el usuario superó el límite por IP (§9) |
+| `openf1_en_vivo` | Hay una sesión de F1 en vivo y OpenF1 no deja consultar sin clave hasta que termine |
 | `fallo_openf1` | OpenF1 caído o con error |
 
 Estados en la web: `despertando` → `cargando` → `listo` | `error`.
@@ -263,7 +264,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 
 ## 9. Seguridad y restricciones
 
-1. **No hay secretos:** OpenF1 histórico no pide clave. Si alguna vez hace falta una, va solo en variables de entorno de Render, nunca en el repo ni en el frontend.
+1. **No hay secretos:** OpenF1 histórico no pide clave, salvo mientras hay una sesión en vivo (ver §11). Si alguna vez hace falta una, va solo en variables de entorno de Render, nunca en el repo ni en el frontend.
 2. **CORS** restringido al dominio de producción de Vercel, a las URLs de preview del proyecto (con una expresión regular, porque cada preview tiene una URL distinta) y a `localhost:3000` en desarrollo.
 3. **Validación de entrada:** año entre 2023 y el actual, tipo de sesión de una lista cerrada, pilotos que existan en la sesión, análisis de gomas solo en carreras y sprints, segmentos Q solo en clasificaciones. Cada rechazo tiene su código (§5.2).
 4. **Respeto a OpenF1:** caché, reintentos con espera ante 429 y máximo 2 análisis sin caché a la vez.
@@ -304,6 +305,8 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Link del canvas del prototipo en §2 y en `design.md` (2026-10-30).
 - [x] Cuentas de Vercel y Render conectadas al GitHub de Emile, con la app desplegada (2026-10-31).
 - [x] Ping para que la API no se duerma: **no se agrega** (decidido el 2026-10-31). La web despierta la API al abrir y muestra «Despertando el servidor». Se puede reabrir si la primera visita resulta muy molesta; un monitor externo gratis sería más confiable que un cron de GitHub Actions, que se atrasa y se desactiva a los 60 días sin actividad.
+- [x] **OpenF1 bloqueado por una sesión en vivo** (descubierto el 2026-10-31; dura unas horas por fin de semana de carrera). **Decisión de Emile (2026-10-31): opción (a) ahora** — aceptarlo y mostrar un mensaje claro en es/en (la API ya responde `openf1_en_vivo`; la web lo explica en el PR 4; la caché sirve lo ya consultado mientras el servidor esté despierto). **La opción (b) queda para después**: guardar como archivos estáticos las sesiones destacadas para que la demo nunca se caiga. Se reconsidera cuando haya un fin de semana de carrera en que el bloqueo moleste de verdad. La opción (c), pagar una clave, se descarta porque rompe el costo de $0.
+- [ ] **Sesiones destacadas estáticas (opción b)**: pendiente de agendar tras el MVP.
 - [ ] Revisar `npm audit`: 16 vulnerabilidades moderadas, solo en herramientas de desarrollo (0 en producción).
 - [ ] Reemplazar `httpx` por `httpx2` en los tests del backend cuando se pueda verificar (Starlette avisa que `httpx` está en desuso para `TestClient`).
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
