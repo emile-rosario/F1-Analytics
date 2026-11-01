@@ -31,6 +31,43 @@
   "Errores": {
     "tiempo_agotado": "Tardó demasiado en responder.",
     "sin_conexion": "No se pudo conectar con el servidor.",
-    "fallo_api": "El servidor respondió con un error."
+    "fallo_api": "El servidor respondió con un error.",
+    "parametro_invalido": "Algún dato de la petición no es válido.",
+    "analisis_no_disponible": "Este análisis no está disponible para esa sesión.",
+    "telemetria_incompleta": "La telemetría de esa vuelta está incompleta.",
+    "sesion_no_encontrada": "No se encontró esa sesión.",
+    "piloto_no_encontrado": "No se encontró ese piloto en la sesión.",
+    "sin_telemetria": "No hay telemetría para esa selección.",
+    "sesion_no_terminada": "Esa sesión todavía no terminó.",
+    "limite_peticiones": "Hay demasiadas consultas a OpenF1 en este momento. Espera un poco y reintenta.",
+    "fallo_openf1": "OpenF1 no está respondiendo bien. Reintenta en un rato.",
+    "openf1_en_vivo": "Hay una sesión de F1 en vivo y OpenF1 bloquea las consultas hasta que termine. Vuelve en un rato."
+  },
+  "Selector": {
+    "anio": "Año",
+    "evento": "Gran Premio",
+    "sesion": "Sesión",
+    "elegirEvento": "Elige un Gran Premio",
+    "elegirSesion": "Elige una sesión",
+    "noTerminada": "sin terminar",
+    "indicacion": "Elige un Gran Premio y una sesión terminada para empezar.",
+    "sesionElegida": "Sesión elegida",
+    "pilotos": "Pilotos ({cantidad})"
+  },
+  "Sesiones": {
+    "Practice 1": "Libres 1",
+    "Practice 2": "Libres 2",
+    "Practice 3": "Libres 3",
+    "Qualifying": "Clasificación",
+    "Sprint Qualifying": "Clasificación sprint",
+    "Sprint Shootout": "Clasificación sprint",
+    "Sprint": "Sprint",
+    "Race": "Carrera"
+  },
+  "Carga": {
+    "cargando": "Cargando…",
+    "despertando": "Despertando el servidor, puede tardar hasta un minuto…",
+    "segundos": "{segundos} s",
+    "reintentar": "Reintentar"
   }
 }

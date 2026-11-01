@@ -31,6 +31,43 @@
   "Errores": {
     "tiempo_agotado": "It took too long to respond.",
     "sin_conexion": "Could not connect to the server.",
-    "fallo_api": "The server responded with an error."
+    "fallo_api": "The server responded with an error.",
+    "parametro_invalido": "Some value in the request is not valid.",
+    "analisis_no_disponible": "This analysis is not available for that session.",
+    "telemetria_incompleta": "The telemetry for that lap is incomplete.",
+    "sesion_no_encontrada": "That session was not found.",
+    "piloto_no_encontrado": "That driver was not found in the session.",
+    "sin_telemetria": "There is no telemetry for that selection.",
+    "sesion_no_terminada": "That session has not finished yet.",
+    "limite_peticiones": "There are too many requests to OpenF1 right now. Wait a moment and try again.",
+    "fallo_openf1": "OpenF1 is not responding properly. Try again in a while.",
+    "openf1_en_vivo": "A live F1 session is in progress and OpenF1 blocks queries until it ends. Come back in a while."
+  },
+  "Selector": {
+    "anio": "Year",
+    "evento": "Grand Prix",
+    "sesion": "Session",
+    "elegirEvento": "Choose a Grand Prix",
+    "elegirSesion": "Choose a session",
+    "noTerminada": "not finished",
+    "indicacion": "Choose a Grand Prix and a finished session to start.",
+    "sesionElegida": "Selected session",
+    "pilotos": "Drivers ({cantidad})"
+  },
+  "Sesiones": {
+    "Practice 1": "Practice 1",
+    "Practice 2": "Practice 2",
+    "Practice 3": "Practice 3",
+    "Qualifying": "Qualifying",
+    "Sprint Qualifying": "Sprint Qualifying",
+    "Sprint Shootout": "Sprint Shootout",
+    "Sprint": "Sprint",
+    "Race": "Race"
+  },
+  "Carga": {
+    "cargando": "Loading…",
+    "despertando": "Waking up the server, it can take up to a minute…",
+    "segundos": "{segundos} s",
+    "reintentar": "Try again"
   }
 }
