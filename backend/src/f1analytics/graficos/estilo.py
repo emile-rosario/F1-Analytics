@@ -31,6 +31,18 @@ def escala_velocidad() -> LinearSegmentedColormap:
     return LinearSegmentedColormap.from_list("velocidad", _VELOCIDAD)
 
 
+def colores_marcha(marchas: int = 8) -> dict[int, str]:
+    """Un color por marcha, de la 1 a la ``marchas``: de oscuro (corta) a claro (larga).
+
+    Sale de viridis, que se distingue bien con daltonismo y se lee sobre el fondo asfalto.
+    """
+    escala = mpl.colormaps["viridis"]
+    return {
+        marcha: mpl.colors.to_hex(escala(0.2 + 0.8 * (marcha - 1) / (marchas - 1)))
+        for marcha in range(1, marchas + 1)
+    }
+
+
 def aplicar_estilo() -> None:
     """Deja los gráficos de Matplotlib con el fondo asfalto y los colores de F1 Analytics."""
     mpl.rcParams.update(
