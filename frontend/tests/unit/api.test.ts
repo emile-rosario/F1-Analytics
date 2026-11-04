@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ErrorApi, pedir } from "@/lib/api";
+import { ErrorApi, pedir, pedirCalendario, pedirPilotos, pedirSesiones } from "@/lib/api";
 
 const SIN_ESPERA = { esperaReintentoMs: 0 };
 
@@ -85,5 +85,31 @@ describe("pedir", () => {
 
     await esperado;
     await expect(resultado).rejects.toMatchObject({ codigo: "tiempo_agotado" });
+  });
+});
+
+describe("funciones de la API", () => {
+  async function rutaPedida(pedirAlgo: (fetchFn: typeof fetch) => Promise<unknown>) {
+    const fetchFn = vi.fn().mockResolvedValue(respuesta(200, []));
+    await pedirAlgo(fetchFn);
+    return new URL(fetchFn.mock.calls[0][0]).pathname;
+  }
+
+  it("pide el calendario de un año", async () => {
+    expect(await rutaPedida((fetchFn) => pedirCalendario(2024, { fetchFn }))).toBe(
+      "/api/calendario/2024",
+    );
+  });
+
+  it("pide las sesiones de un Gran Premio", async () => {
+    expect(await rutaPedida((fetchFn) => pedirSesiones(2024, 1244, { fetchFn }))).toBe(
+      "/api/sesiones/2024/1244",
+    );
+  });
+
+  it("pide los pilotos de una sesión", async () => {
+    expect(await rutaPedida((fetchFn) => pedirPilotos(9586, { fetchFn }))).toBe(
+      "/api/sesiones/9586/pilotos",
+    );
   });
 });

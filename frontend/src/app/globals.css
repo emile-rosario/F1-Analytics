@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* Colores y tipografía de docs/design.md. La web es siempre oscura (fondo asfalto). */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-asfalto: #1a1c23;
+  --color-panel: #242731;
+  --color-linea: #343845;
+  --color-texto: #f2f3f6;
+  --color-suave: #a3a9b7;
+  --color-sobre-claro: #4a4f5c;
+  --color-acento: #b65cff;
+  --color-acento-claro: #d7b3ff;
+  --color-sector-verde: #3ddc84;
+  --color-sector-amarillo: #f2c14e;
+  --color-error: #ff8a7a;
+
+  --font-sans: var(--font-saira), system-ui, sans-serif;
+  --font-titulo: var(--font-saira-condensed), var(--font-saira), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-asfalto);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* Foco visible: contorno morado de 3 px. */
+:focus-visible {
+  outline: 3px solid var(--color-acento);
+  outline-offset: 2px;
+}
+
+/* En `@layer base` para que las clases de Tailwind (text-suave, etc.) puedan sobrescribirlo. */
+@layer base {
+  a {
+    color: var(--color-acento-claro);
+  }
+}
+
+/* Cifras que no bailan al cambiar. */
+.cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+/* «Lower third» de la transmisión: panel claro con una esquina cortada en ángulo. */
+.lower-third {
+  background: var(--color-texto);
+  color: var(--color-asfalto);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+.boton-principal {
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border-radius: 4px;
+  background: var(--color-acento);
+  color: var(--color-asfalto);
+  font-family: var(--font-titulo);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.boton-secundario {
+  min-height: 44px;
+  padding: 0 1.25rem;
+  border-radius: 4px;
+  border: 1px solid var(--color-suave);
+  color: var(--color-texto);
+  font-family: var(--font-titulo);
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+/* Semáforo de salida: las cinco luces se encienden una tras otra, en bucle.
+   El retraso de cada luz va en `animation-delay` (en el componente). */
+@keyframes luz-semaforo {
+  0%,
+  10% {
+    opacity: 0.18;
+  }
+  25%,
+  75% {
+    opacity: 1;
+  }
+  90%,
+  100% {
+    opacity: 0.18;
+  }
+}
+
+.luz-semaforo {
+  animation: luz-semaforo 3s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+/* Sin animación, todo aparece en su estado final. */
+@media (prefers-reduced-motion: reduce) {
+  .luz-semaforo {
+    animation: none;
+    opacity: 1;
+  }
 }

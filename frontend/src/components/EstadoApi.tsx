@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { useTextoError } from "@/hooks/useTextoError";
 import { ErrorApi, pedirSalud } from "@/lib/api";
 
 /** Pasado este tiempo sin respuesta asumimos que el servidor está despertando. */
@@ -16,7 +17,7 @@ type Estado =
 
 export default function EstadoApi() {
   const t = useTranslations("Estado");
-  const errores = useTranslations("Errores");
+  const textoError = useTextoError();
   const [estado, setEstado] = useState<Estado>({ fase: "cargando" });
   const [intento, setIntento] = useState(0);
 
@@ -63,13 +64,13 @@ export default function EstadoApi() {
       )}
       {estado.fase === "error" && (
         <div className="space-y-3">
-          <p role="alert">
-            {t("noResponde")} {errores(estado.codigo)}
+          <p role="alert" className="text-error">
+            {t("noResponde")} {textoError(estado.codigo)}
           </p>
           <button
             type="button"
             onClick={reintentar}
-            className="rounded px-4 py-2 text-sm font-semibold border"
+            className="boton-secundario"
           >
             {t("reintentar")}
           </button>

@@ -1,32 +1,26 @@
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
-import { use } from "react";
+import { Suspense, use } from "react";
 
-import SelectorIdioma from "@/components/SelectorIdioma";
-import { Link } from "@/i18n/navigation";
+import SelectorSesion from "@/components/SelectorSesion";
 
 export default function Inicio({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
   setRequestLocale(locale);
   const t = useTranslations("Inicio");
-  const pie = useTranslations("Pie");
 
   return (
-    <>
-      <header className="flex justify-end p-6">
-        <SelectorIdioma />
-      </header>
-      <main className="flex-1 mx-auto w-full max-w-[1240px] px-6 py-16">
-        <h1 className="text-5xl font-extrabold leading-[0.92] tracking-tight">{t("titulo")}</h1>
-        <p className="mt-6 max-w-xl text-lg">{t("subtitulo")}</p>
-      </main>
-      <footer className="mx-auto w-full max-w-[1240px] px-6 py-8 text-sm">
-        <p>{pie("aviso")}</p>
-        <p>{pie("autor")}</p>
-        <Link href="/estado" className="underline">
-          {pie("estado")}
-        </Link>
-      </footer>
-    </>
+    <div className="space-y-10">
+      <div>
+        <h1 className="font-titulo text-[clamp(52px,7vw,92px)] font-extrabold leading-[0.92]">
+          {t("titulo")}
+        </h1>
+        <p className="mt-6 max-w-xl text-lg text-suave">{t("subtitulo")}</p>
+      </div>
+      {/* useSearchParams obliga a que el selector se pinte en el navegador, no al construir la página. */}
+      <Suspense>
+        <SelectorSesion />
+      </Suspense>
+    </div>
   );
 }
