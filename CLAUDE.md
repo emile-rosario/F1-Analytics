@@ -38,7 +38,10 @@ uv sync
 uv run ruff check . && uv run ruff format --check .
 uv run pytest
 uv run uvicorn f1analytics.api.main:app --reload
+uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_velocidad_circuito.ipynb
 ```
+
+Los notebooks necesitan internet y que no haya una sesión de F1 en vivo; no corren en CI. Se suben con las salidas ya ejecutadas.
 
 Frontend (desde `frontend/`):
 

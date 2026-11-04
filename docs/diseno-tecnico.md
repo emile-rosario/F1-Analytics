@@ -51,7 +51,7 @@ Conclusiones:
 | Recortar la telemetría a una vuelta | Filtro por `date_start` y `date_start + lap_duration` de `laps` |
 | Estado de pista por vuelta (verde, SC, VSC) | Reconstruirlo desde `race_control` |
 | Vueltas de entrada a pits | Desde `pit.lap_number` |
-| Rotación del mapa como en la TV | `datos/circuitos.json` trae la rotación que usa la transmisión (por ejemplo 95° en Monza). Solo en los circuitos que ese archivo no tiene (ver abajo) se rota con PCA, dejando la recta más larga horizontal |
+| Rotación del mapa como en la TV | `datos/circuitos.json` trae la rotación que usa la transmisión (por ejemplo 95° en Monza). En los 2 circuitos que ese archivo no tiene (ver abajo) el análisis del circuito no está disponible (`analisis_no_disponible`) |
 | Números de curva | OpenF1 no los trae. `datos/circuitos.json` es una **copia estática** de la API pública de [MultiViewer](https://multiviewer.app), generada una sola vez con `scripts/generar_circuitos.py`: cada curva con su número, su letra (la 1A de Hungaroring), su posición X/Y y su distancia desde la meta. La app nunca consulta a MultiViewer mientras corre. Las coordenadas son las mismas de `location` de OpenF1 (décimas de metro): en Monza la muestra de telemetría más cercana a cada curva está a menos de 13 m. Cubre 24 de los 26 circuitos desde 2023; **faltan Kuala Lumpur y Madring**, nuevos en 2026, para los que el mapa se dibuja sin curvas numeradas (`circuito()` lanza `analisis_no_disponible`) |
 | Minisectores | MultiViewer trae minisectores oficiales, pero su cantidad varía entre 21 y 28 y casi la mitad de los circuitos no tiene ninguno. Por eso se descartan: los 25 minisectores del análisis son tramos de igual longitud, iguales para todos los circuitos |
 
@@ -130,11 +130,14 @@ backend/
 - `agregar_correccion_combustible(vueltas, segundos_por_vuelta=0.06) -> pd.DataFrame`, que agrega `tiempo_corregido_s`.
 
 ### 4.3 `analisis/circuito.py` (Proyecto 1)
-- `orientar_circuito(tel, rotacion=None) -> pd.DataFrame`: gira el mapa con la rotación de `circuitos.json`; si el circuito no la tiene (`rotacion=None`), con PCA.
-- `zonas_frenado(tel, curvas, longitud_min_m=20) -> pd.DataFrame`: `curva` (el número de la curva más cercana, de `circuitos.json`), inicio, fin, velocidad de entrada y de salida, x/y del punto de frenada.
-- `posicion_curvas(tel, curvas) -> pd.DataFrame`: x/y de cada curva sobre el mapa, para dibujar los números.
-- `zonas_alta_velocidad(tel, percentil=90) -> pd.DataFrame`
-- `resumen_circuito(tel, zonas) -> dict`: % de la vuelta a fondo, frenada más fuerte, velocidad máxima y mínima.
+Funciones puras. Reciben la telemetría de una vuelta y las curvas del circuito, **en el mismo sistema de coordenadas**: si se gira el mapa, las curvas se giran con el mismo ángulo. `x` e `y` van en décimas de metro.
+- `orientar_circuito(tel, rotacion) -> pd.DataFrame`: copia con `x` e `y` girados `rotacion` grados en sentido antihorario (`y` hacia arriba), con la rotación de `circuitos.json`. Con 95° Monza queda como en la transmisión: recta de meta horizontal abajo y la Parabolica a la derecha.
+- `posicion_curvas(curvas, rotacion=0) -> pd.DataFrame`: `numero`, `letra`, `etiqueta` (`"1"`, `"1A"`), `x`, `y`, `distancia_m`, ya girados, para dibujar los números y para pasarle a `zonas_frenado`.
+- `zonas_frenado(tel, curvas, longitud_min_m=20, distancia_max_m=500) -> pd.DataFrame`: `curva`, `letra`, `inicio_m`, `fin_m`, `longitud_m`, `vel_entrada`, `vel_salida`, `x_inicio`, `y_inicio`. Una zona es un tramo con el freno pisado (OpenF1 lo manda como 0 o 100). Se asigna a la curva más cercana al punto donde se suelta el freno (la entrada de la curva); las que no tienen una curva a menos de `distancia_max_m` se descartan y, si dos caen en la misma curva (una chicane), queda la más larga.
+- `zonas_alta_velocidad(tel, percentil=90, longitud_min_m=20) -> pd.DataFrame`: tramos sobre el percentil, con su velocidad máxima y su posición.
+- `resumen_circuito(tel, zonas) -> dict`: solo datos. `pct_a_fondo` (de la **distancia** con el acelerador al 98 % o más), `vel_maxima` y `vel_minima` (`kmh` y `distancia_m`) y `frenada_mas_fuerte` (la que más velocidad pierde: `curva`, `letra`, `vel_entrada`, `vel_salida`; `None` si no hubo frenadas). La web arma la conclusión con estos números.
+
+`graficos/circuito.py` (Matplotlib, solo para notebooks y README): `mapa_velocidad` y `mapa_marchas`, con las curvas numeradas en círculos blancos y un rombo donde empieza cada frenada. La paleta de marchas es viridis (`estilo.colores_marcha()`).
 
 ### 4.4 `analisis/gomas.py` (Proyecto 2)
 - `resumen_stints(vueltas) -> pd.DataFrame`
@@ -355,7 +358,7 @@ Piezas, si se hace: cliente de tiempo real, estado de la sesión, WebSockets en 
 | Primera visita lenta (servidor dormido) | Despertar la API al abrir la web, mensaje claro, reintento; ping opcional |
 | Caché perdida al dormirse | Aceptable (5–8 s por sesión) |
 | Telemetría a ~3.7 Hz poco precisa | Interpolación por distancia, delta ajustado al tiempo oficial y aclaración en la UI |
-| OpenF1 no trae números de curva ni rotación | `circuitos.json`, copia estática de MultiViewer (sin dependencia en producción); PCA y mapa sin números en los 2 circuitos nuevos que MultiViewer no tiene |
+| OpenF1 no trae números de curva ni rotación | `circuitos.json`, copia estática de MultiViewer (sin dependencia en producción); en los 2 circuitos nuevos que MultiViewer no tiene el análisis del circuito responde `analisis_no_disponible` (no hay PCA: sin números de curva el mapa no aporta lo que promete) |
 | MultiViewer es un servicio de terceros y no encontré sus términos de uso | Solo se usa una copia estática, con atribución en el README y en el propio JSON; si desaparece, la app sigue igual |
 | Una carrera sin alguno de los compuestos | La UI muestra solo los compuestos que se usaron y la leyenda se adapta (incluye intermedia y lluvia cuando aparecen) |
 | Vuelta más lenta ≠ degradación | Limpieza + corrección de combustible + sección de limitaciones |
