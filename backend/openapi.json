@@ -236,6 +236,97 @@
         }
       }
     },
+    "/api/analisis/circuito": {
+      "get": {
+        "summary": "Analisis Circuito",
+        "description": "Mapa de la vuelta más rápida del piloto: velocidad, marchas, curvas y frenadas.\n\nSolo para sesiones terminadas. Responde ``analisis_no_disponible`` en los circuitos que\ntodavía no están en ``circuitos.json``.",
+        "operationId": "analisis_circuito_api_analisis_circuito_get",
+        "parameters": [
+          {
+            "name": "sesion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Sesion"
+            }
+          },
+          {
+            "name": "piloto",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Piloto"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisCircuito"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/salud": {
       "get": {
         "summary": "Salud",
@@ -268,6 +359,100 @@
   },
   "components": {
     "schemas": {
+      "AnalisisCircuito": {
+        "properties": {
+          "sesion": {
+            "type": "integer",
+            "title": "Sesion"
+          },
+          "piloto": {
+            "$ref": "#/components/schemas/Piloto"
+          },
+          "vuelta": {
+            "type": "integer",
+            "title": "Vuelta"
+          },
+          "tiempo_vuelta_s": {
+            "type": "number",
+            "title": "Tiempo Vuelta S"
+          },
+          "longitud_m": {
+            "type": "number",
+            "title": "Longitud M"
+          },
+          "puntos": {
+            "items": {
+              "$ref": "#/components/schemas/PuntoMapa"
+            },
+            "type": "array",
+            "title": "Puntos"
+          },
+          "curvas": {
+            "items": {
+              "$ref": "#/components/schemas/CurvaMapa"
+            },
+            "type": "array",
+            "title": "Curvas"
+          },
+          "frenadas": {
+            "items": {
+              "$ref": "#/components/schemas/ZonaFrenado"
+            },
+            "type": "array",
+            "title": "Frenadas"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ResumenCircuito"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sesion",
+          "piloto",
+          "vuelta",
+          "tiempo_vuelta_s",
+          "longitud_m",
+          "puntos",
+          "curvas",
+          "frenadas",
+          "resumen"
+        ],
+        "title": "AnalisisCircuito",
+        "description": "La vuelta más rápida de un piloto sobre el mapa del circuito."
+      },
+      "CurvaMapa": {
+        "properties": {
+          "numero": {
+            "type": "integer",
+            "title": "Numero"
+          },
+          "letra": {
+            "type": "string",
+            "title": "Letra"
+          },
+          "etiqueta": {
+            "type": "string",
+            "title": "Etiqueta"
+          },
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          }
+        },
+        "type": "object",
+        "required": [
+          "numero",
+          "letra",
+          "etiqueta",
+          "x",
+          "y"
+        ],
+        "title": "CurvaMapa"
+      },
       "ErrorApi": {
         "properties": {
           "codigo": {
@@ -327,6 +512,52 @@
         "title": "Evento",
         "description": "Un Gran Premio del calendario."
       },
+      "ExtremoVelocidad": {
+        "properties": {
+          "kmh": {
+            "type": "integer",
+            "title": "Kmh"
+          },
+          "distancia_m": {
+            "type": "number",
+            "title": "Distancia M"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kmh",
+          "distancia_m"
+        ],
+        "title": "ExtremoVelocidad"
+      },
+      "FrenadaFuerte": {
+        "properties": {
+          "curva": {
+            "type": "integer",
+            "title": "Curva"
+          },
+          "letra": {
+            "type": "string",
+            "title": "Letra"
+          },
+          "vel_entrada": {
+            "type": "integer",
+            "title": "Vel Entrada"
+          },
+          "vel_salida": {
+            "type": "integer",
+            "title": "Vel Salida"
+          }
+        },
+        "type": "object",
+        "required": [
+          "curva",
+          "letra",
+          "vel_entrada",
+          "vel_salida"
+        ],
+        "title": "FrenadaFuerte"
+      },
       "Piloto": {
         "properties": {
           "numero": {
@@ -359,6 +590,73 @@
           "color"
         ],
         "title": "Piloto"
+      },
+      "PuntoMapa": {
+        "properties": {
+          "x": {
+            "type": "number",
+            "title": "X"
+          },
+          "y": {
+            "type": "number",
+            "title": "Y"
+          },
+          "velocidad": {
+            "type": "integer",
+            "title": "Velocidad"
+          },
+          "marcha": {
+            "type": "integer",
+            "title": "Marcha"
+          },
+          "distancia_m": {
+            "type": "number",
+            "title": "Distancia M"
+          }
+        },
+        "type": "object",
+        "required": [
+          "x",
+          "y",
+          "velocidad",
+          "marcha",
+          "distancia_m"
+        ],
+        "title": "PuntoMapa",
+        "description": "Una muestra de la vuelta, con la posición ya girada como en la transmisión."
+      },
+      "ResumenCircuito": {
+        "properties": {
+          "pct_a_fondo": {
+            "type": "number",
+            "title": "Pct A Fondo"
+          },
+          "vel_maxima": {
+            "$ref": "#/components/schemas/ExtremoVelocidad"
+          },
+          "vel_minima": {
+            "$ref": "#/components/schemas/ExtremoVelocidad"
+          },
+          "frenada_mas_fuerte": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrenadaFuerte"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "pct_a_fondo",
+          "vel_maxima",
+          "vel_minima",
+          "frenada_mas_fuerte"
+        ],
+        "title": "ResumenCircuito",
+        "description": "Datos para la conclusión: la web los convierte en una frase."
       },
       "Salud": {
         "properties": {
@@ -428,6 +726,60 @@
         ],
         "title": "Sesion",
         "description": "Una sesión de un Gran Premio (libres, clasificación, sprint o carrera)."
+      },
+      "ZonaFrenado": {
+        "properties": {
+          "curva": {
+            "type": "integer",
+            "title": "Curva"
+          },
+          "letra": {
+            "type": "string",
+            "title": "Letra"
+          },
+          "inicio_m": {
+            "type": "number",
+            "title": "Inicio M"
+          },
+          "fin_m": {
+            "type": "number",
+            "title": "Fin M"
+          },
+          "longitud_m": {
+            "type": "number",
+            "title": "Longitud M"
+          },
+          "vel_entrada": {
+            "type": "integer",
+            "title": "Vel Entrada"
+          },
+          "vel_salida": {
+            "type": "integer",
+            "title": "Vel Salida"
+          },
+          "x_inicio": {
+            "type": "number",
+            "title": "X Inicio"
+          },
+          "y_inicio": {
+            "type": "number",
+            "title": "Y Inicio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "curva",
+          "letra",
+          "inicio_m",
+          "fin_m",
+          "longitud_m",
+          "vel_entrada",
+          "vel_salida",
+          "x_inicio",
+          "y_inicio"
+        ],
+        "title": "ZonaFrenado",
+        "description": "Un tramo con el freno pisado, asignado a la curva a la que se llega frenando."
       }
     }
   }

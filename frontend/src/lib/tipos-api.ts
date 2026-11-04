@@ -64,6 +64,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/analisis/circuito": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analisis Circuito
+         * @description Mapa de la vuelta más rápida del piloto: velocidad, marchas, curvas y frenadas.
+         *
+         *     Solo para sesiones terminadas. Responde ``analisis_no_disponible`` en los circuitos que
+         *     todavía no están en ``circuitos.json``.
+         */
+        get: operations["analisis_circuito_api_analisis_circuito_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/salud": {
         parameters: {
             query?: never;
@@ -88,6 +111,41 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AnalisisCircuito
+         * @description La vuelta más rápida de un piloto sobre el mapa del circuito.
+         */
+        AnalisisCircuito: {
+            /** Sesion */
+            sesion: number;
+            piloto: components["schemas"]["Piloto"];
+            /** Vuelta */
+            vuelta: number;
+            /** Tiempo Vuelta S */
+            tiempo_vuelta_s: number;
+            /** Longitud M */
+            longitud_m: number;
+            /** Puntos */
+            puntos: components["schemas"]["PuntoMapa"][];
+            /** Curvas */
+            curvas: components["schemas"]["CurvaMapa"][];
+            /** Frenadas */
+            frenadas: components["schemas"]["ZonaFrenado"][];
+            resumen: components["schemas"]["ResumenCircuito"];
+        };
+        /** CurvaMapa */
+        CurvaMapa: {
+            /** Numero */
+            numero: number;
+            /** Letra */
+            letra: string;
+            /** Etiqueta */
+            etiqueta: string;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
         /**
          * ErrorApi
          * @description Todo error de la API. La web lo traduce según el código; la API no manda textos.
@@ -119,6 +177,24 @@ export interface components {
              */
             inicio: string;
         };
+        /** ExtremoVelocidad */
+        ExtremoVelocidad: {
+            /** Kmh */
+            kmh: number;
+            /** Distancia M */
+            distancia_m: number;
+        };
+        /** FrenadaFuerte */
+        FrenadaFuerte: {
+            /** Curva */
+            curva: number;
+            /** Letra */
+            letra: string;
+            /** Vel Entrada */
+            vel_entrada: number;
+            /** Vel Salida */
+            vel_salida: number;
+        };
         /** Piloto */
         Piloto: {
             /** Numero */
@@ -131,6 +207,33 @@ export interface components {
             equipo: string;
             /** Color */
             color: string;
+        };
+        /**
+         * PuntoMapa
+         * @description Una muestra de la vuelta, con la posición ya girada como en la transmisión.
+         */
+        PuntoMapa: {
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+            /** Velocidad */
+            velocidad: number;
+            /** Marcha */
+            marcha: number;
+            /** Distancia M */
+            distancia_m: number;
+        };
+        /**
+         * ResumenCircuito
+         * @description Datos para la conclusión: la web los convierte en una frase.
+         */
+        ResumenCircuito: {
+            /** Pct A Fondo */
+            pct_a_fondo: number;
+            vel_maxima: components["schemas"]["ExtremoVelocidad"];
+            vel_minima: components["schemas"]["ExtremoVelocidad"];
+            frenada_mas_fuerte: components["schemas"]["FrenadaFuerte"] | null;
         };
         /** Salud */
         Salud: {
@@ -166,6 +269,30 @@ export interface components {
             anio: number;
             /** Terminada */
             terminada: boolean;
+        };
+        /**
+         * ZonaFrenado
+         * @description Un tramo con el freno pisado, asignado a la curva a la que se llega frenando.
+         */
+        ZonaFrenado: {
+            /** Curva */
+            curva: number;
+            /** Letra */
+            letra: string;
+            /** Inicio M */
+            inicio_m: number;
+            /** Fin M */
+            fin_m: number;
+            /** Longitud M */
+            longitud_m: number;
+            /** Vel Entrada */
+            vel_entrada: number;
+            /** Vel Salida */
+            vel_salida: number;
+            /** X Inicio */
+            x_inicio: number;
+            /** Y Inicio */
+            y_inicio: number;
         };
     };
     responses: never;
@@ -315,6 +442,74 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+        };
+    };
+    analisis_circuito_api_analisis_circuito_get: {
+        parameters: {
+            query: {
+                sesion: number;
+                piloto: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalisisCircuito"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -168,7 +168,7 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 | GET | `/api/calendario/{anio}` | GPs del año |
 | GET | `/api/sesiones/{anio}/{evento}` | Sesiones del GP |
 | GET | `/api/sesiones/{sesion}/pilotos` | Pilotos de la sesión |
-| GET | `/api/analisis/circuito?sesion&piloto` | Puntos X/Y/velocidad, zonas, resumen |
+| GET | `/api/analisis/circuito?sesion&piloto` | La vuelta más rápida del piloto: puntos `x`/`y` (ya girados), velocidad y marcha; curvas con su etiqueta; zonas de frenado; resumen. Solo sesiones terminadas |
 | GET | `/api/analisis/gomas?sesion&pilotos` | Vueltas limpias, stints, degradación, resumen |
 | GET | `/api/analisis/telemetria?sesion&piloto_a&piloto_b&segmento` | Canales alineados, delta, minisectores, resumen |
 
@@ -178,9 +178,9 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 - Estado HTTP de cada código: `parametro_invalido`, `analisis_no_disponible` y `telemetria_incompleta` → 422; `sesion_no_encontrada`, `piloto_no_encontrado` y `sin_telemetria` → 404; `sesion_no_terminada` → 409; `limite_peticiones` → 429; `fallo_openf1` y `openf1_en_vivo` → 503. Se usa 503 y no 502 porque el frontend reintenta los 502 como señal de «servidor dormido». Todo error responde `{"codigo": "..."}`, también la validación de FastAPI.
 - Los tipos TypeScript del frontend se generan del OpenAPI: `uv run python scripts/exportar_openapi.py` escribe `backend/openapi.json` y `npm run tipos` genera `frontend/src/lib/tipos-api.ts`. Un test del backend y un paso del CI del frontend fallan si alguno quedó desactualizado.
 - Validación: año entre 2023 y el actual, tipo de sesión y segmento de listas cerradas, pilotos que existan en la sesión, el análisis de gomas solo en carreras y sprints, y los segmentos Q/SQ solo en clasificaciones.
-- **Limitador de concurrencia** (semáforo, máximo 2 análisis sin caché a la vez), para no saturar OpenF1 ni el servidor.
-- **Límite por IP:** máximo 10 análisis sin caché por minuto por IP (las respuestas en caché no cuentan), leyendo la IP de `X-Forwarded-For` porque en Render la API está detrás de un proxy. Al pasarlo responde 429 con `limite_peticiones`.
-- Remuestreo a 5 m + gzip para que el payload sea liviano.
+- **Limitador de concurrencia** (semáforo, máximo 2 análisis a la vez), para no saturar OpenF1 ni el servidor. Implementado en `api/limites.py`.
+- **Límite por IP:** máximo 10 análisis sin caché por minuto por IP (las respuestas en caché no cuentan), leyendo la IP de `X-Forwarded-For` porque en Render la API está detrás de un proxy. Se cuenta cuando el análisis va a pedir `car_data` o `location` a la red: el cliente de OpenF1 avisa justo antes de cada petición (`antes_de_pedir`) y lo que sale de la caché nunca llega ahí. Se toma la primera IP de la lista; una cabecera inventada permitiría repartir peticiones entre IPs falsas, pero el límite de concurrencia sigue en pie. Al pasarlo responde 429 con `limite_peticiones`.
+- Gzip desde el PR 6a (respuestas de más de 1 KB). El remuestreo a 5 m llega con la telemetría (PR 9); el análisis del circuito manda las ~300 muestras de la vuelta tal cual.
 - CORS: `allow_origins` con el dominio de producción y `localhost:3000`, y `allow_origin_regex` para las URLs de preview del proyecto en Vercel, que cambian en cada PR.
 
 ## 5. Frontend

@@ -47,3 +47,70 @@ class Piloto(BaseModel):
     nombre: str
     equipo: str
     color: str
+
+
+class PuntoMapa(BaseModel):
+    """Una muestra de la vuelta, con la posición ya girada como en la transmisión."""
+
+    x: float
+    y: float
+    velocidad: int
+    marcha: int
+    distancia_m: float
+
+
+class CurvaMapa(BaseModel):
+    numero: int
+    letra: str
+    etiqueta: str
+    x: float
+    y: float
+
+
+class ZonaFrenado(BaseModel):
+    """Un tramo con el freno pisado, asignado a la curva a la que se llega frenando."""
+
+    curva: int
+    letra: str
+    inicio_m: float
+    fin_m: float
+    longitud_m: float
+    vel_entrada: int
+    vel_salida: int
+    x_inicio: float
+    y_inicio: float
+
+
+class ExtremoVelocidad(BaseModel):
+    kmh: int
+    distancia_m: float
+
+
+class FrenadaFuerte(BaseModel):
+    curva: int
+    letra: str
+    vel_entrada: int
+    vel_salida: int
+
+
+class ResumenCircuito(BaseModel):
+    """Datos para la conclusión: la web los convierte en una frase."""
+
+    pct_a_fondo: float
+    vel_maxima: ExtremoVelocidad
+    vel_minima: ExtremoVelocidad
+    frenada_mas_fuerte: FrenadaFuerte | None
+
+
+class AnalisisCircuito(BaseModel):
+    """La vuelta más rápida de un piloto sobre el mapa del circuito."""
+
+    sesion: int
+    piloto: Piloto
+    vuelta: int
+    tiempo_vuelta_s: float
+    longitud_m: float
+    puntos: list[PuntoMapa]
+    curvas: list[CurvaMapa]
+    frenadas: list[ZonaFrenado]
+    resumen: ResumenCircuito
