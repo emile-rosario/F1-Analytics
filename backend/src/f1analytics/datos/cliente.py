@@ -2,9 +2,11 @@
 
 import hashlib
 import json
+import threading
 import time
 from collections import OrderedDict
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from pathlib import Path
 
 import httpx
@@ -57,6 +59,22 @@ class ClienteOpenF1:
         self._dormir = dormir
         self._memoria: OrderedDict[str, tuple[pd.DataFrame, int]] = OrderedDict()
         self._bytes_memoria = 0
+        # El gancho de `antes_de_pedir` es de cada hilo: cada petición de la API corre en el suyo.
+        self._local = threading.local()
+
+    @contextmanager
+    def antes_de_pedir(self, gancho: Callable[[str], None]) -> Iterator[None]:
+        """Dentro del bloque, llama a ``gancho(endpoint)`` justo antes de cada petición a la red.
+
+        No se llama cuando la respuesta sale de la caché. Si el gancho lanza un error, la
+        petición no se hace y el error sigue su camino. Solo vale para el hilo que lo pone.
+        """
+        anterior = getattr(self._local, "gancho", None)
+        self._local.gancho = gancho
+        try:
+            yield
+        finally:
+            self._local.gancho = anterior
 
     def obtener(
         self,
@@ -83,6 +101,10 @@ class ClienteOpenF1:
         return tabla
 
     def _pedir(self, endpoint: str, filtros: dict[str, object]) -> list[dict]:
+        gancho = getattr(self._local, "gancho", None)
+        if gancho is not None:
+            gancho(endpoint)
+
         url = f"{self._base_url}/{endpoint}"
         codigo = "fallo_openf1"
 

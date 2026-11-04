@@ -252,3 +252,82 @@ def test_con_openf1_en_vivo_lo_que_ya_esta_en_cache_sigue_sirviendo(cliente):
     tabla = cliente.obtener("laps", {"session_key": 1}, cachear=True)
 
     assert len(tabla) == 2
+
+
+# --- antes_de_pedir ------------------------------------------------------------------
+
+
+@respx.mock
+def test_el_gancho_se_llama_antes_de_cada_peticion_a_la_red(cliente):
+    respx.get(URL).mock(return_value=httpx.Response(200, json=FILAS))
+    pedidos = []
+
+    with cliente.antes_de_pedir(pedidos.append):
+        cliente.obtener("laps", {"session_key": 1})
+        cliente.obtener("laps", {"session_key": 2})
+
+    assert pedidos == ["laps", "laps"]
+
+
+@respx.mock
+def test_el_gancho_no_se_llama_cuando_la_respuesta_sale_de_la_cache(cliente):
+    respx.get(URL).mock(return_value=httpx.Response(200, json=FILAS))
+    cliente.obtener("laps", {"session_key": 1}, cachear=True)
+    pedidos = []
+
+    with cliente.antes_de_pedir(pedidos.append):
+        cliente.obtener("laps", {"session_key": 1}, cachear=True)
+
+    assert pedidos == []
+
+
+@respx.mock
+def test_el_gancho_se_llama_una_vez_por_peticion_aunque_haya_reintentos(cliente):
+    respx.get(URL).mock(
+        side_effect=[httpx.Response(503), httpx.Response(503), httpx.Response(200, json=FILAS)]
+    )
+    pedidos = []
+
+    with cliente.antes_de_pedir(pedidos.append):
+        cliente.obtener("laps")
+
+    assert pedidos == ["laps"]
+
+
+@respx.mock
+def test_si_el_gancho_falla_no_se_hace_la_peticion(cliente):
+    ruta = respx.get(URL).mock(return_value=httpx.Response(200, json=FILAS))
+
+    def prohibir(_endpoint):
+        raise RuntimeError("no")
+
+    with cliente.antes_de_pedir(prohibir), pytest.raises(RuntimeError):
+        cliente.obtener("laps")
+
+    assert not ruta.called
+
+
+@respx.mock
+def test_el_gancho_se_quita_al_salir_del_bloque(cliente):
+    respx.get(URL).mock(return_value=httpx.Response(200, json=FILAS))
+    pedidos = []
+
+    with cliente.antes_de_pedir(pedidos.append):
+        pass
+    cliente.obtener("laps")
+
+    assert pedidos == []
+
+
+@respx.mock
+def test_el_gancho_solo_vale_para_el_hilo_que_lo_puso(cliente):
+    import threading
+
+    respx.get(URL).mock(return_value=httpx.Response(200, json=FILAS))
+    pedidos = []
+    with cliente.antes_de_pedir(pedidos.append):
+        hilo = threading.Thread(target=lambda: cliente.obtener("laps"))
+        hilo.start()
+        hilo.join()
+
+    assert pedidos == []
