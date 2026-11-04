@@ -34,3 +34,20 @@ def test_del_calendario_a_los_pilotos_de_una_sesion_real(cliente):
     pilotos = cliente.get(f"/api/sesiones/{clasificacion['sesion']}/pilotos").json()
     assert len(pilotos) == 20
     assert {"VER", "LEC"} <= {p["codigo"] for p in pilotos}
+
+
+def test_analisis_del_circuito_de_la_pole_de_monza(cliente):
+    sesion = 9586  # clasificación de Monza 2024
+    pilotos = cliente.get(f"/api/sesiones/{sesion}/pilotos").json()
+    norris = next(p for p in pilotos if p["codigo"] == "NOR")
+
+    respuesta = cliente.get(
+        "/api/analisis/circuito", params={"sesion": sesion, "piloto": norris["numero"]}
+    )
+
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert datos["tiempo_vuelta_s"] == 79.327  # la pole: 1:19.327
+    assert len(datos["curvas"]) == 11
+    assert datos["resumen"]["frenada_mas_fuerte"]["curva"] == 1
+    assert 340 <= datos["resumen"]["vel_maxima"]["kmh"] <= 355
