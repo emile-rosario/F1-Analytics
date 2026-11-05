@@ -11,6 +11,7 @@ from pathlib import Path
 
 import httpx
 import pandas as pd
+import pyarrow as pa
 
 from f1analytics import config
 from f1analytics.datos.errores import ErrorOpenF1
@@ -164,13 +165,15 @@ class ClienteOpenF1:
         ruta = self._ruta_disco(endpoint, clave)
         if ruta is None:
             return
+        temporal = ruta.with_suffix(".tmp")
         try:
             ruta.parent.mkdir(parents=True, exist_ok=True)
-            temporal = ruta.with_suffix(".tmp")
             tabla.to_parquet(temporal)
             temporal.replace(ruta)
-        except OSError:
-            pass  # sin disco escribible se sigue solo con la memoria
+        except (OSError, pa.ArrowException):
+            # Sin disco escribible, o con una columna que parquet no entiende (OpenF1 mezcla
+            # números y textos como «+1 LAP» en `gap_to_leader`), se sigue solo con la memoria.
+            temporal.unlink(missing_ok=True)
 
     def _poner_en_memoria(self, clave: str, tabla: pd.DataFrame) -> None:
         peso = int(tabla.memory_usage(deep=True).sum())
