@@ -149,6 +149,7 @@ def agregar_edad_goma(vueltas: pd.DataFrame, stints: pd.DataFrame) -> pd.DataFra
     unidas.loc[fuera, ["stint", "compuesto", "vuelta_inicio", "edad_inicial"]] = np.nan
     unidas["edad_goma"] = unidas["edad_inicial"] + (unidas["vuelta"] - unidas["vuelta_inicio"])
     unidas["stint"] = unidas["stint"].astype("Int64")
+    unidas["edad_goma"] = unidas["edad_goma"].astype("Int64")
     resultado = unidas.drop(columns=["vuelta_inicio", "vuelta_fin", "edad_inicial"])
     return resultado.sort_values(["piloto", "vuelta"]).reset_index(drop=True)
 
