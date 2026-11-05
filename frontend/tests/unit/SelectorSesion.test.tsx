@@ -53,10 +53,10 @@ const PILOTOS: Piloto[] = [
   { numero: 16, codigo: "LEC", nombre: "Charles LECLERC", equipo: "Ferrari", color: "#E80020" },
 ];
 
-function pintar(idioma: "es" | "en" = "es") {
+function pintar(idioma: "es" | "en" = "es", conPiloto = false) {
   return render(
     <NextIntlClientProvider locale={idioma} messages={idioma === "es" ? es : en}>
-      <SelectorSesion />
+      <SelectorSesion conPiloto={conPiloto} />
     </NextIntlClientProvider>,
   );
 }
@@ -107,17 +107,71 @@ describe("SelectorSesion", () => {
     expect(screen.getByRole("option", { name: "Carrera (sin terminar)" })).toBeDisabled();
   });
 
-  it("muestra la sesión elegida y sus pilotos", async () => {
+  it("sin piloto en el selector no se piden los pilotos", async () => {
     parametros = new URLSearchParams("anio=2024&evento=1244&sesion=9586");
     pintar();
+    await screen.findByRole("option", { name: "Clasificación" });
 
-    expect(
-      await screen.findByRole("heading", { name: /Italian Grand Prix · Clasificación/ }),
-    ).toBeInTheDocument();
-    expect(await screen.findByText("VER")).toBeInTheDocument();
-    expect(screen.getByText("Ferrari")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Pilotos (2)" })).toBeInTheDocument();
+    expect(api.pedirPilotos).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Piloto")).not.toBeInTheDocument();
+  });
+
+  it("con piloto lista los pilotos de la sesión elegida", async () => {
+    parametros = new URLSearchParams("anio=2024&evento=1244&sesion=9586");
+    pintar("es", true);
+
+    expect(await screen.findByRole("option", { name: "VER · Max VERSTAPPEN" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "LEC · Charles LECLERC" })).toBeInTheDocument();
     expect(api.pedirPilotos).toHaveBeenCalledWith(9586);
+  });
+
+  it("el piloto de la URL queda elegido", async () => {
+    parametros = new URLSearchParams("anio=2024&evento=1244&sesion=9586&piloto=16");
+    pintar("es", true);
+
+    await screen.findByRole("option", { name: "LEC · Charles LECLERC" });
+
+    expect(screen.getByLabelText("Piloto")).toHaveValue("16");
+  });
+
+  it("al elegir un piloto lo guarda en la URL junto al resto", async () => {
+    parametros = new URLSearchParams("anio=2024&evento=1244&sesion=9586");
+    pintar("es", true);
+    await screen.findByRole("option", { name: "VER · Max VERSTAPPEN" });
+
+    await userEvent.selectOptions(screen.getByLabelText("Piloto"), "1");
+
+    expect(reemplazar).toHaveBeenCalledWith({
+      pathname: "/",
+      query: { anio: "2024", evento: "1244", sesion: "9586", piloto: "1" },
+    });
+  });
+
+  it("al cambiar de sesión se borra el piloto", async () => {
+    parametros = new URLSearchParams("anio=2024&evento=1244&sesion=9586&piloto=1");
+    api.pedirSesiones.mockResolvedValue([...SESIONES, sesion(9591, "Practice 1", true)]);
+    pintar("es", true);
+    await screen.findByRole("option", { name: "Libres 1" });
+
+    await userEvent.selectOptions(screen.getByLabelText("Sesión"), "9591");
+
+    expect(reemplazar).toHaveBeenCalledWith({
+      pathname: "/",
+      query: { anio: "2024", evento: "1244", sesion: "9591" },
+    });
+  });
+
+  it("el selector sin piloto no guarda el piloto en la URL", async () => {
+    parametros = new URLSearchParams("anio=2024&evento=1244&sesion=9586&piloto=1");
+    pintar();
+    await screen.findByRole("option", { name: "Clasificación" });
+
+    await userEvent.selectOptions(screen.getByLabelText("Gran Premio"), "1244");
+
+    expect(reemplazar).toHaveBeenCalledWith({
+      pathname: "/",
+      query: { anio: "2024", evento: "1244" },
+    });
   });
 
   it("no pide pilotos de una sesión que no terminó aunque venga en la URL", async () => {

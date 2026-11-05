@@ -51,8 +51,9 @@
     "elegirSesion": "Elige una sesión",
     "noTerminada": "sin terminar",
     "indicacion": "Elige un Gran Premio y una sesión terminada para empezar.",
-    "sesionElegida": "Sesión elegida",
-    "pilotos": "Pilotos ({cantidad})"
+    "piloto": "Piloto",
+    "elegirPiloto": "Elige un piloto",
+    "indicacionPiloto": "Elige un piloto para ver su vuelta."
   },
   "Sesiones": {
     "Practice 1": "Libres 1",
@@ -69,5 +70,58 @@
     "despertando": "Despertando el servidor, puede tardar hasta un minuto…",
     "segundos": "{segundos} s",
     "reintentar": "Reintentar"
+  },
+  "Circuito": {
+    "titulo": "¿Qué tan rápido va un F1 en cada parte del circuito?",
+    "subtitulo": "La vuelta más rápida de un piloto, pintada sobre el mapa de la pista.",
+    "pestanas": {
+      "etiqueta": "Qué pintar en el mapa",
+      "velocidad": "Velocidad",
+      "marchas": "Marchas"
+    },
+    "leyendaVelocidadMaxima": "{velocidad} km/h",
+    "leyendaMarchas": "Marchas usadas",
+    "marcha": "Marcha {marcha}",
+    "leyendaFrenada": "Inicio de frenada",
+    "vuelta": "Vuelta {vuelta}",
+    "descripcionMapaVelocidad": "Mapa del circuito con la vuelta más rápida de {piloto} coloreada por velocidad. {conclusion}",
+    "descripcionMapaMarchas": "Mapa del circuito con la vuelta más rápida de {piloto} coloreada por marcha. {conclusion}",
+    "conclusion": {
+      "titulo": "La frenada más fuerte es la de la curva {curva}: de {entrada} a {salida} km/h",
+      "tituloSinFrenadas": "En esta vuelta no se detectaron frenadas fuertes",
+      "detalle": "{piloto} fue a fondo el {porcentaje} de la vuelta, llegó a {maxima} km/h a los {distanciaMaxima} m de la meta y bajó hasta {minima} km/h."
+    },
+    "tabla": {
+      "titulo": "Frenadas",
+      "descripcion": "Zonas de frenado de la vuelta, en orden",
+      "curva": "Curva",
+      "empieza": "Empieza (m)",
+      "dura": "Dura (m)",
+      "entrada": "Entrada (km/h)",
+      "salida": "Salida (km/h)",
+      "pierde": "Pierde (km/h)",
+      "vacia": "No se detectaron frenadas en esta vuelta.",
+      "region": "Tabla de frenadas, con desplazamiento horizontal"
+    }
+  },
+  "Preguntas": {
+    "titulo": "Elige una pregunta",
+    "nivel": "Nivel: {nivel}",
+    "proximamente": "Próximamente",
+    "circuito": {
+      "pregunta": "¿Qué tan rápido va un F1 en cada parte del circuito?",
+      "detalle": "El circuito coloreado por velocidad y marcha, con curvas numeradas y frenadas.",
+      "nivel": "Básico"
+    },
+    "gomas": {
+      "pregunta": "¿Cuánto le costó a un piloto su estrategia de gomas?",
+      "detalle": "Degradación por stint y compuesto, corregida por combustible.",
+      "nivel": "Intermedio"
+    },
+    "telemetria": {
+      "pregunta": "¿Dónde le gana tiempo un piloto a otro?",
+      "detalle": "Velocidad, acelerador, freno y diferencia de tiempo metro a metro.",
+      "nivel": "Avanzado"
+    }
   }
 }
