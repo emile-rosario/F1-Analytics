@@ -95,7 +95,7 @@ Ambas de Google Fonts.
 | **Diferencia** | Pieza morada en ángulo entre los dos pilotos, con la diferencia en segundos |
 | **Conclusión** | Barra de acento + panel claro con un titular en Saira Condensed y una línea de detalle |
 | **Curva** | Número en un círculo blanco sobre el mapa, como en la transmisión |
-| **Selector de sesión** | Bloque oscuro con 4 campos (año, Gran Premio, sesión, piloto; en telemetría el campo de piloto pide dos, y en gomas el piloto se elige desde la estrategia) y botón morado «Ver la vuelta». En la app real, listas propias con búsqueda de Gran Premio, no las del navegador |
+| **Selector de sesión** | Bloque oscuro con 4 campos (año, Gran Premio, sesión, piloto; en telemetría el campo de piloto pide dos, y en gomas el piloto se elige desde la estrategia) sin botón: el análisis se pide al elegir el piloto, y la elección queda en la URL (con el límite de 10 análisis por minuto y la caché, cambiar de piloto no cuesta). Por ahora son los `<select>` del navegador; las listas propias con búsqueda de Gran Premio quedan para después |
 | **Selector de idioma** | Dos botones ES / EN, el activo en claro |
 | **Segmentos** | Pastillas: Mejor vuelta / Q1 / Q2 / Q3 (SQ1 / SQ2 / SQ3 en la clasificación sprint). Solo aparecen en clasificaciones |
 | **Interruptor** | «Corregir por combustible», morado cuando está activo |

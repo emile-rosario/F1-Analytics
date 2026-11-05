@@ -307,7 +307,8 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 3 | `feat/api-base` | `/calendario`, `/sesiones`, `/pilotos`, generación de tipos TS | API con calendario real |
 | 4 | `feat/web-base` | Layout, tema visual, `SelectorIdioma`, `SelectorSesion`, `EstadoCarga` con el semáforo, cliente API, test de claves i18n | Ya se puede elegir GP y sesión (hecho; la búsqueda de GP y las listas propias del diseño quedan para después) |
 | 5 | `feat/analisis-circuito` | `analisis/circuito` (velocidad, frenadas y mapa de marchas), `graficos/circuito`, notebook 01 | Igual (notebook) |
-| 6 | `feat/web-circuito` | Endpoint + página `/circuito` | **Proyecto 1 vivo** |
+| 6a | `feat/api-circuito` | Endpoint `/api/analisis/circuito`, gzip, límite por IP y de concurrencia | API con el análisis del circuito (hecho) |
+| 6b | `feat/web-circuito` | Página `/circuito` (selector con piloto, mapa SVG con pestañas Velocidad/Marchas, conclusión, tabla de frenadas), tres preguntas en el inicio | **Proyecto 1 vivo** |
 | 7 | `feat/analisis-gomas` | `limpieza`, `analisis/gomas`, `graficos/gomas`, notebook 02 | Igual (notebook) |
 | 8 | `feat/web-gomas` | Endpoint + página `/gomas` | **Proyecto 2 vivo** |
 | 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) |
