@@ -105,3 +105,25 @@ body {
     opacity: 1;
   }
 }
+
+/* El trazado del mapa se dibuja tramo a tramo; cada tramo lleva su retraso en `animation-delay`. */
+@keyframes aparecer-tramo {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tramo {
+  opacity: 0;
+  animation: aparecer-tramo 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tramo {
+    animation: none;
+    opacity: 1;
+  }
+}
