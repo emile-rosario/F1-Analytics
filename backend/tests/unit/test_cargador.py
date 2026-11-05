@@ -2,7 +2,14 @@ from datetime import UTC, datetime
 
 import pandas as pd
 import pytest
-from conftest import CARRERA, CLASIFICACION, EVENTO_MONZA, LEC, crear_cargador
+from conftest import (
+    CARRERA,
+    CARRERA_ESPANA,
+    CLASIFICACION,
+    EVENTO_MONZA,
+    LEC,
+    crear_cargador,
+)
 
 from f1analytics.datos.errores import ErrorDatos
 
@@ -160,3 +167,36 @@ def test_la_fecha_de_fin_se_compara_con_el_reloj_inyectado(cargador):
     fin = cargador.info_sesion(CLASIFICACION)["fin"]
 
     assert fin == pd.Timestamp("2024-08-31T15:00:00+00:00")
+
+
+def test_resultado_en_espanol_con_los_que_abandonan_al_final(cargador):
+    resultado = cargador.resultado(CARRERA)
+
+    assert list(resultado.columns) == [
+        "piloto",
+        "posicion",
+        "vueltas",
+        "abandono",
+        "no_salio",
+        "descalificado",
+    ]
+    assert len(resultado) == 20
+    assert resultado.iloc[0]["piloto"] == LEC  # ganó Leclerc en Monza 2024
+    assert resultado.iloc[0]["posicion"] == 1
+    assert resultado.iloc[-1]["abandono"]
+    assert pd.isna(resultado.iloc[-1]["posicion"])
+
+
+def test_resultado_ordenado_por_posicion_y_sin_huecos_antes_de_los_abandonos(cargador):
+    resultado = cargador.resultado(CARRERA)
+
+    clasificados = resultado.dropna(subset=["posicion"])
+    assert list(clasificados["posicion"]) == list(range(1, len(clasificados) + 1))
+    assert resultado.iloc[: len(clasificados)]["posicion"].notna().all()
+
+
+def test_resultado_de_una_sesion_que_no_existe_lanza_sesion_no_encontrada(cargador):
+    with pytest.raises(ErrorDatos) as error:
+        cargador.resultado(CARRERA_ESPANA + 1)
+
+    assert error.value.codigo == "sesion_no_encontrada"
