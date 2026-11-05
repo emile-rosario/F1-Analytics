@@ -116,6 +116,7 @@ backend/
 - `stints(sesion)`: `piloto`, `stint`, `compuesto`, `vuelta_inicio`, `vuelta_fin`, `edad_inicial`.
 - `paradas(sesion)`: `piloto`, `vuelta`, `fecha`, `duracion_s` (OpenF1 solo la mide desde el GP de EE. UU. 2024).
 - `direccion_carrera(sesion)`: incluye `fase_clasificacion` (1, 2 o 3), que usa `vuelta_rapida` para recortar Q1/Q2/Q3.
+- `resultado(sesion)`: clasificación final de `session_result`: `piloto`, `posicion`, `vueltas`, `abandono`, `no_salio`, `descalificado`. Los que no tienen posición (abandonos) quedan al final, de más a menos vueltas. La caché en disco tolera que OpenF1 mezcle números y textos como `+1 LAP` en `gap_to_leader`.
 
 **`telemetria_vuelta.py`**: las funciones reciben el `Cargador` como primer argumento.
 - `telemetria_de_vuelta(cargador, sesion, piloto, vuelta) -> pd.DataFrame`: baja `car_data` y `location` solo para el rango de tiempo de esa vuelta, los une con `merge_asof` y agrega `tiempo_s` (desde el inicio de la vuelta) y `distancia_m` (integrando la velocidad). Columnas: `tiempo_s`, `distancia_m`, `x`, `y`, `velocidad`, `acelerador`, `freno`, `marcha`, `rpm`, `drs`.
@@ -123,11 +124,11 @@ backend/
 - Valida que la vuelta tenga al menos 2 muestras por segundo y ningún hueco de más de 2 s; si no, lanza `ErrorDatos("telemetria_incompleta")`. Sin ninguna muestra, `ErrorDatos("sin_telemetria")`.
 - Medido con datos reales: la distancia integrada de la mejor vuelta de Monza 2024 da 5752 m contra 5793 m oficiales (−0,7 %), y la de Bahréin queda también dentro del ±2 %.
 
-**`limpieza.py`**
-- `estado_pista_por_vuelta(direccion_carrera, n_vueltas) -> pd.Series`: `verde`, `amarilla`, `sc`, `vsc` o `roja`.
-- `limpiar_vueltas_carrera(vueltas, paradas, estado_pista, *, quitar_primera=True, solo_verde=True, quitar_pits=True, umbral_rapidas=1.07) -> pd.DataFrame`
-- `agregar_edad_goma(vueltas, stints) -> pd.DataFrame`: agrega `compuesto`, `stint` y `edad_goma` (edad inicial + vueltas desde el inicio del stint).
-- `agregar_correccion_combustible(vueltas, segundos_por_vuelta=0.06) -> pd.DataFrame`, que agrega `tiempo_corregido_s`.
+**`limpieza.py`** (funciones puras sobre las tablas del cargador)
+- `estado_pista_por_vuelta(direccion_carrera, n_vueltas) -> pd.Series`: `verde`, `amarilla` (solo la bandera amarilla de toda la pista; las de un sector no cuentan porque no se sabe dónde estaba cada piloto), `vsc`, `sc` o `roja`. El safety car cubre de `SAFETY CAR DEPLOYED` a `SAFETY CAR IN THIS LAP`, el VSC hasta `VIRTUAL SAFETY CAR ENDING` y la roja hasta el siguiente `SESSION STARTED`. Si coinciden varios manda el más serio. Usa el número de vuelta del líder, así que para un rezagado es una aproximación.
+- `limpiar_vueltas_carrera(vueltas, paradas, estado_pista, *, quitar_primera=True, solo_verde=True, quitar_pits=True, umbral_mediana=1.07) -> pd.DataFrame`: quita las vueltas sin tiempo, la vuelta 1, las no verdes, la entrada y la salida de boxes y las que tardan más de 1,07 veces la **mediana de ese piloto** (tráfico, errores).
+- `agregar_edad_goma(vueltas, stints) -> pd.DataFrame`: agrega `stint`, `compuesto` y `edad_goma` (edad inicial del stint + vueltas desde que empezó).
+- `agregar_correccion_combustible(vueltas, segundos_por_vuelta=0.06) -> pd.DataFrame`: agrega `tiempo_corregido_s = tiempo + 0,06 × (vuelta − 1)`, lo que habría tardado la vuelta con el combustible de la primera. Con el combustible que se quema el coche gana unos 0,06 s por vuelta aunque la goma se gaste; sin corregir eso la degradación se ve mucho menor (en España 2024 la media pasa de 0,03 a 0,09 s por vuelta). El 0,06 es una aproximación.
 
 ### 4.3 `analisis/circuito.py` (Proyecto 1)
 Funciones puras. Reciben la telemetría de una vuelta y las curvas del circuito, **en el mismo sistema de coordenadas**: si se gira el mapa, las curvas se giran con el mismo ángulo. `x` e `y` van en décimas de metro.
@@ -140,10 +141,15 @@ Funciones puras. Reciben la telemetría de una vuelta y las curvas del circuito,
 `graficos/circuito.py` (Matplotlib, solo para notebooks y README): `mapa_velocidad` y `mapa_marchas`, con las curvas numeradas en círculos blancos y un rombo donde empieza cada frenada. La paleta de marchas es viridis (`estilo.colores_marcha()`).
 
 ### 4.4 `analisis/gomas.py` (Proyecto 2)
-- `resumen_stints(vueltas) -> pd.DataFrame`
-- `degradacion_por_stint(vueltas, columna="tiempo_corregido_s") -> pd.DataFrame`: `pendiente_s_por_vuelta`, `intercepto`, `r2`, `n_vueltas`. Los stints con menos de 5 vueltas limpias se marcan como `insuficiente`.
-- `comparar_compuestos(degradacion) -> pd.DataFrame`
-- `resumen_gomas(degradacion, stints) -> dict`
+Recibe las vueltas ya limpias y con la edad de la goma. «Degradación» es la **pendiente** de una recta que ajusta el tiempo de vuelta contra la edad de la goma dentro de cada stint (segundos por vuelta de uso). No es el desgaste real: se mezclan el tráfico, la temperatura y la evolución de la pista, que no se pueden corregir con estos datos.
+- `resumen_stints(vueltas) -> pd.DataFrame`: un renglón por stint con sus vueltas limpias, edades y tiempo medio.
+- `degradacion_por_stint(vueltas, columna="tiempo_corregido_s", minimo_vueltas=5) -> pd.DataFrame`: `pendiente_s_por_vuelta`, `intercepto`, `r2`, `n_vueltas`, `edad_inicial`, `edad_final` e `insuficiente`. Los stints con menos de 5 vueltas limpias, o cuya goma no cambia de edad, quedan `insuficiente` y sin pendiente.
+- `comparar_compuestos(degradacion) -> pd.DataFrame`: pendiente media de cada compuesto ponderada por sus vueltas, y mediana; sin los stints insuficientes; de la más blanda a la más dura.
+- `resumen_gomas(degradacion, stints) -> dict`: solo datos: stints válidos, insuficientes y sin degradación (pendiente ≤ 0), compuesto que más y que menos se gasta (`None` si hay uno solo), stint más largo y paradas por piloto.
+
+`graficos/gomas.py` (Matplotlib, notebooks y README): `estrategias` (una fila por piloto ordenada por posición final, con la letra del compuesto y las vueltas de cada barra y una cruz en quien abandona), `dispersion_edad` (hasta 3 pilotos, un marcador por piloto y una recta por stint) y `degradacion_compuestos`.
+
+`scripts/buscar_carrera_gomas.py` revisa las carreras de 2023 en adelante y lista las que son secas, usan los tres compuestos en cantidad (mínimo 8 stints de cada uno), casi no tienen vueltas neutralizadas y no tuvieron bandera roja.
 
 ### 4.5 `analisis/telemetria.py` (Proyecto 3)
 - `remuestrear_por_distancia(tel, paso_m=5.0) -> pd.DataFrame`
@@ -286,7 +292,7 @@ Casos clave:
 | Análisis | Sesión | Por qué |
 |----------|--------|---------|
 | 1. Circuito | Monza 2024, Clasificación, pole | Rectas largas y frenadas fuertes: el contraste de velocidad se ve clarísimo |
-| 2. Gomas | **A definir en el PR 7**: una carrera seca donde se hayan usado blanda, media y dura | Bahréin 2024 queda descartada: según OpenF1 en esa carrera solo se usaron blandas y duras. Se elige con un script que busque carreras con los 3 compuestos |
+| 2. Gomas | España 2024, carrera (`session_key` 9539) | Seca, sin safety car, VSC ni bandera roja, y con 30 stints de blanda, 19 de media y 13 de dura. Elegida con `scripts/buscar_carrera_gomas.py` (10 de las 89 carreras de 2023 a 2026 cumplen todo). Bahréin 2024 no sirve (solo blanda y dura) y Suzuka 2024 tuvo bandera roja en la vuelta 1 |
 | 3. Telemetría | Bahréin 2024, Clasificación, VER vs LEC, Q3 | Pole contra segundo puesto, en una sesión ya probada con OpenF1 el 2026-10-29 |
 
 Son las que abren por defecto en la web. El usuario puede elegir cualquier sesión desde 2023.
