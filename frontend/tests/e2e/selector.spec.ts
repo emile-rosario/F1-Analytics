@@ -50,7 +50,7 @@ async function simularApi(page: Page, calendario: () => { estado: number; cuerpo
   );
 }
 
-test("elige año, Gran Premio y sesión, y se ven los pilotos con la elección en la URL", async ({
+test("elige año, Gran Premio y sesión, y la elección queda en la URL", async ({
   page,
 }) => {
   await simularApi(page, () => ({ estado: 200, cuerpo: [EVENTO] }));
@@ -63,12 +63,10 @@ test("elige año, Gran Premio y sesión, y se ven los pilotos con la elección e
   await expect(page.locator("option", { hasText: "Carrera (sin terminar)" })).toBeDisabled();
   await page.getByLabel("Sesión").selectOption("9586");
 
-  await expect(
-    page.getByRole("heading", { name: "Italian Grand Prix · Clasificación" }),
-  ).toBeVisible();
-  await expect(page.getByText("VER")).toBeVisible();
-  await expect(page.getByText("Ferrari")).toBeVisible();
   await expect(page).toHaveURL(/\?anio=2024&evento=1244&sesion=9586$/);
+  await expect(page.getByLabel("Sesión")).toHaveValue("9586");
+  // El inicio no pide piloto: eso lo hace cada análisis.
+  await expect(page.getByLabel("Piloto")).toHaveCount(0);
 });
 
 test("un enlace con la elección en la URL abre la sesión directamente", async ({ page }) => {
@@ -76,20 +74,21 @@ test("un enlace con la elección en la URL abre la sesión directamente", async 
 
   await page.goto("/es?anio=2024&evento=1244&sesion=9586");
 
-  await expect(page.getByText("VER")).toBeVisible();
   await expect(page.getByLabel("Gran Premio")).toHaveValue("1244");
+  await expect(page.getByLabel("Sesión")).toHaveValue("9586");
 });
 
 test("la elección se conserva al cambiar de idioma y los nombres se traducen", async ({ page }) => {
   await simularApi(page, () => ({ estado: 200, cuerpo: [EVENTO] }));
   await page.goto("/es?anio=2024&evento=1244&sesion=9586");
-  await expect(page.getByText("VER")).toBeVisible();
+  await expect(page.getByLabel("Sesión")).toHaveValue("9586");
+  await expect(page.getByRole("option", { name: "Clasificación" })).toBeAttached();
 
   await page.getByRole("link", { name: "English" }).click();
 
   await expect(page).toHaveURL(/\/en\?anio=2024&evento=1244&sesion=9586$/);
-  await expect(page.getByRole("heading", { name: "Italian Grand Prix · Qualifying" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Drivers (2)" })).toBeVisible();
+  await expect(page.getByLabel("Session")).toHaveValue("9586");
+  await expect(page.getByRole("option", { name: "Qualifying" })).toBeAttached();
 });
 
 test.describe("sesión de F1 en vivo", () => {

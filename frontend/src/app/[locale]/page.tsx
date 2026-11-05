@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Suspense, use } from "react";
 
 import SelectorSesion from "@/components/SelectorSesion";
+import TarjetasPreguntas from "@/components/TarjetasPreguntas";
 
 export default function Inicio({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -20,6 +21,7 @@ export default function Inicio({ params }: { params: Promise<{ locale: string }>
       {/* useSearchParams obliga a que el selector se pinte en el navegador, no al construir la página. */}
       <Suspense>
         <SelectorSesion />
+        <TarjetasPreguntas />
       </Suspense>
     </div>
   );

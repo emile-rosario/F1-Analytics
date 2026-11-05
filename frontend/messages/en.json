@@ -51,8 +51,9 @@
     "elegirSesion": "Choose a session",
     "noTerminada": "not finished",
     "indicacion": "Choose a Grand Prix and a finished session to start.",
-    "sesionElegida": "Selected session",
-    "pilotos": "Drivers ({cantidad})"
+    "piloto": "Driver",
+    "elegirPiloto": "Choose a driver",
+    "indicacionPiloto": "Choose a driver to see their lap."
   },
   "Sesiones": {
     "Practice 1": "Practice 1",
@@ -69,5 +70,58 @@
     "despertando": "Waking up the server, it can take up to a minute…",
     "segundos": "{segundos} s",
     "reintentar": "Try again"
+  },
+  "Circuito": {
+    "titulo": "How fast does an F1 car go in each part of the circuit?",
+    "subtitulo": "A driver's fastest lap, painted on the track map.",
+    "pestanas": {
+      "etiqueta": "What to paint on the map",
+      "velocidad": "Speed",
+      "marchas": "Gears"
+    },
+    "leyendaVelocidadMaxima": "{velocidad} km/h",
+    "leyendaMarchas": "Gears used",
+    "marcha": "Gear {marcha}",
+    "leyendaFrenada": "Braking point",
+    "vuelta": "Lap {vuelta}",
+    "descripcionMapaVelocidad": "Circuit map with {piloto}'s fastest lap colored by speed. {conclusion}",
+    "descripcionMapaMarchas": "Circuit map with {piloto}'s fastest lap colored by gear. {conclusion}",
+    "conclusion": {
+      "titulo": "The hardest braking is at turn {curva}: from {entrada} to {salida} km/h",
+      "tituloSinFrenadas": "No hard braking was detected on this lap",
+      "detalle": "{piloto} was flat out for {porcentaje} of the lap, reached {maxima} km/h {distanciaMaxima} m after the line and dropped to {minima} km/h."
+    },
+    "tabla": {
+      "titulo": "Braking zones",
+      "descripcion": "Braking zones of the lap, in order",
+      "curva": "Turn",
+      "empieza": "Starts (m)",
+      "dura": "Length (m)",
+      "entrada": "Entry (km/h)",
+      "salida": "Exit (km/h)",
+      "pierde": "Loses (km/h)",
+      "vacia": "No braking zones were detected on this lap.",
+      "region": "Braking table, scrolls horizontally"
+    }
+  },
+  "Preguntas": {
+    "titulo": "Choose a question",
+    "nivel": "Level: {nivel}",
+    "proximamente": "Coming soon",
+    "circuito": {
+      "pregunta": "How fast does an F1 car go in each part of the circuit?",
+      "detalle": "The circuit colored by speed and gear, with numbered turns and braking zones.",
+      "nivel": "Basic"
+    },
+    "gomas": {
+      "pregunta": "How much did a driver's tyre strategy cost them?",
+      "detalle": "Degradation per stint and compound, corrected for fuel.",
+      "nivel": "Intermediate"
+    },
+    "telemetria": {
+      "pregunta": "Where does one driver gain time over another?",
+      "detalle": "Speed, throttle, brake and time gap, meter by meter.",
+      "nivel": "Advanced"
+    }
   }
 }
