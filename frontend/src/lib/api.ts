@@ -81,3 +81,8 @@ export const pedirSesiones = (anio: number, evento: number, opciones?: OpcionesP
 
 export const pedirPilotos = (sesion: number, opciones?: OpcionesPedir) =>
   pedir<Piloto[]>(`/api/sesiones/${sesion}/pilotos`, opciones);
+
+export type AnalisisCircuito = components["schemas"]["AnalisisCircuito"];
+
+export const pedirAnalisisCircuito = (sesion: number, piloto: number, opciones?: OpcionesPedir) =>
+  pedir<AnalisisCircuito>(`/api/analisis/circuito?sesion=${sesion}&piloto=${piloto}`, opciones);
