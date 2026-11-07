@@ -60,7 +60,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 |---|---|
 | Fuente de datos | **OpenF1**, datos históricos gratis y sin cuenta, **desde 2023**. Probado el 2026-10-29: los 3 casos funcionan en 5–8 s y usan ~80 MB de RAM. **Excepción verificada el 2026-10-31:** mientras hay una sesión de F1 en vivo, OpenF1 bloquea con 401 a todos los que no tienen clave, también para sesiones pasadas, hasta que la sesión termina (ver §11) |
 | Sesiones | Cualquier sesión **terminada** desde 2023, elegida por el usuario. No hay datos en vivo |
-| Sesiones por defecto | Las que abre la web sin selección: **circuito**, Monza 2024 Clasificación, pole; **gomas**, a definir en la Fase 7 (carrera seca con blanda, media y dura); **telemetría**, Bahréin 2024 Clasificación, VER vs LEC, Q3 |
+| Sesiones por defecto | Las que abre la web sin selección: **circuito**, Monza 2024 Clasificación, pole; **gomas**, España 2024 Carrera (seca, con blanda, media y dura); **telemetría**, Bahréin 2024 Clasificación, VER vs LEC, Q3 |
 | Backend | **Python 3.12 + FastAPI**, entorno con **uv** |
 | Frontend | **Next.js (App Router) + TypeScript + Tailwind** |
 | Gráficos | **Plotly.js** en la web; SVG propio donde hace falta animar (mapa, minisectores); **Matplotlib** en los notebooks |
@@ -311,5 +311,5 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [ ] Reemplazar `httpx` por `httpx2` en los tests del backend cuando se pueda verificar (Starlette avisa que `httpx` está en desuso para `TestClient`).
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
 - [ ] Armar a mano las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026 que MultiViewer no tiene), o revisar de nuevo MultiViewer más adelante. Mientras tanto, esos mapas salen sin curvas numeradas.
-- [ ] Elegir la carrera destacada de gomas: seca y con blanda, media y dura (Bahréin 2024 no sirve, solo usó blanda y dura) (Fase 7).
+- [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
 - [ ] Verificar si OpenF1 tiene límites de peticiones no documentados (Fase 5).

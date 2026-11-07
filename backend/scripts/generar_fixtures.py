@@ -24,6 +24,11 @@ CLASIFICACION = 9586  # Monza 2024, clasificación
 CARRERA = 9590  # Monza 2024, carrera
 LEC, VER = 16, 1
 
+# España 2024, carrera: seca, con blanda, media y dura y sin safety car. Es la carrera destacada
+# de gomas. Se guardan las vueltas de unos pocos pilotos con estrategias distintas.
+CARRERA_ESPANA = 9539
+PILOTOS_ESPANA = [1, 4, 16, 44, 55, 81]  # VER, NOR, LEC, HAM, SAI, PIA
+
 
 def pedir(endpoint: str, **filtros) -> list[dict]:
     for intento in range(4):
@@ -52,22 +57,35 @@ def main() -> None:
     tablas: dict[str, list[dict]] = {}
 
     tablas["meetings"] = pedir("meetings", year=ANIO)
-    tablas["sessions"] = pedir("sessions", year=ANIO, meeting_key=EVENTO_MONZA) + pedir(
-        "sessions", year=ANIO, meeting_key=PRETEMPORADA
+    tablas["sessions"] = (
+        pedir("sessions", year=ANIO, meeting_key=EVENTO_MONZA)
+        + pedir("sessions", year=ANIO, meeting_key=PRETEMPORADA)
+        + pedir("sessions", session_key=CARRERA_ESPANA)
     )
 
-    tablas["drivers"] = pedir("drivers", session_key=CLASIFICACION) + pedir(
-        "drivers", session_key=CARRERA
+    tablas["drivers"] = (
+        pedir("drivers", session_key=CLASIFICACION)
+        + pedir("drivers", session_key=CARRERA)
+        + pedir("drivers", session_key=CARRERA_ESPANA)
     )
     tablas["laps"] = (
         pedir("laps", session_key=CLASIFICACION, driver_number=LEC)
         + pedir("laps", session_key=CLASIFICACION, driver_number=VER)
         + pedir("laps", session_key=CARRERA, driver_number=LEC)
     )
-    tablas["stints"] = pedir("stints", session_key=CARRERA)
-    tablas["pit"] = pedir("pit", session_key=CARRERA)
-    tablas["race_control"] = pedir("race_control", session_key=CLASIFICACION) + pedir(
-        "race_control", session_key=CARRERA
+    for piloto in PILOTOS_ESPANA:
+        tablas["laps"] += pedir("laps", session_key=CARRERA_ESPANA, driver_number=piloto)
+    tablas["stints"] = pedir("stints", session_key=CARRERA) + pedir(
+        "stints", session_key=CARRERA_ESPANA
+    )
+    tablas["pit"] = pedir("pit", session_key=CARRERA) + pedir("pit", session_key=CARRERA_ESPANA)
+    tablas["race_control"] = (
+        pedir("race_control", session_key=CLASIFICACION)
+        + pedir("race_control", session_key=CARRERA)
+        + pedir("race_control", session_key=CARRERA_ESPANA)
+    )
+    tablas["session_result"] = pedir("session_result", session_key=CARRERA) + pedir(
+        "session_result", session_key=CARRERA_ESPANA
     )
 
     # Telemetría solo de la mejor vuelta de cada piloto en la clasificación.

@@ -259,3 +259,32 @@ class Cargador:
             }
         )
         return tabla.sort_values("fecha").reset_index(drop=True)
+
+    def resultado(self, sesion: int) -> pd.DataFrame:
+        """Clasificación final: los que acaban por posición y, después, los que abandonan.
+
+        ``posicion`` queda vacía en quien abandonó, no salió o fue descalificado; esos van al
+        final, ordenados por las vueltas que dieron.
+        """
+        crudo = self.cliente.obtener(
+            "session_result", {"session_key": sesion}, cachear=self.sesion_terminada(sesion)
+        )
+        columnas = ["piloto", "posicion", "vueltas", "abandono", "no_salio", "descalificado"]
+        if crudo.empty:
+            return _vacio(columnas)
+        tabla = pd.DataFrame(
+            {
+                "piloto": crudo["driver_number"],
+                "posicion": crudo["position"].astype("Int64"),
+                "vueltas": crudo["number_of_laps"].fillna(0).astype(int),
+                "abandono": crudo["dnf"].fillna(False).astype(bool),
+                "no_salio": crudo["dns"].fillna(False).astype(bool),
+                "descalificado": crudo["dsq"].fillna(False).astype(bool),
+            }
+        )
+        # Los que no tienen posición (NaN) quedan al final, de más a menos vueltas.
+        tabla["_sin_posicion"] = tabla["posicion"].isna()
+        tabla = tabla.sort_values(
+            ["_sin_posicion", "posicion", "vueltas"], ascending=[True, True, False]
+        )
+        return tabla.drop(columns="_sin_posicion").reset_index(drop=True)

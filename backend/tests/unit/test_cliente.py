@@ -331,3 +331,18 @@ def test_el_gancho_solo_vale_para_el_hilo_que_lo_puso(cliente):
         hilo.join()
 
     assert pedidos == []
+
+
+@respx.mock
+def test_una_columna_con_tipos_mezclados_no_rompe_la_cache(cliente, tmp_path):
+    # OpenF1 manda `gap_to_leader` como número o como texto («+1 LAP») en la misma respuesta.
+    filas = [{"position": 1, "gap_to_leader": 0}, {"position": 2, "gap_to_leader": "+1 LAP"}]
+    ruta = respx.get(f"{BASE}/session_result").mock(return_value=httpx.Response(200, json=filas))
+
+    primera = cliente.obtener("session_result", {"session_key": 1}, cachear=True)
+    segunda = cliente.obtener("session_result", {"session_key": 1}, cachear=True)
+
+    assert list(primera["position"]) == [1, 2]
+    assert list(segunda["gap_to_leader"]) == [0, "+1 LAP"]
+    assert ruta.call_count == 1  # la segunda salió de la caché en memoria
+    assert not list(tmp_path.rglob("*.tmp"))  # no queda basura a medio escribir

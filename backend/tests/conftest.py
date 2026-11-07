@@ -25,6 +25,7 @@ ENDPOINTS = [
     "stints",
     "pit",
     "race_control",
+    "session_result",
     "car_data",
     "location",
 ]
@@ -34,6 +35,10 @@ CLASIFICACION = 9586
 CARRERA = 9590
 EVENTO_MONZA = 1244
 LEC, VER = 16, 1
+
+# España 2024, carrera (la carrera destacada de gomas), con las vueltas de 6 pilotos.
+CARRERA_ESPANA = 9539
+PILOTOS_ESPANA = [1, 4, 16, 44, 55, 81]  # VER, NOR, LEC, HAM, SAI, PIA
 
 
 def _coincide(fila: dict, clave: str, valor: str) -> bool:
