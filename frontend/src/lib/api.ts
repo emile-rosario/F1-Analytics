@@ -86,3 +86,12 @@ export type AnalisisCircuito = components["schemas"]["AnalisisCircuito"];
 
 export const pedirAnalisisCircuito = (sesion: number, piloto: number, opciones?: OpcionesPedir) =>
   pedir<AnalisisCircuito>(`/api/analisis/circuito?sesion=${sesion}&piloto=${piloto}`, opciones);
+
+export type AnalisisGomas = components["schemas"]["AnalisisGomas"];
+
+/** Hasta 3 pilotos (`pilotos`); sin ellos la API usa el podio. */
+export const pedirAnalisisGomas = (sesion: number, pilotos: number[] = [], opciones?: OpcionesPedir) =>
+  pedir<AnalisisGomas>(
+    `/api/analisis/gomas?${[`sesion=${sesion}`, ...pilotos.map((p) => `pilotos=${p}`)].join("&")}`,
+    opciones,
+  );

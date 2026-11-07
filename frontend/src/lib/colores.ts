@@ -35,3 +35,27 @@ export function colorVelocidad(velocidad: number, minima: number, maxima: number
 
 /** Degradado CSS de la escala de velocidad, para la leyenda. */
 export const DEGRADADO_VELOCIDAD = `linear-gradient(to right, ${VELOCIDAD.join(", ")})`;
+
+/** Color de cada compuesto (docs/design.md). */
+export const COLORES_COMPUESTO: Record<string, string> = {
+  SOFT: "#f0434a",
+  MEDIUM: "#f2c14e",
+  HARD: "#f2f3f6",
+  INTERMEDIATE: "#3ddc84",
+  WET: "#3d7bff",
+};
+
+/** De la más blanda a la más dura, y después las de lluvia (el orden del backend). */
+export const ORDEN_COMPUESTOS = ["SOFT", "MEDIUM", "HARD", "INTERMEDIATE", "WET"];
+
+/** Clave de traducción de un compuesto: OpenF1 a veces manda `UNKNOWN` u otros valores raros. */
+export const claveCompuesto = (compuesto: string) =>
+  ORDEN_COMPUESTOS.includes(compuesto) ? compuesto : "UNKNOWN";
+
+/** Posición para ordenar: los desconocidos van al final. */
+export const ordenCompuesto = (compuesto: string) => {
+  const i = ORDEN_COMPUESTOS.indexOf(compuesto);
+  return i === -1 ? ORDEN_COMPUESTOS.length : i;
+};
+
+export const colorCompuesto = (compuesto: string) => COLORES_COMPUESTO[compuesto] ?? "#a3a9b7";
