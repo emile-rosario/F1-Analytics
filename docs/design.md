@@ -118,7 +118,8 @@ Radios: 3–4px en piezas chicas, 6–8px en paneles. Los *lower thirds* no llev
 
 ### Gomas
 - Estrategias de **todos los pilotos**, ordenados por posición final, con filas compactas. Los abandonos muestran la barra cortada.
-- Dispersión de tiempo de vuelta contra edad de la goma del piloto elegido (clic en su fila), hasta 3 a la vez, con una recta por stint.
+- Dispersión de tiempo de vuelta contra edad de la goma de los pilotos elegidos (clic en su fila), hasta 3 a la vez, con una recta por stint. El color es el compuesto y la forma del punto (círculo, cuadrado, triángulo) es el piloto, porque dos pilotos del mismo equipo comparten color. En pantallas angostas la gráfica se desplaza en horizontal para que los textos se lean.
+- Si no se puede medir la degradación (la mitad o más de los stints no se gasta, o la diferencia entre compuestos es mínima), la conclusión pasa a un aviso con barra amarilla y la nota de limitaciones se abre sola.
 - Interruptor de combustible, conclusión, tabla de degradación por stint y por compuesto, y nota de limitaciones.
 
 ### Telemetría
@@ -151,7 +152,7 @@ Respuesta a acciones (sin animaciones decorativas):
 - Clic en un piloto de la estrategia: el gráfico cambia a ese piloto.
 - Cambio de segmento o de idioma: transición corta.
 
-Herramientas: CSS y Framer Motion para la interfaz; SVG propio para el mapa y los minisectores; Plotly para el resto de los gráficos.
+Herramientas: CSS para la interfaz (Framer Motion si algún día hace falta); SVG propio para todos los gráficos: mapa, minisectores y dispersión de gomas. Las barras de estrategia son HTML con CSS.
 
 **Todo respeta `prefers-reduced-motion`:** sin animación, todo aparece en su estado final.
 
