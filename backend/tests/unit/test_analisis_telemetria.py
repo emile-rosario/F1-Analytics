@@ -363,3 +363,33 @@ def test_un_empate_exacto_no_da_ganador_ni_ventajas(lec):
     assert resumen["ganador"] == "empate"
     assert resumen["sectores_ganados"] == {"a": 0, "b": 0, "empate": 25}
     assert resumen["mayor_ventaja"] == {"a": None, "b": None}
+
+
+# --- contra los tiempos oficiales por sector -----------------------------------------
+
+
+def test_el_delta_a_mitad_de_vuelta_coincide_con_los_sectores_oficiales(
+    cargador, lec, ver, alineadas_reales
+):
+    # Los tiempos de sector de OpenF1 son una verdad independiente de la telemetría: dicen cuánto
+    # llevaba cada piloto al terminar el sector 1 y el 2. El delta se compara en ese punto de la
+    # pista (donde cada coche cruzó, según su reloj; los dos cruces caen a pocos metros).
+    delta = delta_tiempo(alineadas_reales, DURACION_LEC_S, DURACION_VER_S)
+    vueltas = {
+        LEC: cargador.vueltas(CLASIFICACION, LEC).set_index("vuelta").loc[20],
+        VER: cargador.vueltas(CLASIFICACION, VER).set_index("vuelta").loc[11],
+    }
+    estiramiento = alineadas_reales["distancia_m"].iloc[-1] / np.array(
+        [lec["distancia_m"].iloc[-1], ver["distancia_m"].iloc[-1]]
+    )
+
+    for corte in (1, 2):
+        columnas = [f"sector_{i}_s" for i in range(1, corte + 1)]
+        oficial_lec = vueltas[LEC][columnas].sum()
+        oficial_ver = vueltas[VER][columnas].sum()
+        punto_lec = np.interp(oficial_lec, lec["tiempo_s"], lec["distancia_m"]) * estiramiento[0]
+        punto_ver = np.interp(oficial_ver, ver["tiempo_s"], ver["distancia_m"]) * estiramiento[1]
+        assert abs(punto_lec - punto_ver) < 50  # el mismo punto de la pista, ±50 m
+        estimado = np.interp((punto_lec + punto_ver) / 2, alineadas_reales["distancia_m"], delta)
+
+        assert estimado == pytest.approx(oficial_ver - oficial_lec, abs=0.12)

@@ -33,9 +33,10 @@ CANALES = CANALES_CONTINUOS + CANALES_DISCRETOS
 
 # Por debajo de esta velocidad (m/s) no se divide: con el coche casi parado ds / v se dispara.
 VELOCIDAD_MINIMA_MS = 0.5
-# Diferencias menores que esto (segundos) se consideran empate: está por debajo de lo que la
-# telemetría pública (~3,7 Hz) permite distinguir.
-EMPATE_S = 0.005
+# Diferencias menores que esto (segundos) se consideran empate. Contra los tiempos oficiales de
+# sector, el delta se equivoca 0,03 s de media (0,11 s como máximo) tras 1/3 de vuelta, así que
+# una diferencia de un solo minisector por debajo de 0,01 s no se puede distinguir de ese error.
+EMPATE_S = 0.01
 
 COLUMNAS_GANADORES = ["sector", "inicio_m", "fin_m", "diferencia_s", "ganador"]
 
