@@ -129,14 +129,15 @@
     },
     "dispersion": {
       "titulo": "Tiempo de vuelta contra edad de la goma",
-      "descripcion": "Gráfica de los tiempos de vuelta limpios de {pilotos} contra la edad de la goma, con una recta por stint. {conclusion}",
+      "descripcion": "Una gráfica por piloto ({pilotos}) con sus tiempos de vuelta limpios contra la edad de la goma y una recta por stint, todas con la misma escala. {conclusion}",
+      "descripcionPanel": "Tiempos de vuelta limpios de {piloto} contra la edad de la goma, con una recta por stint",
       "region": "Gráfica con desplazamiento horizontal",
       "ejeX": "Edad de la goma (vueltas)",
       "ejeY": "Tiempo de vuelta",
       "corregir": "Corregir por combustible",
       "corregirAyuda": "Con el combustible el coche se aligera y gana unos {segundos, number} s por vuelta. Con el interruptor encendido se suma ese tiempo a cada vuelta para aislar el desgaste de la goma.",
-      "leyenda": "Cada forma es un piloto y cada color, un compuesto.",
       "sinVueltas": "Los pilotos elegidos no tienen vueltas limpias para dibujar.",
+      "sinVueltasPiloto": "{piloto} no tiene vueltas limpias para dibujar.",
       "actualizando": "Actualizando la gráfica…"
     },
     "tablas": {

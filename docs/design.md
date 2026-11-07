@@ -118,7 +118,7 @@ Radios: 3–4px en piezas chicas, 6–8px en paneles. Los *lower thirds* no llev
 
 ### Gomas
 - Estrategias de **todos los pilotos**, ordenados por posición final, con filas compactas. Los abandonos muestran la barra cortada.
-- Dispersión de tiempo de vuelta contra edad de la goma de los pilotos elegidos (clic en su fila), hasta 3 a la vez, con una recta por stint. El color es el compuesto y la forma del punto (círculo, cuadrado, triángulo) es el piloto, porque dos pilotos del mismo equipo comparten color. En pantallas angostas la gráfica se desplaza en horizontal para que los textos se lean.
+- Dispersión de tiempo de vuelta contra edad de la goma de los pilotos elegidos (clic en su fila), hasta 3 a la vez, con una recta por stint. **Un panel por piloto**, apilados y con la misma escala de tiempo y de edad, titulado con su código y la barra del color de su equipo: en una sola gráfica, tres pilotos con las mismas gomas se confunden (las formas de punto no bastaban). El color es siempre el compuesto. En pantallas angostas los paneles se desplazan juntos en horizontal para que los textos se lean.
 - Si no se puede medir la degradación (la mitad o más de los stints no se gasta, o la diferencia entre compuestos es mínima), la conclusión pasa a un aviso con barra amarilla y la nota de limitaciones se abre sola.
 - Interruptor de combustible, conclusión, tabla de degradación por stint y por compuesto, y nota de limitaciones.
 

@@ -90,6 +90,25 @@ test("con tres pilotos elegidos no deja agregar otro", async ({ page }) => {
   await expect(page).toHaveURL(new RegExp(`${URL_COMPLETA}$`));
 });
 
+test("cada piloto elegido tiene su propio panel y al quitar uno desaparece el suyo", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/gomas?${URL_COMPLETA}`);
+  const paneles = page.getByRole("img", { name: /Tiempos de vuelta limpios de/ });
+  await expect(paneles).toHaveCount(3);
+  await expect(paneles.first()).toHaveAccessibleName(/de VER/);
+  // Cada panel solo dibuja a su piloto.
+  expect(
+    await paneles.evaluateAll((svgs) =>
+      svgs.map((s) => [...new Set([...s.querySelectorAll<SVGGElement>(".punto-goma")].map((g) => g.dataset.piloto))]),
+    ),
+  ).toEqual([["1"], ["4"], ["44"]]);
+
+  await page.getByRole("button", { name: /^NOR/ }).click();
+
+  await expect(paneles).toHaveCount(2);
+  await expect(page.getByRole("img", { name: /de NOR/ })).toHaveCount(0);
+});
+
 test("el interruptor de combustible mueve los puntos y cambia la conclusión", async ({ page }) => {
   await simularApi(page);
   await page.goto(`/es/gomas?${URL_COMPLETA}`);

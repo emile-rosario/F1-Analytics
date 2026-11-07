@@ -129,14 +129,15 @@
     },
     "dispersion": {
       "titulo": "Lap time against tyre age",
-      "descripcion": "Chart of the clean lap times of {pilotos} against tyre age, with one line per stint. {conclusion}",
+      "descripcion": "One chart per driver ({pilotos}) with their clean lap times against tyre age and one line per stint, all on the same scale. {conclusion}",
+      "descripcionPanel": "Clean lap times of {piloto} against tyre age, with one line per stint",
       "region": "Chart, scrolls horizontally",
       "ejeX": "Tyre age (laps)",
       "ejeY": "Lap time",
       "corregir": "Correct for fuel",
       "corregirAyuda": "As fuel burns off the car gets lighter and gains about {segundos, number} s per lap. With the switch on, that time is added back to every lap to isolate tyre wear.",
-      "leyenda": "Each shape is a driver and each colour a compound.",
       "sinVueltas": "The picked drivers have no clean laps to draw.",
+      "sinVueltasPiloto": "{piloto} has no clean laps to draw.",
       "actualizando": "Updating the chart…"
     },
     "tablas": {
