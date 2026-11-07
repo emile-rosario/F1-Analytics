@@ -154,9 +154,13 @@ Recibe las vueltas ya limpias y con la edad de la goma. «Degradación» es la *
 ### 4.5 `analisis/telemetria.py` (Proyecto 3)
 - `remuestrear_por_distancia(tel, paso_m=5.0) -> pd.DataFrame`
 - `alinear_vueltas(tel_a, tel_b, paso_m=5.0) -> pd.DataFrame`, con sufijos `_a` y `_b`.
-- `delta_tiempo(alineadas) -> pd.Series`: delta acumulado (positivo = B pierde contra A), integrando `ds / v`. Se ajusta para que el delta final coincida con la diferencia oficial de `lap_duration`, porque la integración con ~3.7 Hz acumula error.
-- `ganador_por_minisector(alineadas, n_sectores=25) -> pd.DataFrame`
-- `resumen_telemetria(alineadas, delta, ganadores) -> dict`
+- `delta_tiempo(alineadas, duracion_a_s=None, duracion_b_s=None) -> pd.Series`: delta acumulado (positivo = B pierde contra A), integrando `ds / v`. Con las duraciones oficiales (`lap_duration`) el tiempo de cada vuelta se escala para terminar justo en la suya, y el delta final es la diferencia oficial: la integración con ~3.7 Hz acumula error (en Bahréin 2024 daba −0,119 s donde el oficial es +0,228 s). El ajuste solo asegura el final; a mitad de vuelta el delta es una estimación.
+- `ganador_por_minisector(alineadas, delta, n_sectores=25) -> pd.DataFrame`: 25 tramos de igual longitud; columnas `sector`, `inicio_m`, `fin_m`, `diferencia_s` y `ganador` (`"a"`, `"b"` o `"empate"`). Recibe el `delta` para que los ganadores sean coherentes con la curva que se dibuja.
+- `resumen_telemetria(alineadas, delta, ganadores) -> dict`: `delta_final_s`, `ganador`, `sectores_ganados`, `mayor_ventaja` (por piloto, con el minisector y la ventaja en segundos), y `pct_a_fondo`, `vel_maxima` y `vel_minima` por piloto (`a` y `b`).
+
+`alinear_vueltas` estira las dos vueltas para que midan lo mismo (el promedio de sus largos): la distancia sale de integrar la velocidad y cada vuelta se equivoca un ~1 % distinto, pero las dos recorren la misma pista.
+
+**Cuánto se equivoca el delta.** Se comparó con los tiempos oficiales de sector de OpenF1 (`duration_sector_1/2/3`) en 6 comparaciones de la Q3 de 5 carreras de 2024: error medio de **0,03 s** y máximo de **0,11 s** en los cruces de sector. Con los relojes de las muestras en vez de integrar `ds / v` el error medio era de 0,13 s, por eso se mantiene la integración. Los empates de minisector son diferencias menores que `EMPATE_S = 0.01` s, el mismo orden que ese error. Los picos del delta en las frenadas fuertes son en parte ruido de muestreo (una muestra cada ~20 m); la página debe decirlo en sus limitaciones.
 
 Las funciones `resumen_*` devuelven datos estructurados, nunca texto:
 
@@ -320,7 +324,7 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 7 | `feat/analisis-gomas` | `limpieza`, `analisis/gomas`, `graficos/gomas`, notebook 02 | Igual (notebook) |
 | 8a | `feat/api-gomas` | Endpoint `/api/analisis/gomas` | API con el análisis de gomas (hecho) |
 | 8b | `feat/web-gomas` | Página `/gomas` (estrategias de todos, dispersión en SVG propio, interruptor de combustible, tablas, conclusión y limitaciones) | **Proyecto 2 vivo** (hecho) |
-| 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) |
+| 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) (hecho) |
 | 10 | `feat/web-telemetria` | Endpoint + página `/telemetria` | **Proyecto 3 vivo** |
 | 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio |
 
