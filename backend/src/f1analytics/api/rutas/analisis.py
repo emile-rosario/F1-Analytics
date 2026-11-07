@@ -2,7 +2,7 @@
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Query, Request
 
 from f1analytics.analisis.circuito import (
     orientar_circuito,
@@ -10,56 +10,31 @@ from f1analytics.analisis.circuito import (
     resumen_circuito,
     zonas_frenado,
 )
-from f1analytics.api.dependencias import (
-    obtener_cargador,
-    obtener_limitador_concurrencia,
-    obtener_limitador_ip,
-)
 from f1analytics.api.esquemas import (
     AnalisisCircuito,
     CurvaMapa,
-    ErrorApi,
     Piloto,
     PuntoMapa,
     ResumenCircuito,
     ZonaFrenado,
 )
-from f1analytics.api.limites import LimitadorConcurrencia, LimitadorPorIp, ip_del_cliente
+from f1analytics.api.limites import ip_del_cliente
+from f1analytics.api.rutas.comunes import (
+    RESPUESTAS_ERROR,
+    CargadorDep,
+    ConcurrenciaDep,
+    LimitadorIpDep,
+    limitar_por_ip,
+)
 from f1analytics.datos.cargador import Cargador
 from f1analytics.datos.circuitos import circuito
 from f1analytics.datos.errores import ErrorDatos
 from f1analytics.datos.telemetria_vuelta import telemetria_de_vuelta, vuelta_rapida
 
-router = APIRouter(
-    prefix="/api/analisis",
-    responses={
-        404: {"model": ErrorApi},
-        409: {"model": ErrorApi},
-        422: {"model": ErrorApi},
-        429: {"model": ErrorApi},
-        503: {"model": ErrorApi},
-    },
-)
+router = APIRouter(prefix="/api/analisis", responses=RESPUESTAS_ERROR)
 
-CargadorDep = Annotated[Cargador, Depends(obtener_cargador)]
-LimitadorIpDep = Annotated[LimitadorPorIp, Depends(obtener_limitador_ip)]
-ConcurrenciaDep = Annotated[LimitadorConcurrencia, Depends(obtener_limitador_concurrencia)]
-
-# Lo que pesa de un análisis es la telemetría; lo demás son consultas chicas.
-ENDPOINTS_PESADOS = {"car_data", "location"}
-
-
-def _limitar_por_ip(limitador: LimitadorPorIp, ip: str):
-    """Gancho para el cliente de OpenF1: el primer pedido pesado de la petición cuenta como uno."""
-    contado = False
-
-    def gancho(endpoint: str) -> None:
-        nonlocal contado
-        if endpoint in ENDPOINTS_PESADOS and not contado:
-            limitador.consumir(ip)
-            contado = True
-
-    return gancho
+# Lo que pesa del análisis del circuito es la telemetría; lo demás son consultas chicas.
+ENDPOINTS_PESADOS = frozenset({"car_data", "location"})
 
 
 def _construir_analisis_circuito(cargador: Cargador, sesion: int, piloto: int) -> AnalisisCircuito:
@@ -160,6 +135,6 @@ def analisis_circuito(
     Solo para sesiones terminadas. Responde ``analisis_no_disponible`` en los circuitos que
     todavía no están en ``circuitos.json``.
     """
-    gancho = _limitar_por_ip(limitador_ip, ip_del_cliente(peticion))
+    gancho = limitar_por_ip(limitador_ip, ip_del_cliente(peticion), ENDPOINTS_PESADOS)
     with concurrencia.turno(), cargador.cliente.antes_de_pedir(gancho):
         return _construir_analisis_circuito(cargador, sesion, piloto)
