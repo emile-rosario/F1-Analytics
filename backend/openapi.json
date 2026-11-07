@@ -327,6 +327,107 @@
         }
       }
     },
+    "/api/analisis/gomas": {
+      "get": {
+        "summary": "Analisis Gomas",
+        "description": "Estrategias de todos los pilotos y degradación de las gomas de una carrera o sprint.\n\n``pilotos`` (hasta 3, repitiendo el parámetro) elige de quiénes se mandan las vueltas\nlimpias para la dispersión; sin él se usa el podio. Solo para carreras y sprints terminados.",
+        "operationId": "analisis_gomas_api_analisis_gomas_get",
+        "parameters": [
+          {
+            "name": "sesion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Sesion"
+            }
+          },
+          {
+            "name": "pilotos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "maxItems": 3
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pilotos"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisGomas"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/salud": {
       "get": {
         "summary": "Salud",
@@ -359,6 +460,30 @@
   },
   "components": {
     "schemas": {
+      "AjusteRecta": {
+        "properties": {
+          "pendiente_s_por_vuelta": {
+            "type": "number",
+            "title": "Pendiente S Por Vuelta"
+          },
+          "intercepto": {
+            "type": "number",
+            "title": "Intercepto"
+          },
+          "r2": {
+            "type": "number",
+            "title": "R2"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pendiente_s_por_vuelta",
+          "intercepto",
+          "r2"
+        ],
+        "title": "AjusteRecta",
+        "description": "Recta de tiempo contra edad de la goma: ``tiempo = intercepto + pendiente × edad``."
+      },
       "AnalisisCircuito": {
         "properties": {
           "sesion": {
@@ -420,6 +545,96 @@
         "title": "AnalisisCircuito",
         "description": "La vuelta más rápida de un piloto sobre el mapa del circuito."
       },
+      "AnalisisGomas": {
+        "properties": {
+          "sesion": {
+            "type": "integer",
+            "title": "Sesion"
+          },
+          "n_vueltas": {
+            "type": "integer",
+            "title": "N Vueltas"
+          },
+          "segundos_combustible_por_vuelta": {
+            "type": "number",
+            "title": "Segundos Combustible Por Vuelta"
+          },
+          "estrategias": {
+            "items": {
+              "$ref": "#/components/schemas/EstrategiaPiloto"
+            },
+            "type": "array",
+            "title": "Estrategias"
+          },
+          "pilotos_elegidos": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Pilotos Elegidos"
+          },
+          "vueltas": {
+            "items": {
+              "$ref": "#/components/schemas/VueltaGoma"
+            },
+            "type": "array",
+            "title": "Vueltas"
+          },
+          "degradacion": {
+            "items": {
+              "$ref": "#/components/schemas/DegradacionStint"
+            },
+            "type": "array",
+            "title": "Degradacion"
+          },
+          "compuestos": {
+            "items": {
+              "$ref": "#/components/schemas/DegradacionCompuesto"
+            },
+            "type": "array",
+            "title": "Compuestos"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ResumenGomas"
+          },
+          "resumen_sin_corregir": {
+            "$ref": "#/components/schemas/ResumenGomas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sesion",
+          "n_vueltas",
+          "segundos_combustible_por_vuelta",
+          "estrategias",
+          "pilotos_elegidos",
+          "vueltas",
+          "degradacion",
+          "compuestos",
+          "resumen",
+          "resumen_sin_corregir"
+        ],
+        "title": "AnalisisGomas",
+        "description": "Las estrategias de toda la carrera y la degradación de las gomas."
+      },
+      "CompuestoPendiente": {
+        "properties": {
+          "compuesto": {
+            "type": "string",
+            "title": "Compuesto"
+          },
+          "pendiente_s_por_vuelta": {
+            "type": "number",
+            "title": "Pendiente S Por Vuelta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "compuesto",
+          "pendiente_s_por_vuelta"
+        ],
+        "title": "CompuestoPendiente"
+      },
       "CurvaMapa": {
         "properties": {
           "numero": {
@@ -453,6 +668,105 @@
         ],
         "title": "CurvaMapa"
       },
+      "DegradacionCompuesto": {
+        "properties": {
+          "compuesto": {
+            "type": "string",
+            "title": "Compuesto"
+          },
+          "n_stints": {
+            "type": "integer",
+            "title": "N Stints"
+          },
+          "n_vueltas": {
+            "type": "integer",
+            "title": "N Vueltas"
+          },
+          "pendiente_s_por_vuelta": {
+            "type": "number",
+            "title": "Pendiente S Por Vuelta"
+          },
+          "pendiente_sin_corregir_s_por_vuelta": {
+            "type": "number",
+            "title": "Pendiente Sin Corregir S Por Vuelta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "compuesto",
+          "n_stints",
+          "n_vueltas",
+          "pendiente_s_por_vuelta",
+          "pendiente_sin_corregir_s_por_vuelta"
+        ],
+        "title": "DegradacionCompuesto"
+      },
+      "DegradacionStint": {
+        "properties": {
+          "piloto": {
+            "type": "integer",
+            "title": "Piloto"
+          },
+          "stint": {
+            "type": "integer",
+            "title": "Stint"
+          },
+          "compuesto": {
+            "type": "string",
+            "title": "Compuesto"
+          },
+          "n_vueltas": {
+            "type": "integer",
+            "title": "N Vueltas"
+          },
+          "edad_inicial": {
+            "type": "integer",
+            "title": "Edad Inicial"
+          },
+          "edad_final": {
+            "type": "integer",
+            "title": "Edad Final"
+          },
+          "insuficiente": {
+            "type": "boolean",
+            "title": "Insuficiente"
+          },
+          "corregido": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AjusteRecta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sin_corregir": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AjusteRecta"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "piloto",
+          "stint",
+          "compuesto",
+          "n_vueltas",
+          "edad_inicial",
+          "edad_final",
+          "insuficiente",
+          "corregido",
+          "sin_corregir"
+        ],
+        "title": "DegradacionStint",
+        "description": "Cuánto se gasta la goma en un stint. Sin ajuste si el stint tiene muy pocas vueltas."
+      },
       "ErrorApi": {
         "properties": {
           "codigo": {
@@ -466,6 +780,49 @@
         ],
         "title": "ErrorApi",
         "description": "Todo error de la API. La web lo traduce según el código; la API no manda textos."
+      },
+      "EstrategiaPiloto": {
+        "properties": {
+          "piloto": {
+            "$ref": "#/components/schemas/Piloto"
+          },
+          "posicion": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Posicion"
+          },
+          "vueltas": {
+            "type": "integer",
+            "title": "Vueltas"
+          },
+          "abandono": {
+            "type": "boolean",
+            "title": "Abandono"
+          },
+          "stints": {
+            "items": {
+              "$ref": "#/components/schemas/StintEstrategia"
+            },
+            "type": "array",
+            "title": "Stints"
+          }
+        },
+        "type": "object",
+        "required": [
+          "piloto",
+          "posicion",
+          "vueltas",
+          "abandono",
+          "stints"
+        ],
+        "title": "EstrategiaPiloto",
+        "description": "La carrera de un piloto: dónde acabó y con qué gomas."
       },
       "Evento": {
         "properties": {
@@ -658,6 +1015,68 @@
         "title": "ResumenCircuito",
         "description": "Datos para la conclusión: la web los convierte en una frase."
       },
+      "ResumenGomas": {
+        "properties": {
+          "n_stints_validos": {
+            "type": "integer",
+            "title": "N Stints Validos"
+          },
+          "n_stints_insuficientes": {
+            "type": "integer",
+            "title": "N Stints Insuficientes"
+          },
+          "n_stints_sin_degradacion": {
+            "type": "integer",
+            "title": "N Stints Sin Degradacion"
+          },
+          "compuesto_mas_degradante": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompuestoPendiente"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "compuesto_menos_degradante": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompuestoPendiente"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stint_mas_largo": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StintMasLargo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "paradas_por_piloto": {
+            "type": "number",
+            "title": "Paradas Por Piloto"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n_stints_validos",
+          "n_stints_insuficientes",
+          "n_stints_sin_degradacion",
+          "compuesto_mas_degradante",
+          "compuesto_menos_degradante",
+          "stint_mas_largo",
+          "paradas_por_piloto"
+        ],
+        "title": "ResumenGomas",
+        "description": "Datos para la conclusión: la web los convierte en una frase."
+      },
       "Salud": {
         "properties": {
           "estado": {
@@ -726,6 +1145,107 @@
         ],
         "title": "Sesion",
         "description": "Una sesión de un Gran Premio (libres, clasificación, sprint o carrera)."
+      },
+      "StintEstrategia": {
+        "properties": {
+          "stint": {
+            "type": "integer",
+            "title": "Stint"
+          },
+          "compuesto": {
+            "type": "string",
+            "title": "Compuesto"
+          },
+          "vuelta_inicio": {
+            "type": "integer",
+            "title": "Vuelta Inicio"
+          },
+          "vuelta_fin": {
+            "type": "integer",
+            "title": "Vuelta Fin"
+          },
+          "edad_inicial": {
+            "type": "integer",
+            "title": "Edad Inicial"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stint",
+          "compuesto",
+          "vuelta_inicio",
+          "vuelta_fin",
+          "edad_inicial"
+        ],
+        "title": "StintEstrategia",
+        "description": "Un tramo de la carrera con la misma goma, tal como lo registra OpenF1."
+      },
+      "StintMasLargo": {
+        "properties": {
+          "piloto": {
+            "type": "integer",
+            "title": "Piloto"
+          },
+          "compuesto": {
+            "type": "string",
+            "title": "Compuesto"
+          },
+          "vueltas": {
+            "type": "integer",
+            "title": "Vueltas"
+          }
+        },
+        "type": "object",
+        "required": [
+          "piloto",
+          "compuesto",
+          "vueltas"
+        ],
+        "title": "StintMasLargo"
+      },
+      "VueltaGoma": {
+        "properties": {
+          "piloto": {
+            "type": "integer",
+            "title": "Piloto"
+          },
+          "vuelta": {
+            "type": "integer",
+            "title": "Vuelta"
+          },
+          "stint": {
+            "type": "integer",
+            "title": "Stint"
+          },
+          "compuesto": {
+            "type": "string",
+            "title": "Compuesto"
+          },
+          "edad_goma": {
+            "type": "integer",
+            "title": "Edad Goma"
+          },
+          "tiempo_s": {
+            "type": "number",
+            "title": "Tiempo S"
+          },
+          "tiempo_corregido_s": {
+            "type": "number",
+            "title": "Tiempo Corregido S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "piloto",
+          "vuelta",
+          "stint",
+          "compuesto",
+          "edad_goma",
+          "tiempo_s",
+          "tiempo_corregido_s"
+        ],
+        "title": "VueltaGoma",
+        "description": "Una vuelta limpia con la edad de su goma, con y sin corrección por combustible."
       },
       "ZonaFrenado": {
         "properties": {

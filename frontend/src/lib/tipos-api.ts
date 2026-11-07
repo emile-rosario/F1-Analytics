@@ -87,6 +87,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/analisis/gomas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analisis Gomas
+         * @description Estrategias de todos los pilotos y degradación de las gomas de una carrera o sprint.
+         *
+         *     ``pilotos`` (hasta 3, repitiendo el parámetro) elige de quiénes se mandan las vueltas
+         *     limpias para la dispersión; sin él se usa el podio. Solo para carreras y sprints terminados.
+         */
+        get: operations["analisis_gomas_api_analisis_gomas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/salud": {
         parameters: {
             query?: never;
@@ -112,6 +135,18 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
+         * AjusteRecta
+         * @description Recta de tiempo contra edad de la goma: ``tiempo = intercepto + pendiente × edad``.
+         */
+        AjusteRecta: {
+            /** Pendiente S Por Vuelta */
+            pendiente_s_por_vuelta: number;
+            /** Intercepto */
+            intercepto: number;
+            /** R2 */
+            r2: number;
+        };
+        /**
          * AnalisisCircuito
          * @description La vuelta más rápida de un piloto sobre el mapa del circuito.
          */
@@ -133,6 +168,37 @@ export interface components {
             frenadas: components["schemas"]["ZonaFrenado"][];
             resumen: components["schemas"]["ResumenCircuito"];
         };
+        /**
+         * AnalisisGomas
+         * @description Las estrategias de toda la carrera y la degradación de las gomas.
+         */
+        AnalisisGomas: {
+            /** Sesion */
+            sesion: number;
+            /** N Vueltas */
+            n_vueltas: number;
+            /** Segundos Combustible Por Vuelta */
+            segundos_combustible_por_vuelta: number;
+            /** Estrategias */
+            estrategias: components["schemas"]["EstrategiaPiloto"][];
+            /** Pilotos Elegidos */
+            pilotos_elegidos: number[];
+            /** Vueltas */
+            vueltas: components["schemas"]["VueltaGoma"][];
+            /** Degradacion */
+            degradacion: components["schemas"]["DegradacionStint"][];
+            /** Compuestos */
+            compuestos: components["schemas"]["DegradacionCompuesto"][];
+            resumen: components["schemas"]["ResumenGomas"];
+            resumen_sin_corregir: components["schemas"]["ResumenGomas"];
+        };
+        /** CompuestoPendiente */
+        CompuestoPendiente: {
+            /** Compuesto */
+            compuesto: string;
+            /** Pendiente S Por Vuelta */
+            pendiente_s_por_vuelta: number;
+        };
         /** CurvaMapa */
         CurvaMapa: {
             /** Numero */
@@ -146,6 +212,41 @@ export interface components {
             /** Y */
             y: number;
         };
+        /** DegradacionCompuesto */
+        DegradacionCompuesto: {
+            /** Compuesto */
+            compuesto: string;
+            /** N Stints */
+            n_stints: number;
+            /** N Vueltas */
+            n_vueltas: number;
+            /** Pendiente S Por Vuelta */
+            pendiente_s_por_vuelta: number;
+            /** Pendiente Sin Corregir S Por Vuelta */
+            pendiente_sin_corregir_s_por_vuelta: number;
+        };
+        /**
+         * DegradacionStint
+         * @description Cuánto se gasta la goma en un stint. Sin ajuste si el stint tiene muy pocas vueltas.
+         */
+        DegradacionStint: {
+            /** Piloto */
+            piloto: number;
+            /** Stint */
+            stint: number;
+            /** Compuesto */
+            compuesto: string;
+            /** N Vueltas */
+            n_vueltas: number;
+            /** Edad Inicial */
+            edad_inicial: number;
+            /** Edad Final */
+            edad_final: number;
+            /** Insuficiente */
+            insuficiente: boolean;
+            corregido: components["schemas"]["AjusteRecta"] | null;
+            sin_corregir: components["schemas"]["AjusteRecta"] | null;
+        };
         /**
          * ErrorApi
          * @description Todo error de la API. La web lo traduce según el código; la API no manda textos.
@@ -153,6 +254,21 @@ export interface components {
         ErrorApi: {
             /** Codigo */
             codigo: string;
+        };
+        /**
+         * EstrategiaPiloto
+         * @description La carrera de un piloto: dónde acabó y con qué gomas.
+         */
+        EstrategiaPiloto: {
+            piloto: components["schemas"]["Piloto"];
+            /** Posicion */
+            posicion: number | null;
+            /** Vueltas */
+            vueltas: number;
+            /** Abandono */
+            abandono: boolean;
+            /** Stints */
+            stints: components["schemas"]["StintEstrategia"][];
         };
         /**
          * Evento
@@ -235,6 +351,23 @@ export interface components {
             vel_minima: components["schemas"]["ExtremoVelocidad"];
             frenada_mas_fuerte: components["schemas"]["FrenadaFuerte"] | null;
         };
+        /**
+         * ResumenGomas
+         * @description Datos para la conclusión: la web los convierte en una frase.
+         */
+        ResumenGomas: {
+            /** N Stints Validos */
+            n_stints_validos: number;
+            /** N Stints Insuficientes */
+            n_stints_insuficientes: number;
+            /** N Stints Sin Degradacion */
+            n_stints_sin_degradacion: number;
+            compuesto_mas_degradante: components["schemas"]["CompuestoPendiente"] | null;
+            compuesto_menos_degradante: components["schemas"]["CompuestoPendiente"] | null;
+            stint_mas_largo: components["schemas"]["StintMasLargo"] | null;
+            /** Paradas Por Piloto */
+            paradas_por_piloto: number;
+        };
         /** Salud */
         Salud: {
             /** Estado */
@@ -269,6 +402,51 @@ export interface components {
             anio: number;
             /** Terminada */
             terminada: boolean;
+        };
+        /**
+         * StintEstrategia
+         * @description Un tramo de la carrera con la misma goma, tal como lo registra OpenF1.
+         */
+        StintEstrategia: {
+            /** Stint */
+            stint: number;
+            /** Compuesto */
+            compuesto: string;
+            /** Vuelta Inicio */
+            vuelta_inicio: number;
+            /** Vuelta Fin */
+            vuelta_fin: number;
+            /** Edad Inicial */
+            edad_inicial: number;
+        };
+        /** StintMasLargo */
+        StintMasLargo: {
+            /** Piloto */
+            piloto: number;
+            /** Compuesto */
+            compuesto: string;
+            /** Vueltas */
+            vueltas: number;
+        };
+        /**
+         * VueltaGoma
+         * @description Una vuelta limpia con la edad de su goma, con y sin corrección por combustible.
+         */
+        VueltaGoma: {
+            /** Piloto */
+            piloto: number;
+            /** Vuelta */
+            vuelta: number;
+            /** Stint */
+            stint: number;
+            /** Compuesto */
+            compuesto: string;
+            /** Edad Goma */
+            edad_goma: number;
+            /** Tiempo S */
+            tiempo_s: number;
+            /** Tiempo Corregido S */
+            tiempo_corregido_s: number;
         };
         /**
          * ZonaFrenado
@@ -497,6 +675,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalisisCircuito"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+        };
+    };
+    analisis_gomas_api_analisis_gomas_get: {
+        parameters: {
+            query: {
+                sesion: number;
+                pilotos?: number[] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalisisGomas"];
                 };
             };
             /** @description Not Found */
