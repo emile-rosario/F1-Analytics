@@ -175,7 +175,7 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 | GET | `/api/sesiones/{anio}/{evento}` | Sesiones del GP |
 | GET | `/api/sesiones/{sesion}/pilotos` | Pilotos de la sesión |
 | GET | `/api/analisis/circuito?sesion&piloto` | La vuelta más rápida del piloto: puntos `x`/`y` (ya girados), velocidad y marcha; curvas con su etiqueta; zonas de frenado; resumen. Solo sesiones terminadas |
-| GET | `/api/analisis/gomas?sesion&pilotos` | Vueltas limpias, stints, degradación, resumen |
+| GET | `/api/analisis/gomas?sesion&pilotos` | Estrategias de los 20 pilotos por posición final, vueltas limpias de los pilotos elegidos (hasta 3, repitiendo `pilotos`; sin él, el podio), degradación de cada stint y por compuesto y resumen, todo con y sin corrección por combustible. Solo carreras y sprints terminados |
 | GET | `/api/analisis/telemetria?sesion&piloto_a&piloto_b&segmento` | Canales alineados, delta, minisectores, resumen |
 
 - Las sesiones se identifican con el `session_key` de OpenF1, que es estable y corto.
@@ -184,8 +184,8 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 - Estado HTTP de cada código: `parametro_invalido`, `analisis_no_disponible` y `telemetria_incompleta` → 422; `sesion_no_encontrada`, `piloto_no_encontrado` y `sin_telemetria` → 404; `sesion_no_terminada` → 409; `limite_peticiones` → 429; `fallo_openf1` y `openf1_en_vivo` → 503. Se usa 503 y no 502 porque el frontend reintenta los 502 como señal de «servidor dormido». Todo error responde `{"codigo": "..."}`, también la validación de FastAPI.
 - Los tipos TypeScript del frontend se generan del OpenAPI: `uv run python scripts/exportar_openapi.py` escribe `backend/openapi.json` y `npm run tipos` genera `frontend/src/lib/tipos-api.ts`. Un test del backend y un paso del CI del frontend fallan si alguno quedó desactualizado.
 - Validación: año entre 2023 y el actual, tipo de sesión y segmento de listas cerradas, pilotos que existan en la sesión, el análisis de gomas solo en carreras y sprints, y los segmentos Q/SQ solo en clasificaciones.
-- **Limitador de concurrencia** (semáforo, máximo 2 análisis a la vez), para no saturar OpenF1 ni el servidor. Implementado en `api/limites.py`.
-- **Límite por IP:** máximo 10 análisis sin caché por minuto por IP (las respuestas en caché no cuentan), leyendo la IP de `X-Forwarded-For` porque en Render la API está detrás de un proxy. Se cuenta cuando el análisis va a pedir `car_data` o `location` a la red: el cliente de OpenF1 avisa justo antes de cada petición (`antes_de_pedir`) y lo que sale de la caché nunca llega ahí. Se toma la primera IP de la lista; una cabecera inventada permitiría repartir peticiones entre IPs falsas, pero el límite de concurrencia sigue en pie. Al pasarlo responde 429 con `limite_peticiones`.
+- **Limitador de concurrencia** (semáforo, máximo 2 análisis a la vez), para no saturar OpenF1 ni el servidor. Implementado en `api/limites.py`; los dos análisis comparten dependencias y el gancho del límite en `api/rutas/comunes.py`.
+- **Límite por IP:** máximo 10 análisis sin caché por minuto por IP (las respuestas en caché no cuentan), leyendo la IP de `X-Forwarded-For` porque en Render la API está detrás de un proxy. Se cuenta cuando el análisis va a pedir a la red lo que pesa de él (la telemetría, `car_data` y `location`, en el circuito; las vueltas de toda la carrera, `laps`, en gomas): el cliente de OpenF1 avisa justo antes de cada petición (`antes_de_pedir`) y lo que sale de la caché nunca llega ahí. Se toma la primera IP de la lista; una cabecera inventada permitiría repartir peticiones entre IPs falsas, pero el límite de concurrencia sigue en pie. Al pasarlo responde 429 con `limite_peticiones`.
 - Gzip desde el PR 6a (respuestas de más de 1 KB). El remuestreo a 5 m llega con la telemetría (PR 9); el análisis del circuito manda las ~300 muestras de la vuelta tal cual.
 - CORS: `allow_origins` con el dominio de producción y `localhost:3000`, y `allow_origin_regex` para las URLs de preview del proyecto en Vercel, que cambian en cada PR.
 
@@ -316,7 +316,8 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 6a | `feat/api-circuito` | Endpoint `/api/analisis/circuito`, gzip, límite por IP y de concurrencia | API con el análisis del circuito (hecho) |
 | 6b | `feat/web-circuito` | Página `/circuito` (selector con piloto, mapa SVG con pestañas Velocidad/Marchas, conclusión, tabla de frenadas), tres preguntas en el inicio | **Proyecto 1 vivo** |
 | 7 | `feat/analisis-gomas` | `limpieza`, `analisis/gomas`, `graficos/gomas`, notebook 02 | Igual (notebook) |
-| 8 | `feat/web-gomas` | Endpoint + página `/gomas` | **Proyecto 2 vivo** |
+| 8a | `feat/api-gomas` | Endpoint `/api/analisis/gomas` | API con el análisis de gomas (hecho) |
+| 8b | `feat/web-gomas` | Página `/gomas` (estrategias de todos, dispersión en SVG propio, interruptor de combustible, tablas, conclusión y limitaciones) | **Proyecto 2 vivo** |
 | 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) |
 | 10 | `feat/web-telemetria` | Endpoint + página `/telemetria` | **Proyecto 3 vivo** |
 | 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio |

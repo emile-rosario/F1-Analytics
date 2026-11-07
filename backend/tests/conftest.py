@@ -10,7 +10,12 @@ import pytest
 import respx
 from fastapi.testclient import TestClient
 
-from f1analytics.api.dependencias import obtener_cargador
+from f1analytics.api.dependencias import (
+    obtener_cargador,
+    obtener_limitador_concurrencia,
+    obtener_limitador_ip,
+)
+from f1analytics.api.limites import LimitadorConcurrencia, LimitadorPorIp
 from f1analytics.api.main import crear_app
 from f1analytics.datos.cargador import Cargador
 from f1analytics.datos.cliente import ClienteOpenF1
@@ -100,6 +105,10 @@ def crear_cliente(cargador: Cargador) -> TestClient:
     """Cliente de la API que usa el cargador indicado en vez del real."""
     app = crear_app(["http://localhost:3000"])
     app.dependency_overrides[obtener_cargador] = lambda: cargador
+    # Límites propios de cada test: los reales son de todo el proceso y se agotarían entre tests.
+    limitador_ip, concurrencia = LimitadorPorIp(), LimitadorConcurrencia()
+    app.dependency_overrides[obtener_limitador_ip] = lambda: limitador_ip
+    app.dependency_overrides[obtener_limitador_concurrencia] = lambda: concurrencia
     return TestClient(app)
 
 

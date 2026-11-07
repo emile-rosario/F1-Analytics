@@ -51,3 +51,16 @@ def test_analisis_del_circuito_de_la_pole_de_monza(cliente):
     assert len(datos["curvas"]) == 11
     assert datos["resumen"]["frenada_mas_fuerte"]["curva"] == 1
     assert 340 <= datos["resumen"]["vel_maxima"]["kmh"] <= 355
+
+
+def test_analisis_de_gomas_de_la_carrera_de_espana(cliente):
+    respuesta = cliente.get("/api/analisis/gomas", params={"sesion": 9539})  # España 2024
+
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert len(datos["estrategias"]) == 20
+    assert datos["estrategias"][0]["piloto"]["codigo"] == "VER"
+    assert datos["pilotos_elegidos"] == [1, 4, 44]  # el podio
+    assert datos["resumen"]["n_stints_validos"] == 62
+    assert datos["resumen"]["compuesto_mas_degradante"]["compuesto"] == "SOFT"
+    assert {c["compuesto"] for c in datos["compuestos"]} == {"SOFT", "MEDIUM", "HARD"}
