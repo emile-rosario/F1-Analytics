@@ -114,3 +114,103 @@ class AnalisisCircuito(BaseModel):
     curvas: list[CurvaMapa]
     frenadas: list[ZonaFrenado]
     resumen: ResumenCircuito
+
+
+class StintEstrategia(BaseModel):
+    """Un tramo de la carrera con la misma goma, tal como lo registra OpenF1."""
+
+    stint: int
+    compuesto: str
+    vuelta_inicio: int
+    vuelta_fin: int
+    edad_inicial: int
+
+
+class EstrategiaPiloto(BaseModel):
+    """La carrera de un piloto: dónde acabó y con qué gomas."""
+
+    piloto: Piloto
+    posicion: int | None  # vacío en quien abandonó o no salió
+    vueltas: int
+    abandono: bool
+    stints: list[StintEstrategia]
+
+
+class VueltaGoma(BaseModel):
+    """Una vuelta limpia con la edad de su goma, con y sin corrección por combustible."""
+
+    piloto: int
+    vuelta: int
+    stint: int
+    compuesto: str
+    edad_goma: int
+    tiempo_s: float
+    tiempo_corregido_s: float
+
+
+class AjusteRecta(BaseModel):
+    """Recta de tiempo contra edad de la goma: ``tiempo = intercepto + pendiente × edad``."""
+
+    pendiente_s_por_vuelta: float
+    intercepto: float
+    r2: float
+
+
+class DegradacionStint(BaseModel):
+    """Cuánto se gasta la goma en un stint. Sin ajuste si el stint tiene muy pocas vueltas."""
+
+    piloto: int
+    stint: int
+    compuesto: str
+    n_vueltas: int
+    edad_inicial: int
+    edad_final: int
+    insuficiente: bool
+    corregido: AjusteRecta | None  # con la corrección por combustible
+    sin_corregir: AjusteRecta | None
+
+
+class DegradacionCompuesto(BaseModel):
+    compuesto: str
+    n_stints: int
+    n_vueltas: int
+    pendiente_s_por_vuelta: float  # con la corrección por combustible
+    pendiente_sin_corregir_s_por_vuelta: float
+
+
+class CompuestoPendiente(BaseModel):
+    compuesto: str
+    pendiente_s_por_vuelta: float
+
+
+class StintMasLargo(BaseModel):
+    piloto: int
+    compuesto: str
+    vueltas: int
+
+
+class ResumenGomas(BaseModel):
+    """Datos para la conclusión: la web los convierte en una frase."""
+
+    n_stints_validos: int
+    n_stints_insuficientes: int
+    n_stints_sin_degradacion: int
+    compuesto_mas_degradante: CompuestoPendiente | None
+    compuesto_menos_degradante: CompuestoPendiente | None
+    stint_mas_largo: StintMasLargo | None
+    paradas_por_piloto: float
+
+
+class AnalisisGomas(BaseModel):
+    """Las estrategias de toda la carrera y la degradación de las gomas."""
+
+    sesion: int
+    n_vueltas: int
+    segundos_combustible_por_vuelta: float
+    estrategias: list[EstrategiaPiloto]  # todos los pilotos, por posición final
+    pilotos_elegidos: list[int]
+    vueltas: list[VueltaGoma]  # solo las de los pilotos elegidos
+    degradacion: list[DegradacionStint]  # todos los stints de todos los pilotos
+    compuestos: list[DegradacionCompuesto]
+    resumen: ResumenGomas  # con la corrección por combustible
+    resumen_sin_corregir: ResumenGomas
