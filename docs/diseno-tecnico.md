@@ -61,7 +61,7 @@ Riesgo: OpenF1 no publica límites de peticiones. El cliente reintenta con backo
 
 ```
                        ┌────────────────────── backend/ ───────────────────────┐
-OpenF1 API ──► datos/cliente ──► datos/cargador ──► datos/limpieza ──► analisis/* ──┬──► api/ (FastAPI, JSON) ──► frontend/ (Next.js + Plotly, ES/EN)
+OpenF1 API ──► datos/cliente ──► datos/cargador ──► datos/limpieza ──► analisis/* ──┬──► api/ (FastAPI, JSON) ──► frontend/ (Next.js + SVG propio, ES/EN)
                      │                                                         │
               cache (disco + memoria)                                          └──► notebooks/ + graficos/ (Matplotlib, README)
 ```
@@ -202,14 +202,16 @@ frontend/
 │   ├── components/
 │   │   ├── SelectorSesion.tsx, SelectorIdioma.tsx, Conclusion.tsx
 │   │   ├── EstadoCarga.tsx       # cargando / despertando servidor / error
-│   │   └── graficos/  MapaVelocidad, DispersionVueltas, PanelTelemetria, MapaMinisectores
-│   └── lib/  api.ts, tipos-api.ts, plotly-idioma.ts
+│   │   ├── MapaCircuito.tsx      # SVG: mapa de velocidad/marchas, curvas y frenadas
+│   │   ├── VistaGomas.tsx, EstrategiaCarrera.tsx, DispersionGomas.tsx, TablasDegradacion.tsx, ConclusionGomas.tsx
+│   │   └── (telemetría: PanelTelemetria, MapaMinisectores, por hacer)
+│   └── lib/  api.ts, tipos-api.ts, colores.ts, formato.ts, gomas.ts
 └── tests/
 ```
 
 ### Stack
 - **Next.js (App Router) + TypeScript + Tailwind**, con tema oscuro estilo F1.
-- **Plotly.js** con `react-plotly.js`, cargado con `dynamic(..., { ssr: false })`.
+- **Gráficos en SVG propio** (React), sin librería de gráficos: se animan con CSS y pesan nada. Las escalas y los ejes están en `lib/` y en cada componente; la tabla y el texto son la alternativa accesible de cada gráfica.
 
 ### Diseño visual
 Colores, tipografía, marca, componentes, pantallas y animaciones: [`design.md`](design.md).
@@ -217,14 +219,14 @@ Colores, tipografía, marca, componentes, pantallas y animaciones: [`design.md`]
 Cómo se implementa:
 - Los colores y tipografías de `design.md` van como variables del tema de Tailwind (`asfalto`, `panel`, `morado`, `compuesto-blanda`…), nunca escritos a mano en los componentes.
 - Fuentes con `next/font/google` (Saira y Saira Condensed), sin pedirlas a Google desde el navegador.
-- Animaciones de la interfaz con CSS y Framer Motion; mapa del circuito y minisectores en SVG propio; el resto de los gráficos en Plotly.
+- Animaciones de la interfaz con CSS y Framer Motion; los gráficos (mapa del circuito, dispersión de gomas, minisectores) en SVG propio, y las barras de estrategia en HTML con CSS.
 - `prefers-reduced-motion` se respeta en un solo lugar (un hook compartido) para que todos los componentes lo cumplan.
 
 ### Idiomas (ES / EN)
 - `next-intl` con rutas `/es/...` y `/en/...`. Español por defecto, y la primera visita detecta el idioma del navegador.
 - `SelectorIdioma` cambia de idioma conservando los parámetros de la sesión.
 - Se traduce todo: la interfaz, ejes, leyendas y tooltips, las conclusiones (plantillas a partir de los datos estructurados), los códigos de error, los compuestos y los tipos de sesión.
-- Formato de números según el locale en Plotly (`plotly-idioma.ts`). Las unidades no cambian.
+- Formato de números y tiempos según el locale (`useFormatter` de `next-intl` y `lib/formato.ts`). Las unidades no cambian.
 - Metadata y Open Graph traducidos.
 
 ### Servidor dormido (Render gratis)
@@ -317,7 +319,7 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 6b | `feat/web-circuito` | Página `/circuito` (selector con piloto, mapa SVG con pestañas Velocidad/Marchas, conclusión, tabla de frenadas), tres preguntas en el inicio | **Proyecto 1 vivo** |
 | 7 | `feat/analisis-gomas` | `limpieza`, `analisis/gomas`, `graficos/gomas`, notebook 02 | Igual (notebook) |
 | 8a | `feat/api-gomas` | Endpoint `/api/analisis/gomas` | API con el análisis de gomas (hecho) |
-| 8b | `feat/web-gomas` | Página `/gomas` (estrategias de todos, dispersión en SVG propio, interruptor de combustible, tablas, conclusión y limitaciones) | **Proyecto 2 vivo** |
+| 8b | `feat/web-gomas` | Página `/gomas` (estrategias de todos, dispersión en SVG propio, interruptor de combustible, tablas, conclusión y limitaciones) | **Proyecto 2 vivo** (hecho) |
 | 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) |
 | 10 | `feat/web-telemetria` | Endpoint + página `/telemetria` | **Proyecto 3 vivo** |
 | 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio |

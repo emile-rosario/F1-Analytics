@@ -7,7 +7,7 @@ import { Link } from "@/i18n/navigation";
 
 const PREGUNTAS = [
   { clave: "circuito", numero: 1, color: "#ff5a36", ruta: "/circuito" },
-  { clave: "gomas", numero: 2, color: "#f2c14e", ruta: null },
+  { clave: "gomas", numero: 2, color: "#f2c14e", ruta: "/gomas" },
   { clave: "telemetria", numero: 3, color: "#b65cff", ruta: null },
 ] as const;
 

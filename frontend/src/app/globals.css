@@ -127,3 +127,47 @@ body {
     opacity: 1;
   }
 }
+
+/* Gomas: las barras de estrategia crecen desde la izquierda, una tras otra. */
+@keyframes crecer-barra {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.barra-stint {
+  transform-origin: left center;
+  animation: crecer-barra 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+/* Los puntos de la dispersión aparecen vuelta por vuelta y, al cambiar el combustible,
+   se mueven a su nuevo lugar. Después aparecen las rectas. */
+@keyframes aparecer-punto {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.punto-goma {
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: aparecer-punto 0.3s ease-out backwards;
+}
+
+.recta-goma {
+  animation: aparecer-punto 0.4s ease-out 0.5s backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-stint,
+  .punto-goma,
+  .recta-goma {
+    animation: none;
+    transition: none;
+  }
+}

@@ -104,6 +104,90 @@
       "region": "Tabla de frenadas, con desplazamiento horizontal"
     }
   },
+  "Gomas": {
+    "titulo": "¿Cuánto le costó a un piloto su estrategia de gomas?",
+    "subtitulo": "Cómo corrió cada piloto la carrera y cuánto tiempo perdió su goma al gastarse.",
+    "compuestos": {
+      "SOFT": { "nombre": "Blanda", "letra": "B" },
+      "MEDIUM": { "nombre": "Media", "letra": "M" },
+      "HARD": { "nombre": "Dura", "letra": "D" },
+      "INTERMEDIATE": { "nombre": "Intermedia", "letra": "I" },
+      "WET": { "nombre": "Lluvia", "letra": "LL" },
+      "UNKNOWN": { "nombre": "Desconocida", "letra": "?" }
+    },
+    "estrategia": {
+      "titulo": "Estrategia de todos los pilotos",
+      "ayuda": "Elige un piloto para ver sus vueltas en la gráfica de abajo (hasta {max} a la vez).",
+      "maximo": "Ya hay {max} pilotos elegidos: quita uno para elegir a otro.",
+      "lista": "Estrategias de gomas por piloto",
+      "eje": "Vuelta",
+      "puesto": "puesto {posicion}",
+      "abandono": "abandonó",
+      "stint": "{compuesto}, {vueltas, plural, one {# vuelta} other {# vueltas}}",
+      "fila": "{codigo}, {resultado}. {stints}",
+      "retiro": "Abandonó en la vuelta {vuelta}"
+    },
+    "dispersion": {
+      "titulo": "Tiempo de vuelta contra edad de la goma",
+      "descripcion": "Gráfica de los tiempos de vuelta limpios de {pilotos} contra la edad de la goma, con una recta por stint. {conclusion}",
+      "region": "Gráfica con desplazamiento horizontal",
+      "ejeX": "Edad de la goma (vueltas)",
+      "ejeY": "Tiempo de vuelta",
+      "corregir": "Corregir por combustible",
+      "corregirAyuda": "Con el combustible el coche se aligera y gana unos {segundos, number} s por vuelta. Con el interruptor encendido se suma ese tiempo a cada vuelta para aislar el desgaste de la goma.",
+      "leyenda": "Cada forma es un piloto y cada color, un compuesto.",
+      "sinVueltas": "Los pilotos elegidos no tienen vueltas limpias para dibujar.",
+      "actualizando": "Actualizando la gráfica…"
+    },
+    "tablas": {
+      "stints": {
+        "titulo": "Degradación por stint",
+        "descripcion": "Stints de los pilotos elegidos, con cuánto tiempo pierde la goma por vuelta de uso",
+        "region": "Tabla de degradación por stint, con desplazamiento horizontal",
+        "piloto": "Piloto",
+        "stint": "Stint",
+        "compuesto": "Compuesto",
+        "vueltas": "Vueltas limpias",
+        "edad": "Edad (vueltas)",
+        "pierde": "Pierde (s/vuelta)",
+        "r2": "R²",
+        "insuficiente": "Muy pocas vueltas",
+        "sinDegradacion": "No se gasta",
+        "vacia": "Los pilotos elegidos no tienen stints para medir."
+      },
+      "compuestos": {
+        "titulo": "Degradación por compuesto",
+        "descripcion": "Promedio de todos los pilotos por compuesto, ponderado por vueltas",
+        "region": "Tabla de degradación por compuesto, con desplazamiento horizontal",
+        "compuesto": "Compuesto",
+        "stints": "Stints",
+        "vueltas": "Vueltas limpias",
+        "corregida": "Con combustible corregido (s/vuelta)",
+        "sinCorregir": "Sin corregir (s/vuelta)",
+        "vacia": "No hay stints suficientes para comparar compuestos."
+      }
+    },
+    "conclusion": {
+      "titulo": "La {compuesto} fue la que más se gastó: {pendiente, number, ::.000} s por vuelta",
+      "tituloUnico": "Solo se pudo medir la goma {compuesto}: pierde {pendiente, number, ::.000} s por vuelta",
+      "tituloParecidas": "Los compuestos se gastaron casi igual en esta carrera",
+      "tituloSinMedida": "En esta carrera no se puede medir cuánto se gastó cada goma",
+      "detalle": "La que mejor aguantó fue la {menos}, con {pendienteMenos, number, ::.000} s por vuelta. Se midieron {validos} stints y {insuficientes, plural, =0 {ninguno quedó} one {# quedó} other {# quedaron}} fuera por tener muy pocas vueltas.",
+      "detalleUnico": "Se midieron {validos} stints y {insuficientes, plural, =0 {ninguno quedó} one {# quedó} other {# quedaron}} fuera por tener muy pocas vueltas.",
+      "detalleParecidas": "La diferencia entre la que más y la que menos se gastó ({mas} y {menos}) es de {diferencia, number, ::.000} s por vuelta, demasiado poco para llamarla un resultado. Se midieron {validos} stints.",
+      "detalleSinMedida": "En {sin} de {validos} stints la goma no perdió tiempo: la pista mejoró más de lo que la goma se gastó, así que los números no dicen cuál compuesto es peor.",
+      "paradas": "Hicieron {paradas, number, ::.0} paradas en promedio por piloto.",
+      "masLargo": "El stint más largo fue de {piloto}, con {compuesto}: {vueltas} vueltas."
+    },
+    "limitaciones": {
+      "titulo": "Qué no mide este análisis",
+      "intro": "La pendiente de cada stint es lo que la goma «parece» perder por vuelta, no su desgaste real. Estas cosas no se pueden corregir con los datos que hay:",
+      "trafico": "El tráfico: ir detrás de otro coche cuesta tiempo sin que la goma tenga que ver.",
+      "pista": "La temperatura y la evolución de la pista: el asfalto mejora con las vueltas y puede tapar el desgaste, como pasó en Qatar 2024.",
+      "combustible": "El combustible: la corrección usa {segundos, number} s por vuelta para todos los coches, es una aproximación.",
+      "limpias": "Solo cuentan las vueltas limpias: se descartan la primera, las de safety car o bandera, la entrada y salida de boxes y las muy lentas."
+    }
+  },
   "Preguntas": {
     "titulo": "Elige una pregunta",
     "nivel": "Nivel: {nivel}",

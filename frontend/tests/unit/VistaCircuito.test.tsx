@@ -196,11 +196,18 @@ describe("TarjetasPreguntas", () => {
     expect(enlace).toHaveAttribute("href", `/circuito?${URL_COMPLETA}`);
   });
 
-  it("las otras dos avisan que llegan pronto y no son enlaces", () => {
+  it("la segunda pregunta lleva a gomas conservando la elección de la URL", () => {
     pintar(<TarjetasPreguntas />);
 
-    expect(screen.getAllByText("Próximamente")).toHaveLength(2);
-    expect(screen.getAllByRole("link")).toHaveLength(1);
+    const enlace = screen.getByRole("link", { name: /¿Cuánto le costó a un piloto/ });
+    expect(enlace).toHaveAttribute("href", `/gomas?${URL_COMPLETA}`);
+  });
+
+  it("la de telemetría avisa que llega pronto y no es un enlace", () => {
+    pintar(<TarjetasPreguntas />);
+
+    expect(screen.getAllByText("Próximamente")).toHaveLength(1);
+    expect(screen.getAllByRole("link")).toHaveLength(2);
   });
 
   it("muestra el nivel de cada pregunta en el idioma elegido", () => {
@@ -208,6 +215,6 @@ describe("TarjetasPreguntas", () => {
 
     expect(screen.getByText("Level: Basic")).toBeInTheDocument();
     expect(screen.getByText("Level: Advanced")).toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(2);
+    expect(screen.getAllByText("Coming soon")).toHaveLength(1);
   });
 });

@@ -1,16 +1,17 @@
 /**
  * Tiempo de vuelta como `1:19.327` en inglés y `1:19,327` en español.
- * Los milisegundos se redondean al más cercano.
+ * Los milisegundos (o la fracción de `decimales`) se redondean al más cercano.
  */
-export function formatearTiempoVuelta(segundos: number, idioma: string): string {
-  const totalMs = Math.round(segundos * 1000);
-  const minutos = Math.floor(totalMs / 60_000);
-  const resto = totalMs - minutos * 60_000;
-  const decimales = new Intl.NumberFormat(idioma, {
+export function formatearTiempoVuelta(segundos: number, idioma: string, decimales = 3): string {
+  const factor = 10 ** decimales;
+  const total = Math.round(segundos * factor);
+  const minutos = Math.floor(total / (60 * factor));
+  const resto = total - minutos * 60 * factor;
+  const fraccion = new Intl.NumberFormat(idioma, {
     minimumIntegerDigits: 2,
-    minimumFractionDigits: 3,
-    maximumFractionDigits: 3,
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
     useGrouping: false,
-  }).format(resto / 1000);
-  return `${minutos}:${decimales}`;
+  }).format(resto / factor);
+  return `${minutos}:${fraccion}`;
 }

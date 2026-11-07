@@ -63,7 +63,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 | Sesiones por defecto | Las que abre la web sin selección: **circuito**, Monza 2024 Clasificación, pole; **gomas**, España 2024 Carrera (seca, con blanda, media y dura); **telemetría**, Bahréin 2024 Clasificación, VER vs LEC, Q3 |
 | Backend | **Python 3.12 + FastAPI**, entorno con **uv** |
 | Frontend | **Next.js (App Router) + TypeScript + Tailwind** |
-| Gráficos | **Plotly.js** en la web; SVG propio donde hace falta animar (mapa, minisectores); **Matplotlib** en los notebooks |
+| Gráficos | **SVG propio** en la web (mapa, estrategia, dispersión, minisectores), con CSS para animar; **Matplotlib** en los notebooks. Sin Plotly (decidido el 2026-11-05, ver §11) |
 | Notebooks | Sí, uno por análisis, como laboratorio antes de pasar a la web |
 | Persistencia | **Sin base de datos.** Caché en memoria y en disco de las respuestas de OpenF1 |
 | Repositorio | **Monorepo** (`backend/` + `frontend/`) en GitHub **público** |
@@ -89,7 +89,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 - **Cola de trabajos con polling:** se diseñó cuando FastF1 tardaba hasta 2 min por sesión. Con OpenF1 tarda 5–8 s, y una petición normal basta.
 - **Base de datos:** los datos vienen de OpenF1 y no cambian; con caché alcanza.
 - **React + Vite:** se eligió Next.js, el mismo stack de ESCORE.
-- **Apache ECharts:** Plotly está mejor pensado para gráficos técnicos (paneles con eje compartido, escalas de color).
+- **Apache ECharts y Plotly.js:** se descartaron a favor de SVG propio. Los gráficos son pocos y sencillos, se animan con CSS, y Plotly pesa cientos de KB que la web gratis no necesita. Plotly quedaría como opción solo si la telemetría (PR 10) pide paneles con eje compartido que no valga la pena dibujar a mano.
 - **Código en inglés:** decisión de Emile; el código va en español.
 - **Zonas de frenado como «Z1, Z2…»:** Emile prefiere los números de curva reales, como en la transmisión.
 - **Logo de un solo bloque morado:** no le gustó a Emile; se cambió por tres barras con los colores de sector.
@@ -133,7 +133,7 @@ imagen para compartir el link, exportar gráficos en PNG, glosario, posiciones v
 
 ```
 [Next.js en Vercel]  ──HTTPS──►  [FastAPI en Render]  ──HTTPS──►  [OpenF1 API]
-  es / en, Plotly                  datos/ → analisis/ → api/
+  es / en, SVG propio              datos/ → analisis/ → api/
   anima y traduce                  caché en memoria + disco
                                          │
                                          └──► notebooks/ (Matplotlib, figuras del README)
@@ -312,4 +312,6 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
 - [ ] Armar a mano las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026 que MultiViewer no tiene), o revisar de nuevo MultiViewer más adelante. Mientras tanto, esos mapas salen sin curvas numeradas.
 - [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
+- [x] **Gráficos de la web en SVG propio, sin Plotly** (decidido el 2026-11-05 al aprobar el plan del PR 8): el mapa del circuito ya era SVG; la estrategia de gomas y la dispersión también. Se reabre solo si la telemetría (PR 10) lo necesita.
+- [x] **La conclusión de gomas no elige un compuesto cuando los datos no alcanzan** (2026-11-06): si la mitad o más de los stints válidos no se gasta (Qatar 2024: 17 de 20) o la diferencia entre el que más y el que menos se gasta es menor de 0,02 s por vuelta, dice que no se puede medir o que se gastaron casi igual. El umbral de 0,02 s es una estimación a ojo del ruido de los stints; se revisa con más carreras.
 - [ ] Verificar si OpenF1 tiene límites de peticiones no documentados (Fase 5).

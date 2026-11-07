@@ -104,6 +104,90 @@
       "region": "Braking table, scrolls horizontally"
     }
   },
+  "Gomas": {
+    "titulo": "How much did a driver's tyre strategy cost?",
+    "subtitulo": "How each driver ran the race and how much time their tyres lost as they wore out.",
+    "compuestos": {
+      "SOFT": { "nombre": "Soft", "letra": "S" },
+      "MEDIUM": { "nombre": "Medium", "letra": "M" },
+      "HARD": { "nombre": "Hard", "letra": "H" },
+      "INTERMEDIATE": { "nombre": "Intermediate", "letra": "I" },
+      "WET": { "nombre": "Wet", "letra": "W" },
+      "UNKNOWN": { "nombre": "Unknown", "letra": "?" }
+    },
+    "estrategia": {
+      "titulo": "Every driver's strategy",
+      "ayuda": "Pick a driver to see their laps in the chart below (up to {max} at a time).",
+      "maximo": "{max} drivers are already picked: remove one to pick another.",
+      "lista": "Tyre strategies by driver",
+      "eje": "Lap",
+      "puesto": "position {posicion}",
+      "abandono": "retired",
+      "stint": "{compuesto}, {vueltas, plural, one {# lap} other {# laps}}",
+      "fila": "{codigo}, {resultado}. {stints}",
+      "retiro": "Retired on lap {vuelta}"
+    },
+    "dispersion": {
+      "titulo": "Lap time against tyre age",
+      "descripcion": "Chart of the clean lap times of {pilotos} against tyre age, with one line per stint. {conclusion}",
+      "region": "Chart, scrolls horizontally",
+      "ejeX": "Tyre age (laps)",
+      "ejeY": "Lap time",
+      "corregir": "Correct for fuel",
+      "corregirAyuda": "As fuel burns off the car gets lighter and gains about {segundos, number} s per lap. With the switch on, that time is added back to every lap to isolate tyre wear.",
+      "leyenda": "Each shape is a driver and each colour a compound.",
+      "sinVueltas": "The picked drivers have no clean laps to draw.",
+      "actualizando": "Updating the chart…"
+    },
+    "tablas": {
+      "stints": {
+        "titulo": "Degradation by stint",
+        "descripcion": "Stints of the picked drivers, with how much time the tyre loses per lap of use",
+        "region": "Degradation by stint table, scrolls horizontally",
+        "piloto": "Driver",
+        "stint": "Stint",
+        "compuesto": "Compound",
+        "vueltas": "Clean laps",
+        "edad": "Age (laps)",
+        "pierde": "Loses (s/lap)",
+        "r2": "R²",
+        "insuficiente": "Too few laps",
+        "sinDegradacion": "No wear",
+        "vacia": "The picked drivers have no stints to measure."
+      },
+      "compuestos": {
+        "titulo": "Degradation by compound",
+        "descripcion": "Average of all drivers per compound, weighted by laps",
+        "region": "Degradation by compound table, scrolls horizontally",
+        "compuesto": "Compound",
+        "stints": "Stints",
+        "vueltas": "Clean laps",
+        "corregida": "Fuel-corrected (s/lap)",
+        "sinCorregir": "Uncorrected (s/lap)",
+        "vacia": "There are not enough stints to compare compounds."
+      }
+    },
+    "conclusion": {
+      "titulo": "The {compuesto} wore out the most: {pendiente, number, ::.000} s per lap",
+      "tituloUnico": "Only the {compuesto} tyre could be measured: it loses {pendiente, number, ::.000} s per lap",
+      "tituloParecidas": "The compounds wore out about the same in this race",
+      "tituloSinMedida": "Tyre wear can't be measured in this race",
+      "detalle": "The one that lasted best was the {menos}, at {pendienteMenos, number, ::.000} s per lap. {validos} stints were measured and {insuficientes, plural, =0 {none was} one {# was} other {# were}} left out for having too few laps.",
+      "detalleUnico": "{validos} stints were measured and {insuficientes, plural, =0 {none was} one {# was} other {# were}} left out for having too few laps.",
+      "detalleParecidas": "The gap between the one that wore out most and least ({mas} and {menos}) is {diferencia, number, ::.000} s per lap, too little to call it a result. {validos} stints were measured.",
+      "detalleSinMedida": "In {sin} of {validos} stints the tyre didn't lose time: the track got faster by more than the tyre wore out, so the numbers don't say which compound is worse.",
+      "paradas": "Drivers made {paradas, number, ::.0} stops on average.",
+      "masLargo": "The longest stint was {piloto}'s, on {compuesto}: {vueltas} laps."
+    },
+    "limitaciones": {
+      "titulo": "What this analysis doesn't measure",
+      "intro": "The slope of each stint is what the tyre «seems» to lose per lap, not its real wear. The data can't correct for these:",
+      "trafico": "Traffic: running behind another car costs time that has nothing to do with the tyre.",
+      "pista": "Temperature and track evolution: the surface gets faster with each lap and can hide wear, as happened in Qatar 2024.",
+      "combustible": "Fuel: the correction uses {segundos, number} s per lap for every car, which is an approximation.",
+      "limpias": "Only clean laps count: the first lap, safety car or flag laps, pit entry and exit laps and very slow ones are dropped."
+    }
+  },
   "Preguntas": {
     "titulo": "Choose a question",
     "nivel": "Level: {nivel}",
