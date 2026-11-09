@@ -41,6 +41,7 @@ uv run uvicorn f1analytics.api.main:app --reload
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_velocidad_circuito.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_degradacion_gomas.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/03_comparacion_telemetria.ipynb
+uv run python scripts/medir_recursos.py   # RAM y tiempos con los límites de Render Free (necesita Docker)
 ```
 
 Los notebooks necesitan internet y que no haya una sesión de F1 en vivo; no corren en CI. Se suben con las salidas ya ejecutadas.
