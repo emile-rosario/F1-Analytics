@@ -24,6 +24,11 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
+      # Solo lo que se publica (las dependencias de producción): un aviso en una herramienta de
+      # desarrollo, como ESLint, no debe frenar los PR. No depende del sistema operativo.
+      - name: Auditar las dependencias de producción
+        if: runner.os == 'Linux'
+        run: npm audit --omit=dev --audit-level=moderate
       - name: Comprobar que los tipos de la API están al día
         run: |
           npm run tipos
