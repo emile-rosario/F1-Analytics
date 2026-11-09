@@ -45,6 +45,7 @@ Principios:
 | Velocidad | lenta `#3D7BFF` → media `#F2C14E` → rápida `#FF5A36` (azul a naranja, apta para daltonismo) |
 | Compuestos | blanda `#F0434A`, media `#F2C14E`, dura `#F2F3F6`, intermedia `#3DDC84`, lluvia `#3D7BFF` |
 | Equipos | el `team_colour` que manda OpenF1 |
+| Pilotos en la telemetría | A (referencia) `#B65CFF`, B (comparado) `#FF8A3D`, empate `#6B7285` |
 | Preguntas del inicio | circuito `#FF5A36`, gomas `#F2C14E`, telemetría `#B65CFF` |
 
 Reglas:
@@ -125,8 +126,10 @@ Radios: 3–4px en piezas chicas, 6–8px en paneles. Los *lower thirds* no llev
 ### Telemetría
 - Los dos pilotos como en la tele, con la diferencia en el medio.
 - Segmentos (mejor vuelta / Q1 / Q2 / Q3, o SQ1 / SQ2 / SQ3), solo en clasificaciones.
-- Trazas apiladas con eje compartido: velocidad, acelerador, freno y delta. Un cursor recorre la vuelta en todas a la vez.
-- Mapa de los 25 minisectores pintados del color del más rápido, conclusión y tabla de mayores ganancias.
+- Trazas apiladas con eje compartido: velocidad, acelerador, freno (un carril por piloto) y delta, en un solo SVG. Un cursor recorre la vuelta en todas a la vez: se mueve con el mouse, tocando, o con un deslizador con teclado que lo anuncia a los lectores de pantalla. Encima, una tabla con los valores de los dos pilotos en ese punto; en el móvil el deslizador es el control principal, porque arrastrar sobre la gráfica la desplaza.
+- **Colores de los pilotos:** el A (la referencia) es morado `#B65CFF` y el B naranja `#FF8A3D`, y el empate gris `#6B7285`. No son los colores de los equipos, porque dos compañeros comparten color; cada línea se identifica además con el código del piloto.
+- Mapa de los 25 minisectores pintados del color del más rápido, con la leyenda de tramos ganados y un punto que sigue al cursor de las gráficas.
+- Conclusión (con aviso amarillo si las dos vueltas son casi iguales) y una nota de limitaciones que se abre sola en ese caso.
 
 ### Carga
 - Semáforo de salida que se enciende luz por luz, «Despertando el servidor», contador de segundos y enlace para volver.
