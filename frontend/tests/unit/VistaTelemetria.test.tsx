@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import VistaTelemetria from "@/components/VistaTelemetria";
 import { ErrorApi } from "@/lib/api";
@@ -282,6 +282,128 @@ describe("gráficas y cursor", () => {
       "tabindex",
       "0",
     );
+  });
+});
+
+describe("tooltip al pasar el mouse", () => {
+  const canales = crearAnalisisTelemetria().canales;
+  // La gráfica mide 800 × 600 px en pantalla, así que un píxel es una unidad del SVG (ANCHO = 800).
+  // El eje va de x = 84 (0 m) a x = 780 (1000 m): cada 25 m son 17,4 px.
+  const xDe = (metros: number) => 84 + (metros / 1000) * 696;
+
+  beforeEach(() => {
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 800,
+      bottom: 600,
+      width: 800,
+      height: 600,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const zona = () => screen.getByTestId("zona-cursor");
+  const mouse = (metros: number, y = 100) =>
+    fireEvent.pointerMove(zona(), { pointerType: "mouse", clientX: xDe(metros), clientY: y });
+
+  it("no se ve hasta que el mouse pasa por la gráfica", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    expect(screen.queryByTestId("tooltip-telemetria")).not.toBeInTheDocument();
+  });
+
+  it("muestra la distancia, los dos pilotos y la diferencia del punto", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse(500);
+
+    const tooltip = screen.getByTestId("tooltip-telemetria");
+    expect(tooltip).toHaveTextContent("A 500 m de la meta");
+    expect(tooltip).toHaveTextContent(`VER${canales.velocidad_a[20]} km/h · ${canales.acelerador_a[20]} %`);
+    expect(tooltip).toHaveTextContent(`LEC${canales.velocidad_b[20]} km/h · ${canales.acelerador_b[20]} %`);
+    expect(tooltip).toHaveTextContent("Diferencia: 0,114 s · VER por delante");
+    expect(cursor()).toHaveValue("20");
+  });
+
+  it("está oculto para los lectores de pantalla, que ya tienen el deslizador y la tabla", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse(500);
+
+    expect(screen.getByTestId("tooltip-telemetria")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+  });
+
+  it("sigue al mouse y se actualiza con cada punto", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse(250);
+    expect(screen.getByTestId("tooltip-telemetria")).toHaveTextContent("A 250 m de la meta");
+    mouse(750);
+    expect(screen.getByTestId("tooltip-telemetria")).toHaveTextContent("A 750 m de la meta");
+  });
+
+  it("dice qué piloto está frenando y no menciona al que no frena", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse(250); // frena VER (i = 10), LEC todavía no
+
+    const filas = within(screen.getByTestId("tooltip-telemetria")).getAllByText(/km\/h/);
+    expect(filas[0].parentElement).toHaveTextContent("frenando");
+    expect(filas[1].parentElement).not.toHaveTextContent("frenando");
+  });
+
+  it("desaparece al sacar el mouse de la gráfica", async () => {
+    pintar();
+    await esperarAnalisis();
+    mouse(500);
+
+    fireEvent.pointerLeave(zona());
+
+    expect(screen.queryByTestId("tooltip-telemetria")).not.toBeInTheDocument();
+  });
+
+  it("con el tacto mueve el cursor pero no muestra el tooltip", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    fireEvent.pointerDown(zona(), { pointerType: "touch", clientX: xDe(500), clientY: 100 });
+
+    expect(cursor()).toHaveValue("20");
+    expect(screen.queryByTestId("tooltip-telemetria")).not.toBeInTheDocument();
+  });
+
+  it("queda a la derecha y debajo del puntero, y se voltea cerca de los bordes derecho e inferior", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse(100, 100);
+    expect(screen.getByTestId("tooltip-telemetria").style.transform).toBe("translate(0, 0)");
+
+    mouse(950, 100);
+    expect(screen.getByTestId("tooltip-telemetria").style.transform).toBe("translate(-100%, 0)");
+
+    mouse(100, 500);
+    expect(screen.getByTestId("tooltip-telemetria").style.transform).toBe("translate(0, -100%)");
+  });
+
+  it("está traducido al inglés", async () => {
+    pintar("en");
+    await screen.findByRole("heading", { name: "The two laps, metre by metre" });
+
+    mouse(250);
+
+    expect(screen.getByTestId("tooltip-telemetria")).toHaveTextContent("250 m from the line");
+    expect(screen.getByTestId("tooltip-telemetria")).toHaveTextContent("braking");
   });
 });
 
