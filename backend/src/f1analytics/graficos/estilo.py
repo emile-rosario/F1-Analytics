@@ -22,6 +22,10 @@ COLORES_COMPUESTO = {
     "WET": "#3D7BFF",
 }
 
+# Los dos pilotos de la comparación de telemetría: morado (A, la referencia) y naranja (B).
+# Se distinguen también con daltonismo y se leen sobre el fondo asfalto. El gris es el empate.
+COLORES_PILOTOS = {"a": "#B65CFF", "b": "#FF8A3D", "empate": "#6B7285"}
+
 # Escala de velocidad apta para daltonismo: lenta (azul) → media (amarillo) → rápida (naranja).
 _VELOCIDAD = ("#3D7BFF", "#F2C14E", "#FF5A36")
 
