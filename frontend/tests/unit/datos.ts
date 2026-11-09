@@ -1,4 +1,4 @@
-import type { AnalisisCircuito, AnalisisGomas } from "@/lib/api";
+import type { AnalisisCircuito, AnalisisGomas, AnalisisTelemetria } from "@/lib/api";
 
 /** Un circuito de juguete: un rectángulo recorrido en sentido horario, con una frenada. */
 export function crearAnalisis(cambios: Partial<AnalisisCircuito> = {}): AnalisisCircuito {
@@ -204,6 +204,80 @@ export function crearAnalisisGomas(
     ],
     resumen: resumen(0.1, 0.05),
     resumen_sin_corregir: resumen(0.04, 0.0),
+    ...cambios,
+  };
+}
+
+/**
+ * Una comparación de juguete: VER (A) contra LEC (B) en 1000 m, 41 puntos cada 25 m. El delta
+ * sube parejo hasta 0,228 s (gana A), cada piloto frena una vez y los 25 minisectores se
+ * reparten 12 para A, 7 para B y 6 empates.
+ */
+export function crearAnalisisTelemetria(
+  cambios: Partial<AnalisisTelemetria> = {},
+): AnalisisTelemetria {
+  const n = 41;
+  const distancia_m = Array.from({ length: n }, (_, i) => i * 25);
+  const piloto = (numero: number, codigo: string, equipo: string, color: string) => ({
+    numero,
+    codigo,
+    nombre: `Piloto ${codigo}`,
+    equipo,
+    color,
+  });
+  const ganadores = [
+    ...Array<"a">(12).fill("a"),
+    ...Array<"b">(7).fill("b"),
+    ...Array<"empate">(6).fill("empate"),
+  ];
+  return {
+    sesion: 9468,
+    segmento: "Q3",
+    piloto_a: { piloto: piloto(1, "VER", "Red Bull Racing", "#3671C6"), vuelta: 16, tiempo_vuelta_s: 89.179 },
+    piloto_b: { piloto: piloto(16, "LEC", "Ferrari", "#E80020"), vuelta: 18, tiempo_vuelta_s: 89.407 },
+    longitud_m: 1000,
+    paso_m: 5,
+    canales: {
+      distancia_m,
+      velocidad_a: distancia_m.map((d) => Math.round(200 + 80 * Math.sin(d / 150))),
+      velocidad_b: distancia_m.map((d) => Math.round(198 + 80 * Math.sin(d / 150))),
+      acelerador_a: distancia_m.map((_, i) => (i >= 10 && i <= 14 ? 0 : 100)),
+      acelerador_b: distancia_m.map((_, i) => (i >= 11 && i <= 15 ? 0 : 100)),
+      freno_a: distancia_m.map((_, i) => i >= 10 && i <= 14),
+      freno_b: distancia_m.map((_, i) => i >= 11 && i <= 15),
+      delta_s: distancia_m.map((d) => Number(((0.228 * d) / 1000).toFixed(3))),
+      x: distancia_m.map((d) => Math.round(2000 * Math.cos((d / 1000) * 2 * Math.PI))),
+      y: distancia_m.map((d) => Math.round(1000 * Math.sin((d / 1000) * 2 * Math.PI))),
+    },
+    curvas: [
+      { numero: 1, letra: "", etiqueta: "1", x: 2000, y: 0 },
+      { numero: 2, letra: "", etiqueta: "2", x: -2000, y: 0 },
+    ],
+    minisectores: ganadores.map((ganador, sector) => ({
+      sector,
+      inicio_m: sector * 40,
+      fin_m: (sector + 1) * 40,
+      diferencia_s: ganador === "a" ? 0.03 : ganador === "b" ? -0.02 : 0.002,
+      ganador,
+    })),
+    resumen: {
+      delta_final_s: 0.228,
+      ganador: "a",
+      sectores_ganados: { a: 12, b: 7, empate: 6 },
+      mayor_ventaja: {
+        a: { sector: 3, inicio_m: 120, fin_m: 160, ventaja_s: 0.196 },
+        b: { sector: 14, inicio_m: 560, fin_m: 600, ventaja_s: 0.141 },
+      },
+      pct_a_fondo: { a: 70.3, b: 72.6 },
+      vel_maxima: {
+        a: { kmh: 322, distancia_m: 475 },
+        b: { kmh: 318, distancia_m: 430 },
+      },
+      vel_minima: {
+        a: { kmh: 72, distancia_m: 710 },
+        b: { kmh: 66, distancia_m: 705 },
+      },
+    },
     ...cambios,
   };
 }

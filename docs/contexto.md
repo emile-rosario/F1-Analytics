@@ -89,7 +89,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 - **Cola de trabajos con polling:** se diseñó cuando FastF1 tardaba hasta 2 min por sesión. Con OpenF1 tarda 5–8 s, y una petición normal basta.
 - **Base de datos:** los datos vienen de OpenF1 y no cambian; con caché alcanza.
 - **React + Vite:** se eligió Next.js, el mismo stack de ESCORE.
-- **Apache ECharts y Plotly.js:** se descartaron a favor de SVG propio. Los gráficos son pocos y sencillos, se animan con CSS, y Plotly pesa cientos de KB que la web gratis no necesita. Plotly quedaría como opción solo si la telemetría (PR 10) pide paneles con eje compartido que no valga la pena dibujar a mano.
+- **Apache ECharts y Plotly.js:** se descartaron a favor de SVG propio. Los gráficos son pocos y sencillos, se animan con CSS, y Plotly pesa cientos de KB que la web gratis no necesita. Plotly quedaba como opción solo si la telemetría (PR 10) pedía paneles con eje compartido que no valía la pena dibujar a mano: no hizo falta, los cuatro paneles con eje compartido y cursor se dibujaron en SVG propio (PR 10b, 2026-11-08).
 - **Código en inglés:** decisión de Emile; el código va en español.
 - **Zonas de frenado como «Z1, Z2…»:** Emile prefiere los números de curva reales, como en la transmisión.
 - **Logo de un solo bloque morado:** no le gustó a Emile; se cambió por tres barras con los colores de sector.
@@ -312,6 +312,6 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
 - [ ] Armar a mano las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026 que MultiViewer no tiene), o revisar de nuevo MultiViewer más adelante. Mientras tanto, esos mapas salen sin curvas numeradas.
 - [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
-- [x] **Gráficos de la web en SVG propio, sin Plotly** (decidido el 2026-11-05 al aprobar el plan del PR 8): el mapa del circuito ya era SVG; la estrategia de gomas y la dispersión también. Se reabre solo si la telemetría (PR 10) lo necesita.
+- [x] **Gráficos de la web en SVG propio, sin Plotly** (decidido el 2026-11-05 al aprobar el plan del PR 8): el mapa del circuito ya era SVG; la estrategia de gomas y la dispersión también. Confirmado en el PR 10b: la telemetría (cuatro paneles con eje compartido y un cursor que recorre la vuelta) también va en SVG propio, sin Plotly.
 - [x] **La conclusión de gomas no elige un compuesto cuando los datos no alcanzan** (2026-11-06): si la mitad o más de los stints válidos no se gasta (Qatar 2024: 17 de 20) o la diferencia entre el que más y el que menos se gasta es menor de 0,02 s por vuelta, dice que no se puede medir o que se gastaron casi igual. El umbral de 0,02 s es una estimación a ojo del ruido de los stints; se revisa con más carreras.
 - [ ] Verificar si OpenF1 tiene límites de peticiones no documentados (Fase 5).

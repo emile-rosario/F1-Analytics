@@ -59,3 +59,10 @@ export const ordenCompuesto = (compuesto: string) => {
 };
 
 export const colorCompuesto = (compuesto: string) => COLORES_COMPUESTO[compuesto] ?? "#a3a9b7";
+
+/**
+ * Los dos pilotos de la telemetría: morado el A (la referencia) y naranja el B. No son los
+ * colores de sus equipos, porque dos compañeros comparten el color. Los mismos de
+ * `graficos/estilo.py`; el gris es el empate.
+ */
+export const COLORES_PILOTO = { a: "#b65cff", b: "#ff8a3d", empate: "#6b7285" } as const;

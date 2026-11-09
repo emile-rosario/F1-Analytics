@@ -53,7 +53,14 @@
     "indicacion": "Elige un Gran Premio y una sesión terminada para empezar.",
     "piloto": "Piloto",
     "elegirPiloto": "Elige un piloto",
-    "indicacionPiloto": "Elige un piloto para ver su vuelta."
+    "indicacionPiloto": "Elige un piloto para ver su vuelta.",
+    "pilotoA": "Piloto A (referencia)",
+    "pilotoB": "Piloto B (comparado)",
+    "elegirPilotoA": "Elige el piloto A",
+    "elegirPilotoB": "Elige el piloto B",
+    "segmento": "Vuelta",
+    "mejorVuelta": "Mejor de la sesión",
+    "indicacionPilotos": "Elige dos pilotos distintos para comparar su vuelta."
   },
   "Sesiones": {
     "Practice 1": "Libres 1",
@@ -187,6 +194,64 @@
       "pista": "La temperatura y la evolución de la pista: el asfalto mejora con las vueltas y puede tapar el desgaste, como pasó en Qatar 2024.",
       "combustible": "El combustible: la corrección usa {segundos, number} s por vuelta para todos los coches, es una aproximación.",
       "limpias": "Solo cuentan las vueltas limpias: se descartan la primera, las de safety car o bandera, la entrada y salida de boxes y las muy lentas."
+    }
+  },
+  "Telemetria": {
+    "titulo": "¿Dónde le gana tiempo un piloto a otro?",
+    "subtitulo": "La vuelta rápida de dos pilotos, metro a metro: velocidad, acelerador, freno y cuánto tiempo gana o pierde cada uno.",
+    "vuelta": "Vuelta {vuelta}",
+    "seccionPanel": "Las dos vueltas, metro a metro",
+    "referencia": "Referencia",
+    "comparado": "Comparado",
+    "paneles": {
+      "velocidad": "Velocidad (km/h)",
+      "acelerador": "Acelerador (%)",
+      "freno": "Freno",
+      "delta": "Diferencia de tiempo (s)"
+    },
+    "delta": { "adelante": "{piloto} por delante" },
+    "ejeX": "Distancia desde la meta (m)",
+    "region": "Gráficas con desplazamiento horizontal",
+    "descripcion": "Velocidad, acelerador, freno y diferencia de tiempo de {a} y {b} a lo largo de la vuelta. {conclusion}",
+    "cursor": {
+      "etiqueta": "Posición en la vuelta",
+      "ayuda": "Mueve el deslizador, o toca o pasa el mouse por las gráficas, para ver los valores de los dos pilotos en cada punto de la vuelta.",
+      "valor": "{distancia} m desde la meta: {a} {velocidadA} km/h, {b} {velocidadB} km/h, diferencia {delta} s",
+      "lectura": "Valores en la posición elegida",
+      "distancia": "A {distancia} m de la meta",
+      "piloto": "Piloto",
+      "velocidad": "Velocidad",
+      "acelerador": "Acelerador",
+      "freno": "Freno",
+      "frenando": "Sí",
+      "sinFreno": "No",
+      "diferencia": "Diferencia: {delta} s",
+      "sinDiferencia": "Diferencia: ninguna"
+    },
+    "mapa": {
+      "titulo": "Quién fue más rápido en cada tramo",
+      "descripcion": "Mapa del circuito partido en {tramos} tramos de igual longitud, pintado del color del piloto que fue más rápido en cada uno. {conclusion}",
+      "ganados": "{piloto}: {tramos}",
+      "empate": "Empate: {tramos}",
+      "leyenda": "Tramos ganados",
+      "ayuda": "La vuelta se parte en {tramos} tramos iguales. En cada uno gana quien lo recorre en menos tiempo; si la diferencia es menor de {umbral, number, ::.000} s se cuenta como empate."
+    },
+    "conclusion": {
+      "titulo": "{ganador} fue {diferencia, number, ::.000} s más rápido que {perdedor}",
+      "detalle": "{ganador} ganó {ganados} de los {total} tramos, {perdedor} ganó {otros} y {empates, plural, =0 {ninguno quedó empatado} one {uno quedó empatado} other {# quedaron empatados}}.",
+      "ventaja": "{piloto} sacó más tiempo entre los {inicio, number} y los {fin, number} m ({ventaja, number, ::.000} s en ese tramo).",
+      "tituloEmpate": "Las dos vueltas fueron casi iguales",
+      "detalleEmpate": "La diferencia fue de {diferencia, number, ::.000} s, menos de lo que esta telemetría permite distinguir ({umbral, number, ::.000} s)."
+    },
+    "limitaciones": {
+      "titulo": "Qué no mide este análisis",
+      "intro": "El delta dice quién fue más rápido y dónde, con estas salvedades:",
+      "muestras": "Pocas muestras: la telemetría pública trae unas 3,7 por segundo, una cada ~20 m a 250 km/h.",
+      "picos": "Picos en las frenadas: el delta sube y baja de golpe en las frenadas fuertes. Es en parte ruido de muestreo; lo que cuenta es el nivel en que se estabiliza después de la curva.",
+      "exactitud": "Exactitud: el delta final es exacto porque se ajusta al tiempo oficial de cada vuelta. A mitad de vuelta se equivoca unos 0,03 s de media (0,11 s como máximo) contra los tiempos oficiales de sector.",
+      "porque": "No dice por qué: muestra quién fue más rápido en un tramo, no si fue por frenar más tarde, trazar mejor o levantar el pie.",
+      "condiciones": "Condiciones distintas: sin elegir segmento cada piloto usa su mejor vuelta de la sesión, que puede ser de otro momento, con otra goma o más combustible. El tráfico no se corrige.",
+      "tramos": "Los tramos son de igual longitud, no los minisectores oficiales de la transmisión."
     }
   },
   "Preguntas": {

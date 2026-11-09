@@ -209,8 +209,8 @@ frontend/
 │   │   ├── EstadoCarga.tsx       # cargando / despertando servidor / error
 │   │   ├── MapaCircuito.tsx      # SVG: mapa de velocidad/marchas, curvas y frenadas
 │   │   ├── VistaGomas.tsx, EstrategiaCarrera.tsx, DispersionGomas.tsx, TablasDegradacion.tsx, ConclusionGomas.tsx
-│   │   └── (telemetría: PanelTelemetria, MapaMinisectores, por hacer)
-│   └── lib/  api.ts, tipos-api.ts, colores.ts, formato.ts, gomas.ts
+│   │   ├── VistaTelemetria.tsx, PanelTelemetria.tsx, MapaMinisectores.tsx, ConclusionTelemetria.tsx
+│   └── lib/  api.ts, tipos-api.ts, colores.ts, formato.ts, gomas.ts, telemetria.ts
 └── tests/
 ```
 
@@ -249,7 +249,7 @@ La API se duerme a los 15 min sin tráfico, y la primera petición tarda ~1 min 
   - Estrategias de **todos los pilotos**, ordenados por posición final, con filas compactas. Los abandonos muestran la barra cortada en la vuelta en que se retiraron.
   - `DispersionVueltas` del piloto elegido (clic en su fila), con opción de comparar hasta 3.
   - Tabla de degradación por stint del piloto elegido + tabla general de degradación promedio por compuesto en toda la carrera.
-- **/telemetria**: selector de segmento (mejor vuelta / Q1 / Q2 / Q3, o SQ1 / SQ2 / SQ3 en la clasificación sprint; en las demás sesiones no aparece) + `PanelTelemetria` (velocidad, acelerador, freno y delta) + `MapaMinisectores`.
+- **/telemetria**: `SelectorSesion` en modo comparación (año, Gran Premio, sesión, piloto A, piloto B y segmento: mejor vuelta / Q1 / Q2 / Q3, o SQ1 / SQ2 / SQ3 en la clasificación sprint; en las demás sesiones no aparece), con todo en la URL (`piloto_a`, `piloto_b`, `segmento`) + `PanelTelemetria` (velocidad, acelerador, freno y delta en un solo SVG, con un cursor controlado por mouse, toque y un deslizador accesible) + `MapaMinisectores` (el punto del mapa sigue al cursor) + conclusión y limitaciones. El cursor vive en `VistaTelemetria` y se comparte con el mapa; vuelve a la meta al cambiar la comparación. Sin Plotly (ver `contexto.md`).
 - **/estado**: versión del frontend y de la API, y si la API responde.
 
 Responsive: en móvil los paneles se apilan.
@@ -327,7 +327,7 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 8b | `feat/web-gomas` | Página `/gomas` (estrategias de todos, dispersión en SVG propio, interruptor de combustible, tablas, conclusión y limitaciones) | **Proyecto 2 vivo** (hecho) |
 | 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) (hecho) |
 | 10a | `feat/api-telemetria` | Endpoint `/api/analisis/telemetria` | API con la comparación de telemetría (hecho) |
-| 10b | `feat/web-telemetria` | Página `/telemetria` (selector de segmento, paneles con cursor en SVG propio, mapa de minisectores, conclusión y limitaciones) | **Proyecto 3 vivo** |
+| 10b | `feat/web-telemetria` | Página `/telemetria` (selector de segmento, paneles con cursor en SVG propio, mapa de minisectores, conclusión y limitaciones) | **Proyecto 3 vivo** (hecho) |
 | 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio |
 
 Definition of Done de cada PR:
