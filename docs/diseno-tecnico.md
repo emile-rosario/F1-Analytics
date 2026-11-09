@@ -40,8 +40,29 @@ En octubre de 2026 la F1 empezó a exigir autenticación en sus APIs de datos. F
 
 Conclusiones:
 - La RAM está muy por debajo de los 512 MB de Render gratis.
-- Una sesión tarda 5–8 s en bajarse. Eso es aceptable en una petición HTTP normal, así que la API responde directo, sin cola de trabajos ni polling. Con caché, la segunda vez es instantánea.
+- Una sesión tarda 5–8 s en bajarse. Eso es aceptable en una petición HTTP normal, así que la API responde directo, sin cola de trabajos ni polling. Con caché la segunda vez es más rápida, pero no instantánea (ver la medición de abajo).
 - Detalle encontrado: la vuelta más rápida de LEC en esa clasificación fue en Q2 (89.165 s), no en Q3. Para comparar en igualdad de condiciones, el proyecto 3 deja elegir **"mejor vuelta de la sesión"** o **"mejor vuelta de Q1 / Q2 / Q3"** (ver 4.5).
+
+### Medición en las condiciones de Render Free (2026-11-09)
+
+Con los tres análisis ya hechos, se midió la API completa (no solo un script) dentro de un contenedor con los límites de Render Free: 512 MB de RAM, sin swap y 0,1 CPU. La memoria es el `memory.peak` del cgroup (lo que el sistema compara con el límite para matar el proceso). Se repite con `uv run python scripts/medir_recursos.py` desde `backend/` (necesita Docker, internet y que no haya una sesión en vivo; no corre en CI).
+
+| Análisis (sesión real) | En frío (s) | En caliente (s) | Pico de RAM (MB) | Render, en caliente (s) |
+|---|---|---|---|---|
+| Circuito · Monza 2024, clasificación | 5,5 | 0,7 | 136 | 0,7 a 1,0 |
+| Gomas · España 2024, carrera | 10,1 | 3,0 | 143 | 1,6 |
+| Gomas · Mónaco 2024, carrera (78 vueltas) | 8,1 | 2,8 | 143 | 1,4 |
+| Telemetría · Bahréin 2024 Q3, VER y LEC | 7,5 | 2,3 | 135 | 1,2 |
+| Telemetría · España 2024, carrera, VER y NOR | 6,0 | 1,1 | 134 | 0,9 |
+| Los 5 seguidos, mismo contenedor | 3,0 a 6,7 | | **147** | |
+| Los 5 a la vez, contenedor nuevo | 15 a 59 | | **167** | |
+
+Conclusiones:
+- **La RAM sobra.** El arranque ya ocupa ~122 MB (Python, FastAPI y pandas); cada análisis suma 12 a 25 MB y el máximo, con 5 a la vez, fue de 167 MB: un tercio del límite. No hubo ningún OOM. La cifra de ~80 MB de arriba era el proceso de un script sin la API, así que no se puede comparar con esta.
+- **Los tiempos, también bien:** en frío 5 a 10 s (bajar la sesión de OpenF1) y en caliente 0,7 a 3 s. En caliente no es instantáneo porque la caché guarda los datos de OpenF1, no la respuesta: el análisis se vuelve a calcular. El contenedor con 0,1 CPU resultó más lento que Render real (en caliente, hasta el doble), así que sirve como cota pesimista.
+- **Después de despertar, la primera petición puede tardar mucho más.** En Render, justo tras despertar el servidor, una petición de circuito tardó 51 s y una de telemetría 36 s (con el disco vacío, CPU escasa y OpenF1 respondiendo cuando le tocó); otras en frío tardaron 3 a 5 s. No se pudo separar cuánto fue de cada cosa. El frontend espera hasta 90 s y reintenta, así que no falla, pero se nota.
+- **Una ráfaga se encola, no se rechaza.** El límite de concurrencia es un semáforo de 2: con 5 análisis a la vez las 5 respuestas fueron 200, pero tres esperaron hasta 59 s. Por una cuenta simple (cada tanda de 2 tarda unos 20 s), con unas 8 peticiones simultáneas en frío las últimas superarían los 90 s del frontend; es una estimación, no se midió. Para el tráfico de un proyecto de portafolio no es un problema; si lo fuera, la salida es acotar la cola y responder 503 con un código, en un PR aparte.
+- **Falta** la RAM real de Render: el CLI y la API de logs no la exponen. Se ve en la pestaña *Metrics* del servicio en el dashboard.
 
 ### Lo que FastF1 nos daba hecho y ahora hacemos nosotros
 | Qué | Cómo lo resolvemos |
@@ -289,7 +310,7 @@ Casos clave:
 - **Frontend → Vercel (Hobby, gratis).** Merge a `main` → producción. Cada PR → link de preview comentado en el PR.
 - **API → Render (Free, gratis), sin tarjeta.**
   - Merge a `main` → deploy automático. Configurado en `render.yaml` dentro del repo.
-  - 512 MB de RAM (~80 MB medidos por análisis, más la caché en memoria de hasta ~100 MB), 750 horas al mes (alcanza para 1 servicio 24/7).
+  - 512 MB de RAM (medido en un contenedor con esos límites: ~122 MB al arrancar y 167 MB como máximo con 5 análisis a la vez; ver sección 2), 750 horas al mes (alcanza para 1 servicio 24/7).
   - Se duerme a los 15 min sin tráfico (ver sección 5) y el disco se borra al dormirse (ver la caché en 4.2).
   - Previews de PR del backend: no en el plan gratis. Los previews del frontend apuntan a la API de producción, y los cambios de API se prueban local antes del merge.
 - **Opcional, a decidir:** una GitHub Action que llame a `/api/salud` cada 14 min para que no se duerma. Gasta ~744 h/mes de las 750, así que alcanza para un solo servicio. Ojo: el cron de Actions puede atrasarse más de 15 min (la API se dormiría igual) y se desactiva solo tras 60 días sin actividad en el repo; un monitor externo gratis puede ser más confiable. Se decide en el PR 1.
@@ -371,7 +392,8 @@ Piezas, si se hace: cliente de tiempo real, estado de la sesión, WebSockets en 
 | OpenF1 bloquea todo acceso sin clave durante una sesión de F1 en vivo (verificado el 2026-10-31) | Código `openf1_en_vivo` con mensaje claro en la web; la caché sirve lo ya consultado. Opciones para la demo: sesiones destacadas como archivos estáticos o una clave de pago (`contexto.md` §11) |
 | OpenF1 limita las peticiones (429) | Reintentos con backoff, caché, máximo 2 análisis sin caché a la vez |
 | Alguien abusa de la API pública y la deja ocupada para todos | Límite de 10 análisis sin caché por minuto por IP (4.6) |
-| Primera visita lenta (servidor dormido) | Despertar la API al abrir la web, mensaje claro, reintento; ping opcional |
+| Primera visita lenta (servidor dormido) | Despertar la API al abrir la web, mensaje claro, reintento; ping opcional. La primera petición tras despertar llegó a tardar 36 y 51 s; el frontend espera hasta 90 s |
+| Muchas peticiones en frío a la vez | El semáforo de 2 las encola (5 a la vez: hasta 59 s, sin errores); con ~8 superarían los 90 s del frontend. Si hiciera falta, acotar la cola y responder 503 |
 | Caché perdida al dormirse | Aceptable (5–8 s por sesión) |
 | Telemetría a ~3.7 Hz poco precisa | Interpolación por distancia, delta ajustado al tiempo oficial y aclaración en la UI |
 | OpenF1 no trae números de curva ni rotación | `circuitos.json`, copia estática de MultiViewer (sin dependencia en producción); en los 2 circuitos nuevos que MultiViewer no tiene el análisis del circuito responde `analisis_no_disponible` (no hay PCA: sin números de curva el mapa no aporta lo que promete) |
