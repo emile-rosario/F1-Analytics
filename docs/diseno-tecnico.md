@@ -147,7 +147,7 @@ Recibe las vueltas ya limpias y con la edad de la goma. «Degradación» es la *
 - `comparar_compuestos(degradacion) -> pd.DataFrame`: pendiente media de cada compuesto ponderada por sus vueltas, y mediana; sin los stints insuficientes; de la más blanda a la más dura.
 - `resumen_gomas(degradacion, stints) -> dict`: solo datos: stints válidos, insuficientes y sin degradación (pendiente ≤ 0), compuesto que más y que menos se gasta (`None` si hay uno solo), stint más largo y paradas por piloto.
 
-`graficos/gomas.py` (Matplotlib, notebooks y README): `estrategias` (una fila por piloto ordenada por posición final, con la letra del compuesto y las vueltas de cada barra y una cruz en quien abandona), `dispersion_edad` (hasta 3 pilotos, un marcador por piloto y una recta por stint) y `degradacion_compuestos`.
+`graficos/gomas.py` (Matplotlib, notebooks y README): `estrategias` (una fila por piloto ordenada por posición final, con la letra del compuesto y las vueltas de cada barra y una cruz en quien abandona), `dispersion_edad` (hasta 3 pilotos, un panel por piloto con los mismos ejes y una recta por stint; el color es el compuesto) y `degradacion_compuestos`.
 
 `scripts/buscar_carrera_gomas.py` revisa las carreras de 2023 en adelante y lista las que son secas, usan los tres compuestos en cantidad (mínimo 8 stints de cada uno), casi no tienen vueltas neutralizadas y no tuvieron bandera roja.
 
