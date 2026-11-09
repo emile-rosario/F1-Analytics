@@ -15,7 +15,13 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { pedirAnalisisTelemetria, type AnalisisTelemetria } from "@/lib/api";
 import { COLORES_PILOTO } from "@/lib/colores";
 import { formatearTiempoVuelta } from "@/lib/formato";
-import { SESION_DESTACADA_TELEMETRIA } from "@/lib/telemetria";
+import {
+  indiceEnRango,
+  indicesDelRango,
+  rangoCompleto,
+  SESION_DESTACADA_TELEMETRIA,
+  type Rango,
+} from "@/lib/telemetria";
 
 function Vuelta({ letra, datos }: { letra: "a" | "b"; datos: AnalisisTelemetria["piloto_a"] }) {
   const t = useTranslations("Telemetria");
@@ -46,7 +52,14 @@ function Vuelta({ letra, datos }: { letra: "a" | "b"; datos: AnalisisTelemetria[
 function Resultado({ analisis }: { analisis: AnalisisTelemetria }) {
   const t = useTranslations("Telemetria");
   // El cursor empieza en la meta: ahí el delta es la diferencia oficial de tiempo de vuelta.
-  const [indice, setIndice] = useState(analisis.canales.distancia_m.length - 1);
+  const distancias = analisis.canales.distancia_m;
+  const [indice, setIndice] = useState(distancias.length - 1);
+  // Tramo visible de la vuelta: empieza entera. Al acercar, el cursor se queda dentro del tramo.
+  const [rango, setRango] = useState<Rango>(() => rangoCompleto(distancias[distancias.length - 1]));
+  const elegirRango = (nuevo: Rango) => {
+    setRango(nuevo);
+    setIndice((actual) => indiceEnRango(actual, indicesDelRango(distancias, nuevo)));
+  };
   const conclusion = useConclusionTelemetria(analisis);
   const a = analisis.piloto_a.piloto.codigo;
   const b = analisis.piloto_b.piloto.codigo;
@@ -68,6 +81,8 @@ function Resultado({ analisis }: { analisis: AnalisisTelemetria }) {
           analisis={analisis}
           indice={indice}
           onCambiar={setIndice}
+          rango={rango}
+          onRango={elegirRango}
           descripcion={t("descripcion", { a, b, conclusion: conclusion.titulo })}
         />
       </section>

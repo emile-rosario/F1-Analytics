@@ -231,6 +231,16 @@
     "tooltip": {
       "frenando": "braking"
     },
+    "rango": {
+      "titulo": "Zoom into a section",
+      "desde": "From",
+      "hasta": "To",
+      "valor": "{metros} m from the line",
+      "estado": "Showing {desde} to {hasta} m from the line",
+      "estadoCompleto": "Showing the whole lap ({largo} m)",
+      "restablecer": "Whole lap",
+      "ayuda": "Choose the section with the sliders or, with a mouse, drag across the charts. A click without dragging only moves the cursor."
+    },
     "mapa": {
       "titulo": "Who was faster in each stretch",
       "descripcion": "Map of the circuit split into {tramos} stretches of equal length, painted in the colour of the driver who was faster in each one. {conclusion}",
