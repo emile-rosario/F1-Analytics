@@ -95,3 +95,23 @@ export const pedirAnalisisGomas = (sesion: number, pilotos: number[] = [], opcio
     `/api/analisis/gomas?${[`sesion=${sesion}`, ...pilotos.map((p) => `pilotos=${p}`)].join("&")}`,
     opciones,
   );
+
+export type AnalisisTelemetria = components["schemas"]["AnalisisTelemetria"];
+
+/** `segmento` es `Q1`/`Q2`/`Q3` (o `SQ1`/`SQ2`/`SQ3`); sin él la API usa la mejor vuelta de la sesión. */
+export const pedirAnalisisTelemetria = (
+  sesion: number,
+  pilotoA: number,
+  pilotoB: number,
+  segmento?: string | null,
+  opciones?: OpcionesPedir,
+) =>
+  pedir<AnalisisTelemetria>(
+    `/api/analisis/telemetria?${[
+      `sesion=${sesion}`,
+      `piloto_a=${pilotoA}`,
+      `piloto_b=${pilotoB}`,
+      ...(segmento ? [`segmento=${segmento}`] : []),
+    ].join("&")}`,
+    opciones,
+  );

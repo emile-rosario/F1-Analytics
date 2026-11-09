@@ -203,11 +203,13 @@ describe("TarjetasPreguntas", () => {
     expect(enlace).toHaveAttribute("href", `/gomas?${URL_COMPLETA}`);
   });
 
-  it("la de telemetría avisa que llega pronto y no es un enlace", () => {
+  it("la tercera pregunta lleva a telemetría conservando la elección de la URL", () => {
     pintar(<TarjetasPreguntas />);
 
-    expect(screen.getAllByText("Próximamente")).toHaveLength(1);
-    expect(screen.getAllByRole("link")).toHaveLength(2);
+    const enlace = screen.getByRole("link", { name: /¿Dónde le gana tiempo un piloto a otro/ });
+    expect(enlace).toHaveAttribute("href", `/telemetria?${URL_COMPLETA}`);
+    expect(screen.getAllByRole("link")).toHaveLength(3);
+    expect(screen.queryByText("Próximamente")).not.toBeInTheDocument();
   });
 
   it("muestra el nivel de cada pregunta en el idioma elegido", () => {
@@ -215,6 +217,6 @@ describe("TarjetasPreguntas", () => {
 
     expect(screen.getByText("Level: Basic")).toBeInTheDocument();
     expect(screen.getByText("Level: Advanced")).toBeInTheDocument();
-    expect(screen.getAllByText("Coming soon")).toHaveLength(1);
+    expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
   });
 });

@@ -8,12 +8,12 @@ import { Link } from "@/i18n/navigation";
 const PREGUNTAS = [
   { clave: "circuito", numero: 1, color: "#ff5a36", ruta: "/circuito" },
   { clave: "gomas", numero: 2, color: "#f2c14e", ruta: "/gomas" },
-  { clave: "telemetria", numero: 3, color: "#b65cff", ruta: null },
+  { clave: "telemetria", numero: 3, color: "#b65cff", ruta: "/telemetria" },
 ] as const;
 
 /**
- * Las tres preguntas del inicio como paneles de la transmisión. La que ya existe lleva a su
- * página con la elección de la URL; las demás avisan que llegan pronto.
+ * Las tres preguntas del inicio como paneles de la transmisión. Cada una lleva a su
+ * página con la elección de la URL; una sin página avisaría que llega pronto.
  */
 export default function TarjetasPreguntas() {
   const t = useTranslations("Preguntas");
