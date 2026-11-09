@@ -328,7 +328,7 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) (hecho) |
 | 10a | `feat/api-telemetria` | Endpoint `/api/analisis/telemetria` | API con la comparación de telemetría (hecho) |
 | 10b | `feat/web-telemetria` | Página `/telemetria` (selector de segmento, paneles con cursor en SVG propio, mapa de minisectores, conclusión y limitaciones) | **Proyecto 3 vivo** (hecho) |
-| 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio |
+| 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio (hecho) |
 
 Definition of Done de cada PR:
 - [ ] Plan aprobado antes de empezar
