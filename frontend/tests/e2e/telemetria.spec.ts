@@ -89,6 +89,65 @@ test("pasar el mouse por las gráficas mueve el cursor y el punto del mapa", asy
   expect(await punto.evaluate((c) => [c.getAttribute("cx"), c.getAttribute("cy")])).not.toEqual(alFinal);
 });
 
+const tooltip = (page: Page) => page.getByTestId("tooltip-telemetria");
+
+test("al pasar el mouse aparece un tooltip junto al puntero y desaparece al salir", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(lectura(page)).toContainText("A 1000 m de la meta");
+  await expect(tooltip(page)).toHaveCount(0);
+  const zona = page.getByTestId("zona-cursor");
+
+  await zona.hover({ position: { x: 150, y: 30 } });
+
+  await expect(tooltip(page)).toBeVisible();
+  await expect(tooltip(page)).toContainText("m de la meta");
+  await expect(tooltip(page)).toContainText("VER");
+  await expect(tooltip(page)).toContainText("LEC");
+  await expect(tooltip(page)).toContainText("Diferencia:");
+  // Queda a la derecha y debajo del puntero, sin taparlo.
+  const caja = (await zona.boundingBox())!;
+  const t = (await tooltip(page).boundingBox())!;
+  expect(t.x).toBeGreaterThanOrEqual(caja.x + 150);
+  expect(t.y).toBeGreaterThanOrEqual(caja.y + 30);
+  expect(t.x - (caja.x + 150)).toBeLessThan(40);
+
+  await page.mouse.move(0, 0);
+  await expect(tooltip(page)).toHaveCount(0);
+});
+
+test("cerca del borde derecho el tooltip pasa a la izquierda del puntero y no se sale de la gráfica", async ({
+  page,
+}) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(lectura(page)).toContainText("A 1000 m de la meta");
+  const zona = page.getByTestId("zona-cursor");
+  const caja = (await zona.boundingBox())!;
+
+  await zona.hover({ position: { x: caja.width - 12, y: 30 } });
+
+  await expect(tooltip(page)).toBeVisible();
+  const t = (await tooltip(page).boundingBox())!;
+  expect(t.x + t.width).toBeLessThanOrEqual(caja.x + caja.width - 12);
+  const desborde = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(desborde).toBeLessThanOrEqual(0);
+});
+
+test("el tooltip no estorba al teclado: el deslizador sigue anunciando y no hay tooltip", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(lectura(page)).toContainText("A 1000 m de la meta");
+
+  await cursor(page).focus();
+  await page.keyboard.press("Home");
+
+  await expect(lectura(page)).toContainText("A 0 m de la meta");
+  await expect(tooltip(page)).toHaveCount(0);
+});
+
 test("el deslizador se maneja con el teclado y anuncia el punto", async ({ page }) => {
   await simularApi(page);
   await page.goto(`/es/telemetria?${URL_COMPLETA}`);
@@ -247,5 +306,27 @@ test("en el móvil la página no se desborda, las gráficas se desplazan y el de
   await cursor(page).focus();
   await page.keyboard.press("Home");
   await expect(lectura(page)).toContainText("A 0 m de la meta");
+  await expect(tooltip(page)).toHaveCount(0);
+  await contexto.close();
+});
+
+test("con el tacto, tocar la gráfica mueve el cursor y no abre el tooltip", async ({ browser }) => {
+  const contexto = await browser.newContext({
+    viewport: { width: 390, height: 800 },
+    locale: "es-ES",
+    hasTouch: true,
+    isMobile: true,
+  });
+  const page = await contexto.newPage();
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(lectura(page)).toContainText("A 1000 m de la meta");
+  const zona = page.getByTestId("zona-cursor");
+  await zona.scrollIntoViewIfNeeded();
+
+  await zona.tap({ position: { x: 100, y: 30 } });
+
+  await expect(lectura(page)).not.toContainText("A 1000 m de la meta");
+  await expect(tooltip(page)).toHaveCount(0);
   await contexto.close();
 });

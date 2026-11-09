@@ -228,6 +228,9 @@
       "diferencia": "Diferencia: {delta} s",
       "sinDiferencia": "Diferencia: ninguna"
     },
+    "tooltip": {
+      "frenando": "frenando"
+    },
     "mapa": {
       "titulo": "Quién fue más rápido en cada tramo",
       "descripcion": "Mapa del circuito partido en {tramos} tramos de igual longitud, pintado del color del piloto que fue más rápido en cada uno. {conclusion}",
