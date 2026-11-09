@@ -304,6 +304,11 @@ Casos clave:
 - `backend.yml`: `ruff check`, `ruff format --check`, `pytest` (sin integración), en Ubuntu y Windows.
 - `frontend.yml`: `eslint`, `tsc --noEmit`, `vitest`, `next build` y Playwright, en Ubuntu y Windows.
 
+**Dependencias y seguridad:**
+- **En CI:** `frontend.yml` corre `npm audit --omit=dev --audit-level=moderate` (solo en Ubuntu: no depende del sistema). Audita únicamente lo que se publica; un aviso en una herramienta de desarrollo, como ESLint, no frena los PR. Si aparece un aviso en una dependencia de producción, todos los PR fallan hasta arreglarlo, que es lo que se quiere.
+- **Dependabot** (`.github/dependabot.yml`): cada lunes revisa `npm` (frontend), `uv` (backend) y GitHub Actions. Las versiones menores y de parche van agrupadas en un solo PR por ecosistema; las mayores llegan una por PR; máximo 3 abiertos por ecosistema. Emile revisa y mergea, como siempre.
+- **`minimatch` en `overrides` (2026-11-09):** `npm audit` marcaba `minimatch` 10.2.6 (denegación de servicio con patrones glob, parchado en 11.0.1) dentro de `@typescript-eslint/typescript-estree`, que todavía pide `^10.2.2`. Se fuerza a `^11.0.5` solo para ese paquete en `frontend/package.json`. Solo afecta a las herramientas de lint (producción ya salía con 0 avisos) y `npm audit fix --force` no sirve: propone bajar `eslint-config-next` a la 15. **Cuando `typescript-estree` suba su dependencia a `minimatch` 11, quitar el `override`.** Backend: `pip-audit` sobre `uv.lock`, con y sin desarrollo, no encontró vulnerabilidades.
+
 **Local:** `docker compose up` (API en `:8000`, web en `:3000`), o cada uno por separado con `uv run` y `npm run dev`.
 
 **Deploy (desde el PR 1), $0/mes:**
