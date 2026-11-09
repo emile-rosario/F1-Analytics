@@ -148,6 +148,95 @@ test("el tooltip no estorba al teclado: el deslizador sigue anunciando y no hay 
   await expect(tooltip(page)).toHaveCount(0);
 });
 
+const estadoRango = (page: Page) => page.getByRole("status").filter({ hasText: "Mostrando" });
+const marcasX = (page: Page) => page.getByTestId("marca-x");
+
+test("los deslizadores acercan un tramo, el eje cambia y «Toda la vuelta» lo deshace", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(estadoRango(page)).toHaveText("Mostrando la vuelta entera (1000 m)");
+  await expect(page.getByRole("button", { name: "Toda la vuelta" })).toBeDisabled();
+
+  await page.getByRole("slider", { name: "Desde" }).fill("400");
+  await page.getByRole("slider", { name: "Hasta" }).fill("600");
+
+  await expect(estadoRango(page)).toHaveText("Mostrando de 400 a 600 m de la meta");
+  await expect(marcasX(page).first()).toHaveText("400");
+  await expect(marcasX(page).last()).toHaveText("600");
+  // El cursor estaba en la meta (1000 m): ahora queda en el final del tramo.
+  await expect(lectura(page)).toContainText("A 600 m de la meta");
+
+  await page.getByRole("button", { name: "Toda la vuelta" }).click();
+  await expect(estadoRango(page)).toHaveText("Mostrando la vuelta entera (1000 m)");
+  await expect(marcasX(page).first()).toHaveText("0");
+  await expect(marcasX(page).last()).toHaveText("1000");
+});
+
+test("los deslizadores del tramo se manejan con el teclado y respetan el mínimo de 100 m", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(estadoRango(page)).toBeVisible();
+
+  await page.getByRole("slider", { name: "Hasta" }).focus();
+  await page.keyboard.press("Home");
+
+  await expect(estadoRango(page)).toHaveText("Mostrando de 0 a 100 m de la meta");
+  await expect(page.getByRole("slider", { name: "Hasta" })).toHaveAttribute("aria-valuetext", "100 m de la meta");
+});
+
+test("arrastrar con el mouse sobre las gráficas acerca ese tramo", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(lectura(page)).toContainText("A 1000 m de la meta");
+  const zona = page.getByTestId("zona-cursor");
+  await zona.scrollIntoViewIfNeeded();
+  const caja = (await zona.boundingBox())!;
+  // La zona es más alta que la pantalla: se arrastra por la parte que se ve.
+  const y = Math.max(caja.y, 0) + 60;
+
+  await page.mouse.move(caja.x + caja.width * 0.25, y);
+  await page.mouse.down();
+  await page.mouse.move(caja.x + caja.width * 0.5, y, { steps: 5 });
+  await expect(page.getByTestId("banda-zoom")).toBeVisible();
+  await expect(page.getByTestId("tooltip-telemetria")).toHaveCount(0);
+  await page.mouse.up();
+
+  await expect(page.getByTestId("banda-zoom")).toHaveCount(0);
+  await expect(estadoRango(page)).toHaveText(/Mostrando de (2[0-9]\d) a (5[0-2]\d) m de la meta/);
+  // Arrastrar no debe dejar texto seleccionado (se vería resaltado el tooltip y los ejes).
+  await zona.hover({ position: { x: 60, y: 60 } });
+  expect(await page.evaluate(() => window.getSelection()?.toString())).toBe("");
+  // El eje ahora va solo del tramo elegido.
+  expect(Number(await marcasX(page).first().textContent())).toBeGreaterThanOrEqual(200);
+  expect(Number(await marcasX(page).last().textContent())).toBeLessThanOrEqual(520);
+});
+
+test("con el tramo acercado, el tooltip del mouse da distancias de ese tramo", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await page.getByRole("slider", { name: "Desde" }).fill("400");
+  await page.getByRole("slider", { name: "Hasta" }).fill("600");
+  const zona = page.getByTestId("zona-cursor");
+
+  await zona.hover({ position: { x: 20, y: 30 } });
+
+  const texto = await page.getByTestId("tooltip-telemetria").innerText();
+  const metros = Number(/A (\d+) m/.exec(texto)![1]);
+  expect(metros).toBeGreaterThanOrEqual(400);
+  expect(metros).toBeLessThanOrEqual(425);
+});
+
+test("cambiar de comparación vuelve a mostrar la vuelta entera", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await page.getByRole("slider", { name: "Desde" }).fill("400");
+  await expect(estadoRango(page)).toHaveText("Mostrando de 400 a 1000 m de la meta");
+
+  await page.getByLabel("Piloto B (comparado)").selectOption("55");
+
+  await expect(estadoRango(page)).toHaveText("Mostrando la vuelta entera (1000 m)");
+});
+
 test("el deslizador se maneja con el teclado y anuncia el punto", async ({ page }) => {
   await simularApi(page);
   await page.goto(`/es/telemetria?${URL_COMPLETA}`);
@@ -328,5 +417,24 @@ test("con el tacto, tocar la gráfica mueve el cursor y no abre el tooltip", asy
 
   await expect(lectura(page)).not.toContainText("A 1000 m de la meta");
   await expect(tooltip(page)).toHaveCount(0);
+  await contexto.close();
+});
+
+test("en el móvil los deslizadores del tramo acercan la vuelta y la página no se desborda", async ({ browser }) => {
+  const contexto = await browser.newContext({ viewport: { width: 390, height: 800 }, locale: "es-ES" });
+  const page = await contexto.newPage();
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(estadoRango(page)).toBeVisible();
+
+  await page.getByRole("slider", { name: "Desde" }).fill("300");
+  await page.getByRole("slider", { name: "Hasta" }).fill("700");
+
+  await expect(estadoRango(page)).toHaveText("Mostrando de 300 a 700 m de la meta");
+  await expect(marcasX(page).first()).toHaveText("300");
+  const desborde = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(desborde).toBeLessThanOrEqual(0);
   await contexto.close();
 });
