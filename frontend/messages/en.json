@@ -228,6 +228,9 @@
       "diferencia": "Difference: {delta} s",
       "sinDiferencia": "Difference: none"
     },
+    "tooltip": {
+      "frenando": "braking"
+    },
     "mapa": {
       "titulo": "Who was faster in each stretch",
       "descripcion": "Map of the circuit split into {tramos} stretches of equal length, painted in the colour of the driver who was faster in each one. {conclusion}",

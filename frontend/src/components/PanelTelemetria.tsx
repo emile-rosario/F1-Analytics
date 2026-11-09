@@ -1,7 +1,7 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { memo, useMemo, type PointerEvent } from "react";
+import { memo, useMemo, useState, type PointerEvent } from "react";
 
 import type { AnalisisTelemetria } from "@/lib/api";
 import { COLORES_PILOTO } from "@/lib/colores";
@@ -21,6 +21,14 @@ const PANELES = [
   { clave: "freno", alto: 52 },
   { clave: "delta", alto: 150 },
 ] as const;
+
+/** Margen entre el puntero y el tooltip, en píxeles. */
+const SEPARACION_TOOLTIP = 16;
+/** Pasada esta fracción del ancho o del alto, el tooltip se pone al otro lado del puntero. */
+const FRACCION_VOLTEO = 0.55;
+
+/** Dónde está el mouse sobre la gráfica, en píxeles de pantalla desde su esquina superior izquierda. */
+type Puntero = { x: number; y: number; ancho: number; alto: number };
 
 type Canales = AnalisisTelemetria["canales"];
 
@@ -273,6 +281,18 @@ export default function PanelTelemetria({
     formato.number(valor, { signDisplay: "exceptZero", minimumFractionDigits: 3, maximumFractionDigits: 3 });
   const metros = formato.number(Math.round(distancia));
   const x = g.px(distancia);
+  const textoDiferencia = adelante
+    ? `${t("cursor.diferencia", { delta: tresDecimales(Math.abs(delta)) })} · ${t("delta.adelante", {
+        piloto: adelante === "a" ? codigoA : codigoB,
+      })}`
+    : t("cursor.sinDiferencia");
+
+  // El tooltip solo existe mientras el mouse está encima. Con el tacto, arrastrar desplaza la
+  // página, y con el teclado ya están el deslizador y la tabla.
+  const [puntero, setPuntero] = useState<Puntero | null>(null);
+  // Cerca del borde derecho o del inferior el tooltip se pone al otro lado del puntero.
+  const volteoX = puntero !== null && puntero.x > puntero.ancho * FRACCION_VOLTEO;
+  const volteoY = puntero !== null && puntero.y > puntero.alto * FRACCION_VOLTEO;
 
   function desdePuntero(e: PointerEvent<SVGRectElement>) {
     const svg = e.currentTarget.ownerSVGElement;
@@ -281,6 +301,9 @@ export default function PanelTelemetria({
     const xSvg = ((e.clientX - caja.left) / caja.width) * ANCHO;
     const d = ((xSvg - IZQ) / g.anchoUtil) * g.largo;
     onCambiar(indiceMasCercano(g.distancias, Math.min(g.largo, Math.max(0, d))));
+    if (e.pointerType === "mouse") {
+      setPuntero({ x: e.clientX - caja.left, y: e.clientY - caja.top, ancho: caja.width, alto: caja.height });
+    }
   }
 
   const filas = [
@@ -368,13 +391,7 @@ export default function PanelTelemetria({
               ))}
             </tbody>
           </table>
-          <p className="cifras">
-            {adelante
-              ? `${t("cursor.diferencia", { delta: tresDecimales(Math.abs(delta)) })} · ${t("delta.adelante", {
-                  piloto: adelante === "a" ? codigoA : codigoB,
-                })}`
-              : t("cursor.sinDiferencia")}
-          </p>
+          <p className="cifras">{textoDiferencia}</p>
         </div>
       </div>
 
@@ -385,41 +402,74 @@ export default function PanelTelemetria({
         role="region"
         aria-label={t("region")}
       >
-        <svg
-          viewBox={`0 0 ${ANCHO} ${g.altoTotal}`}
-          role="img"
-          aria-label={descripcion}
-          className="w-full min-w-[40rem]"
-        >
-          <Capas analisis={analisis} g={g} />
+        <div className="relative min-w-[40rem]">
+          <svg
+            viewBox={`0 0 ${ANCHO} ${g.altoTotal}`}
+            role="img"
+            aria-label={descripcion}
+            className="block w-full"
+          >
+            <Capas analisis={analisis} g={g} />
 
-          <g data-testid="cursor" pointerEvents="none">
-            <line x1={x} x2={x} y1={g.velocidad.arriba} y2={g.delta.arriba + g.delta.alto} stroke="var(--color-texto)" strokeWidth={1.5} strokeDasharray="4 3" />
-            {(
-              [
-                [g.yVelocidad, canales.velocidad_a[indice], canales.velocidad_b[indice]],
-                [g.yAcelerador, canales.acelerador_a[indice], canales.acelerador_b[indice]],
-              ] as const
-            ).map(([y, a, b], i) => (
-              <g key={i} stroke="var(--color-asfalto)" strokeWidth={1.5}>
-                <circle cx={x} cy={y(b)} r={5} fill={COLORES_PILOTO.b} />
-                <circle cx={x} cy={y(a)} r={5} fill={COLORES_PILOTO.a} />
-              </g>
-            ))}
-            <circle cx={x} cy={g.yDelta(delta)} r={5} fill="var(--color-texto)" stroke="var(--color-asfalto)" strokeWidth={1.5} />
-          </g>
+            <g data-testid="cursor" pointerEvents="none">
+              <line x1={x} x2={x} y1={g.velocidad.arriba} y2={g.delta.arriba + g.delta.alto} stroke="var(--color-texto)" strokeWidth={1.5} strokeDasharray="4 3" />
+              {(
+                [
+                  [g.yVelocidad, canales.velocidad_a[indice], canales.velocidad_b[indice]],
+                  [g.yAcelerador, canales.acelerador_a[indice], canales.acelerador_b[indice]],
+                ] as const
+              ).map(([y, a, b], i) => (
+                <g key={i} stroke="var(--color-asfalto)" strokeWidth={1.5}>
+                  <circle cx={x} cy={y(b)} r={5} fill={COLORES_PILOTO.b} />
+                  <circle cx={x} cy={y(a)} r={5} fill={COLORES_PILOTO.a} />
+                </g>
+              ))}
+              <circle cx={x} cy={g.yDelta(delta)} r={5} fill="var(--color-texto)" stroke="var(--color-asfalto)" strokeWidth={1.5} />
+            </g>
 
-          <rect
-            data-testid="zona-cursor"
-            x={IZQ}
-            y={g.velocidad.arriba}
-            width={g.anchoUtil}
-            height={g.altoTotal - PIE - g.velocidad.arriba + 14}
-            fill="transparent"
-            onPointerDown={desdePuntero}
-            onPointerMove={(e) => e.pointerType === "mouse" && desdePuntero(e)}
-          />
-        </svg>
+            <rect
+              data-testid="zona-cursor"
+              x={IZQ}
+              y={g.velocidad.arriba}
+              width={g.anchoUtil}
+              height={g.altoTotal - PIE - g.velocidad.arriba + 14}
+              fill="transparent"
+              onPointerDown={desdePuntero}
+              onPointerMove={(e) => e.pointerType === "mouse" && desdePuntero(e)}
+              onPointerLeave={() => setPuntero(null)}
+            />
+          </svg>
+
+          {puntero && (
+            <div
+              data-testid="tooltip-telemetria"
+              aria-hidden="true"
+              className="pointer-events-none absolute z-10 w-max max-w-[17rem] space-y-1 rounded-md border border-suave bg-asfalto px-3 py-2 text-sm shadow-lg"
+              style={{
+                left: puntero.x + (volteoX ? -SEPARACION_TOOLTIP : SEPARACION_TOOLTIP),
+                top: puntero.y + (volteoY ? -SEPARACION_TOOLTIP : SEPARACION_TOOLTIP),
+                transform: `translate(${volteoX ? "-100%" : "0"}, ${volteoY ? "-100%" : "0"})`,
+              }}
+            >
+              <p className="cifras font-titulo text-base font-bold">{t("cursor.distancia", { distancia: metros })}</p>
+              {filas.map((fila) => (
+                <p key={fila.letra} className="cifras flex items-center gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="h-1 w-4 shrink-0 rounded-full"
+                    style={{ background: COLORES_PILOTO[fila.letra] }}
+                  />
+                  <span className="font-titulo font-bold">{fila.codigo}</span>
+                  <span>
+                    {fila.velocidad} km/h · {fila.acelerador} %
+                  </span>
+                  {fila.freno && <span className="text-suave">{t("tooltip.frenando")}</span>}
+                </p>
+              ))}
+              <p className="cifras border-t border-linea pt-1 text-suave">{textoDiferencia}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
