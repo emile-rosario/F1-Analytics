@@ -428,6 +428,131 @@
         }
       }
     },
+    "/api/analisis/telemetria": {
+      "get": {
+        "summary": "Analisis Telemetria",
+        "description": "Compara la vuelta más rápida de dos pilotos: velocidad, pedales y delta metro a metro.\n\nEl piloto A es la referencia y el B el que se compara. Sin ``segmento`` se usa la mejor\nvuelta de la sesión; con él, la mejor de Q1, Q2 o Q3 (SQ1, SQ2 o SQ3 en la clasificación\nsprint), que solo existe en esas sesiones. Solo para sesiones terminadas. Responde\n``analisis_no_disponible`` en los circuitos que todavía no están en ``circuitos.json``.",
+        "operationId": "analisis_telemetria_api_analisis_telemetria_get",
+        "parameters": [
+          {
+            "name": "sesion",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Sesion"
+            }
+          },
+          {
+            "name": "piloto_a",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Piloto A"
+            }
+          },
+          {
+            "name": "piloto_b",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Piloto B"
+            }
+          },
+          {
+            "name": "segmento",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "Q1",
+                    "Q2",
+                    "Q3",
+                    "SQ1",
+                    "SQ2",
+                    "SQ3"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Segmento"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisTelemetria"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorApi"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
     "/api/salud": {
       "get": {
         "summary": "Salud",
@@ -616,6 +741,163 @@
         ],
         "title": "AnalisisGomas",
         "description": "Las estrategias de toda la carrera y la degradación de las gomas."
+      },
+      "AnalisisTelemetria": {
+        "properties": {
+          "sesion": {
+            "type": "integer",
+            "title": "Sesion"
+          },
+          "segmento": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Segmento"
+          },
+          "piloto_a": {
+            "$ref": "#/components/schemas/VueltaComparada"
+          },
+          "piloto_b": {
+            "$ref": "#/components/schemas/VueltaComparada"
+          },
+          "longitud_m": {
+            "type": "number",
+            "title": "Longitud M"
+          },
+          "paso_m": {
+            "type": "number",
+            "title": "Paso M"
+          },
+          "canales": {
+            "$ref": "#/components/schemas/CanalesAlineados"
+          },
+          "curvas": {
+            "items": {
+              "$ref": "#/components/schemas/CurvaMapa"
+            },
+            "type": "array",
+            "title": "Curvas"
+          },
+          "minisectores": {
+            "items": {
+              "$ref": "#/components/schemas/Minisector"
+            },
+            "type": "array",
+            "title": "Minisectores"
+          },
+          "resumen": {
+            "$ref": "#/components/schemas/ResumenTelemetria"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sesion",
+          "segmento",
+          "piloto_a",
+          "piloto_b",
+          "longitud_m",
+          "paso_m",
+          "canales",
+          "curvas",
+          "minisectores",
+          "resumen"
+        ],
+        "title": "AnalisisTelemetria",
+        "description": "La comparación de la vuelta rápida de dos pilotos, metro a metro."
+      },
+      "CanalesAlineados": {
+        "properties": {
+          "distancia_m": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Distancia M"
+          },
+          "velocidad_a": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Velocidad A"
+          },
+          "velocidad_b": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Velocidad B"
+          },
+          "acelerador_a": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Acelerador A"
+          },
+          "acelerador_b": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Acelerador B"
+          },
+          "freno_a": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array",
+            "title": "Freno A"
+          },
+          "freno_b": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array",
+            "title": "Freno B"
+          },
+          "delta_s": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Delta S"
+          },
+          "x": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "X"
+          },
+          "y": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Y"
+          }
+        },
+        "type": "object",
+        "required": [
+          "distancia_m",
+          "velocidad_a",
+          "velocidad_b",
+          "acelerador_a",
+          "acelerador_b",
+          "freno_a",
+          "freno_b",
+          "delta_s",
+          "x",
+          "y"
+        ],
+        "title": "CanalesAlineados",
+        "description": "Las dos vueltas sobre la misma rejilla de distancia, un valor por punto.\n\nVan en columnas (un arreglo por canal) y no en una lista de objetos: son ~1000 puntos y\nasí la respuesta pesa mucho menos. Todos los arreglos tienen el mismo largo. El piloto A es\nla referencia y el B el que se compara; ``delta_s`` es positivo cuando B va por detrás.\n``x`` e ``y`` son la posición de la vuelta de A, ya girada como en la transmisión."
       },
       "CompuestoPendiente": {
         "properties": {
@@ -869,6 +1151,22 @@
         "title": "Evento",
         "description": "Un Gran Premio del calendario."
       },
+      "ExtremoPorPiloto": {
+        "properties": {
+          "a": {
+            "$ref": "#/components/schemas/ExtremoVelocidad"
+          },
+          "b": {
+            "$ref": "#/components/schemas/ExtremoVelocidad"
+          }
+        },
+        "type": "object",
+        "required": [
+          "a",
+          "b"
+        ],
+        "title": "ExtremoPorPiloto"
+      },
       "ExtremoVelocidad": {
         "properties": {
           "kmh": {
@@ -915,6 +1213,45 @@
         ],
         "title": "FrenadaFuerte"
       },
+      "Minisector": {
+        "properties": {
+          "sector": {
+            "type": "integer",
+            "title": "Sector"
+          },
+          "inicio_m": {
+            "type": "number",
+            "title": "Inicio M"
+          },
+          "fin_m": {
+            "type": "number",
+            "title": "Fin M"
+          },
+          "diferencia_s": {
+            "type": "number",
+            "title": "Diferencia S"
+          },
+          "ganador": {
+            "type": "string",
+            "enum": [
+              "a",
+              "b",
+              "empate"
+            ],
+            "title": "Ganador"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sector",
+          "inicio_m",
+          "fin_m",
+          "diferencia_s",
+          "ganador"
+        ],
+        "title": "Minisector",
+        "description": "Un tramo de igual longitud y quién lo recorrió más rápido (``a``, ``b`` o ``empate``)."
+      },
       "Piloto": {
         "properties": {
           "numero": {
@@ -947,6 +1284,24 @@
           "color"
         ],
         "title": "Piloto"
+      },
+      "PorcentajePorPiloto": {
+        "properties": {
+          "a": {
+            "type": "number",
+            "title": "A"
+          },
+          "b": {
+            "type": "number",
+            "title": "B"
+          }
+        },
+        "type": "object",
+        "required": [
+          "a",
+          "b"
+        ],
+        "title": "PorcentajePorPiloto"
       },
       "PuntoMapa": {
         "properties": {
@@ -1077,6 +1432,50 @@
         "title": "ResumenGomas",
         "description": "Datos para la conclusión: la web los convierte en una frase."
       },
+      "ResumenTelemetria": {
+        "properties": {
+          "delta_final_s": {
+            "type": "number",
+            "title": "Delta Final S"
+          },
+          "ganador": {
+            "type": "string",
+            "enum": [
+              "a",
+              "b",
+              "empate"
+            ],
+            "title": "Ganador"
+          },
+          "sectores_ganados": {
+            "$ref": "#/components/schemas/SectoresGanados"
+          },
+          "mayor_ventaja": {
+            "$ref": "#/components/schemas/VentajaPorPiloto"
+          },
+          "pct_a_fondo": {
+            "$ref": "#/components/schemas/PorcentajePorPiloto"
+          },
+          "vel_maxima": {
+            "$ref": "#/components/schemas/ExtremoPorPiloto"
+          },
+          "vel_minima": {
+            "$ref": "#/components/schemas/ExtremoPorPiloto"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delta_final_s",
+          "ganador",
+          "sectores_ganados",
+          "mayor_ventaja",
+          "pct_a_fondo",
+          "vel_maxima",
+          "vel_minima"
+        ],
+        "title": "ResumenTelemetria",
+        "description": "Datos para la conclusión: la web los convierte en una frase."
+      },
       "Salud": {
         "properties": {
           "estado": {
@@ -1094,6 +1493,29 @@
           "version"
         ],
         "title": "Salud"
+      },
+      "SectoresGanados": {
+        "properties": {
+          "a": {
+            "type": "integer",
+            "title": "A"
+          },
+          "b": {
+            "type": "integer",
+            "title": "B"
+          },
+          "empate": {
+            "type": "integer",
+            "title": "Empate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "a",
+          "b",
+          "empate"
+        ],
+        "title": "SectoresGanados"
       },
       "Sesion": {
         "properties": {
@@ -1202,6 +1624,88 @@
           "vueltas"
         ],
         "title": "StintMasLargo"
+      },
+      "VentajaPorPiloto": {
+        "properties": {
+          "a": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VentajaSector"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "b": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VentajaSector"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "a",
+          "b"
+        ],
+        "title": "VentajaPorPiloto",
+        "description": "El minisector donde cada piloto sacó más tiempo; vacío si no ganó ninguno."
+      },
+      "VentajaSector": {
+        "properties": {
+          "sector": {
+            "type": "integer",
+            "title": "Sector"
+          },
+          "inicio_m": {
+            "type": "number",
+            "title": "Inicio M"
+          },
+          "fin_m": {
+            "type": "number",
+            "title": "Fin M"
+          },
+          "ventaja_s": {
+            "type": "number",
+            "title": "Ventaja S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sector",
+          "inicio_m",
+          "fin_m",
+          "ventaja_s"
+        ],
+        "title": "VentajaSector"
+      },
+      "VueltaComparada": {
+        "properties": {
+          "piloto": {
+            "$ref": "#/components/schemas/Piloto"
+          },
+          "vuelta": {
+            "type": "integer",
+            "title": "Vuelta"
+          },
+          "tiempo_vuelta_s": {
+            "type": "number",
+            "title": "Tiempo Vuelta S"
+          }
+        },
+        "type": "object",
+        "required": [
+          "piloto",
+          "vuelta",
+          "tiempo_vuelta_s"
+        ],
+        "title": "VueltaComparada",
+        "description": "La vuelta de un piloto en la comparación de telemetría y su tiempo oficial."
       },
       "VueltaGoma": {
         "properties": {

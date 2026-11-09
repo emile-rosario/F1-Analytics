@@ -5,7 +5,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from f1analytics import config
 from f1analytics.api.errores import registrar_manejadores
 from f1analytics.api.esquemas import ErrorApi, Salud
-from f1analytics.api.rutas import analisis, gomas, meta
+from f1analytics.api.rutas import analisis, gomas, meta, telemetria
 
 
 def crear_app(origenes: list[str], origen_regex: str | None = None) -> FastAPI:
@@ -24,6 +24,7 @@ def crear_app(origenes: list[str], origen_regex: str | None = None) -> FastAPI:
     app.include_router(meta.router)
     app.include_router(analisis.router)
     app.include_router(gomas.router)
+    app.include_router(telemetria.router)
 
     @app.get("/api/salud", responses={503: {"model": ErrorApi}})
     def salud() -> Salud:

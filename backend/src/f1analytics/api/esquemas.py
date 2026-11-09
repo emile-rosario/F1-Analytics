@@ -1,6 +1,7 @@
 """Modelos de la API. De aquí sale el OpenAPI y, de ahí, los tipos TypeScript del frontend."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -214,3 +215,99 @@ class AnalisisGomas(BaseModel):
     compuestos: list[DegradacionCompuesto]
     resumen: ResumenGomas  # con la corrección por combustible
     resumen_sin_corregir: ResumenGomas
+
+
+class VueltaComparada(BaseModel):
+    """La vuelta de un piloto en la comparación de telemetría y su tiempo oficial."""
+
+    piloto: Piloto
+    vuelta: int
+    tiempo_vuelta_s: float
+
+
+class CanalesAlineados(BaseModel):
+    """Las dos vueltas sobre la misma rejilla de distancia, un valor por punto.
+
+    Van en columnas (un arreglo por canal) y no en una lista de objetos: son ~1000 puntos y
+    así la respuesta pesa mucho menos. Todos los arreglos tienen el mismo largo. El piloto A es
+    la referencia y el B el que se compara; ``delta_s`` es positivo cuando B va por detrás.
+    ``x`` e ``y`` son la posición de la vuelta de A, ya girada como en la transmisión.
+    """
+
+    distancia_m: list[float]
+    velocidad_a: list[int]
+    velocidad_b: list[int]
+    acelerador_a: list[int]
+    acelerador_b: list[int]
+    freno_a: list[bool]
+    freno_b: list[bool]
+    delta_s: list[float]
+    x: list[float]
+    y: list[float]
+
+
+class Minisector(BaseModel):
+    """Un tramo de igual longitud y quién lo recorrió más rápido (``a``, ``b`` o ``empate``)."""
+
+    sector: int
+    inicio_m: float
+    fin_m: float
+    diferencia_s: float  # positiva si B perdió tiempo (gana A)
+    ganador: Literal["a", "b", "empate"]
+
+
+class SectoresGanados(BaseModel):
+    a: int
+    b: int
+    empate: int
+
+
+class VentajaSector(BaseModel):
+    sector: int
+    inicio_m: float
+    fin_m: float
+    ventaja_s: float
+
+
+class VentajaPorPiloto(BaseModel):
+    """El minisector donde cada piloto sacó más tiempo; vacío si no ganó ninguno."""
+
+    a: VentajaSector | None
+    b: VentajaSector | None
+
+
+class PorcentajePorPiloto(BaseModel):
+    a: float
+    b: float
+
+
+class ExtremoPorPiloto(BaseModel):
+    a: ExtremoVelocidad
+    b: ExtremoVelocidad
+
+
+class ResumenTelemetria(BaseModel):
+    """Datos para la conclusión: la web los convierte en una frase."""
+
+    delta_final_s: float  # positivo si B perdió tiempo en toda la vuelta
+    ganador: Literal["a", "b", "empate"]
+    sectores_ganados: SectoresGanados
+    mayor_ventaja: VentajaPorPiloto
+    pct_a_fondo: PorcentajePorPiloto
+    vel_maxima: ExtremoPorPiloto
+    vel_minima: ExtremoPorPiloto
+
+
+class AnalisisTelemetria(BaseModel):
+    """La comparación de la vuelta rápida de dos pilotos, metro a metro."""
+
+    sesion: int
+    segmento: str | None  # Q1/Q2/Q3 (SQ1/SQ2/SQ3 en la clasificación sprint); vacío si no se pidió
+    piloto_a: VueltaComparada
+    piloto_b: VueltaComparada
+    longitud_m: float
+    paso_m: float
+    canales: CanalesAlineados
+    curvas: list[CurvaMapa]
+    minisectores: list[Minisector]
+    resumen: ResumenTelemetria
