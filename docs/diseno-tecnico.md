@@ -230,7 +230,7 @@ frontend/
 │   │   ├── EstadoCarga.tsx       # cargando / despertando servidor / error
 │   │   ├── MapaCircuito.tsx      # SVG: mapa de velocidad/marchas, curvas y frenadas
 │   │   ├── VistaGomas.tsx, EstrategiaCarrera.tsx, DispersionGomas.tsx, TablasDegradacion.tsx, ConclusionGomas.tsx
-│   │   ├── VistaTelemetria.tsx, PanelTelemetria.tsx, MapaMinisectores.tsx, ConclusionTelemetria.tsx
+│   │   ├── VistaTelemetria.tsx, PanelTelemetria.tsx, ControlesRango.tsx, MapaMinisectores.tsx, ConclusionTelemetria.tsx
 │   └── lib/  api.ts, tipos-api.ts, colores.ts, formato.ts, gomas.ts, telemetria.ts
 └── tests/
 ```
@@ -270,7 +270,7 @@ La API se duerme a los 15 min sin tráfico, y la primera petición tarda ~1 min 
   - Estrategias de **todos los pilotos**, ordenados por posición final, con filas compactas. Los abandonos muestran la barra cortada en la vuelta en que se retiraron.
   - `DispersionVueltas` del piloto elegido (clic en su fila), con opción de comparar hasta 3.
   - Tabla de degradación por stint del piloto elegido + tabla general de degradación promedio por compuesto en toda la carrera.
-- **/telemetria**: `SelectorSesion` en modo comparación (año, Gran Premio, sesión, piloto A, piloto B y segmento: mejor vuelta / Q1 / Q2 / Q3, o SQ1 / SQ2 / SQ3 en la clasificación sprint; en las demás sesiones no aparece), con todo en la URL (`piloto_a`, `piloto_b`, `segmento`) + `PanelTelemetria` (velocidad, acelerador, freno y delta en un solo SVG, con un cursor controlado por mouse, toque y un deslizador accesible, y un tooltip HTML pegado al puntero solo con mouse) + `MapaMinisectores` (el punto del mapa sigue al cursor) + conclusión y limitaciones. El cursor vive en `VistaTelemetria` y se comparte con el mapa; vuelve a la meta al cambiar la comparación. Sin Plotly (ver `contexto.md`).
+- **/telemetria**: `SelectorSesion` en modo comparación (año, Gran Premio, sesión, piloto A, piloto B y segmento: mejor vuelta / Q1 / Q2 / Q3, o SQ1 / SQ2 / SQ3 en la clasificación sprint; en las demás sesiones no aparece), con todo en la URL (`piloto_a`, `piloto_b`, `segmento`) + `PanelTelemetria` (velocidad, acelerador, freno y delta en un solo SVG, con un cursor controlado por mouse, toque y un deslizador accesible, y un tooltip HTML pegado al puntero solo con mouse; el tramo visible, `rango`, se elige con los dos deslizadores de `ControlesRango` o arrastrando con el mouse, se recorta con un `clipPath` y deja el cursor dentro; no va en la URL) + `MapaMinisectores` (el punto del mapa sigue al cursor) + conclusión y limitaciones. El cursor vive en `VistaTelemetria` y se comparte con el mapa; vuelve a la meta al cambiar la comparación. Sin Plotly (ver `contexto.md`).
 - **/estado**: versión del frontend y de la API, y si la API responde.
 
 Responsive: en móvil los paneles se apilan.
