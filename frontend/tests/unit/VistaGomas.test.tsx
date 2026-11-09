@@ -278,12 +278,91 @@ describe("dispersión y combustible", () => {
     const puntos = await abrir();
 
     expect(puntos.querySelectorAll(".punto-goma")).toHaveLength(10);
-    expect(
-      within(screen.getByTestId("rectas")).queryAllByRole("presentation"),
-    ).toHaveLength(0);
-    expect(screen.getByTestId("rectas").querySelectorAll("line")).toHaveLength(
+    const rectas = screen.getAllByTestId("rectas");
+    expect(rectas.flatMap((g) => [...g.querySelectorAll("line")])).toHaveLength(
       2,
     ); // el stint de NOR es insuficiente
+  });
+
+  describe("un panel por piloto", () => {
+    const paneles = () =>
+      screen.getAllByRole("img", { name: /Tiempos de vuelta limpios de/ });
+
+    it("con tres pilotos hay tres paneles, cada uno con solo sus puntos", async () => {
+      await abrir();
+
+      expect(paneles().map((p) => p.getAttribute("aria-label"))).toEqual([
+        expect.stringContaining("de VER"),
+        expect.stringContaining("de NOR"),
+        expect.stringContaining("de HAM"),
+      ]);
+      const pilotosPorPanel = paneles().map((panel) => [
+        ...new Set(
+          [...panel.querySelectorAll<SVGGElement>(".punto-goma")].map(
+            (g) => g.dataset.piloto,
+          ),
+        ),
+      ]);
+      expect(pilotosPorPanel).toEqual([["1"], ["4"], ["44"]]);
+      // El código de cada piloto titula su panel.
+      for (const codigo of ["VER", "NOR", "HAM"])
+        expect(
+          screen.getAllByText(codigo, { selector: "svg text" }),
+        ).toHaveLength(1);
+    });
+
+    it("todos los paneles usan la misma escala de tiempo y de edad", async () => {
+      await abrir();
+
+      const marcas = paneles().map((panel) =>
+        [...panel.querySelectorAll("text")]
+          .map((texto) => texto.textContent)
+          .filter((texto) => /^(\d+|\d:\d\d,\d)$/.test(texto ?? "")),
+      );
+      expect(marcas[0].length).toBeGreaterThan(4);
+      expect(marcas[1]).toEqual(marcas[0]);
+      expect(marcas[2]).toEqual(marcas[0]);
+    });
+
+    it("la posición horizontal sigue la misma escala en todos los paneles", async () => {
+      await abrir();
+      const xs = (piloto: string) =>
+        [
+          ...screen
+            .getByTestId("puntos")
+            .querySelectorAll<SVGGElement>(`[data-piloto="${piloto}"]`),
+        ].map((g) => Number(/translate\(([\d.]+)px/.exec(g.style.transform)?.[1]));
+      // NOR tiene edades 3 y 9 (6 vueltas de diferencia) y VER 2 y 6 (4 de diferencia).
+      const [nor3, nor9] = xs("4");
+      const [ver2, ver6] = xs("1");
+
+      expect((nor9 - nor3) / 6).toBeCloseTo((ver6 - ver2) / 4, 5);
+    });
+
+    it("con un solo piloto hay un único panel, sin título de piloto", async () => {
+      parametros = new URLSearchParams(`${URL_COMPLETA}&pilotos=1`);
+      await abrir();
+
+      expect(paneles()).toHaveLength(1);
+      expect(
+        screen.queryByText("VER", { selector: "svg text" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("un piloto sin vueltas limpias no tiene panel y se avisa", async () => {
+      const base = crearAnalisisGomas();
+      api.pedirAnalisisGomas.mockResolvedValue({
+        ...base,
+        vueltas: base.vueltas.filter((v) => v.piloto !== 4),
+      });
+
+      await abrir();
+
+      expect(paneles()).toHaveLength(2);
+      expect(
+        screen.getByText("NOR no tiene vueltas limpias para dibujar."),
+      ).toBeInTheDocument();
+    });
   });
 
   it("el interruptor empieza encendido y mueve los puntos al apagarlo", async () => {
@@ -357,10 +436,10 @@ describe("dispersión y combustible", () => {
     expect(within(blanda).getByText("0,040")).toBeInTheDocument();
   });
 
-  it("la gráfica tiene un nombre que incluye a los pilotos y la conclusión", async () => {
+  it("las gráficas tienen un nombre que incluye a los pilotos y la conclusión", async () => {
     await abrir();
 
-    const grafica = screen.getByRole("img", { name: /VER, NOR, HAM/ });
+    const grafica = screen.getByRole("group", { name: /VER, NOR, HAM/ });
     expect(grafica).toHaveAccessibleName(
       expect.stringContaining("La blanda fue la que más se gastó"),
     );

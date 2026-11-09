@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import ConclusionGomas from "@/components/ConclusionGomas";
-import DispersionGomas, { MarcaLeyenda } from "@/components/DispersionGomas";
+import DispersionGomas from "@/components/DispersionGomas";
 import EstadoCarga from "@/components/EstadoCarga";
 import EstrategiaCarrera from "@/components/EstrategiaCarrera";
 import SelectorSesion, { leerEntero } from "@/components/SelectorSesion";
@@ -95,17 +95,6 @@ function Resultado({
             </span>
             {t("dispersion.corregir")}
           </button>
-          <ul
-            className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-suave"
-            aria-label={t("dispersion.leyenda")}
-          >
-            {elegidos.map((n, i) => (
-              <li key={n} className="flex items-center gap-2">
-                <MarcaLeyenda forma={i} />
-                {codigos[i]}
-              </li>
-            ))}
-          </ul>
         </div>
         <p id="ayuda-combustible" className="max-w-3xl text-sm text-suave">
           {t("dispersion.corregirAyuda", {
