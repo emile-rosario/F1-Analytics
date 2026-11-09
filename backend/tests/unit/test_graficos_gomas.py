@@ -99,16 +99,54 @@ def test_dispersion_dibuja_los_puntos_y_una_recta_por_stint(espana):
     assert puntos == len(espana["vueltas"][espana["vueltas"]["piloto"] == 1])
 
 
-def test_dispersion_con_tres_pilotos_usa_un_marcador_por_piloto_y_nombra_sus_codigos(espana):
+def test_dispersion_con_tres_pilotos_dibuja_un_panel_por_piloto_titulado_con_su_codigo(espana):
     codigos = espana["pilotos"].set_index("numero")["codigo"]
 
     fig = dispersion_edad(espana["vueltas"], espana["degradacion"], [1, 4, 16], codigos)
 
-    leyenda = [t.get_text() for t in fig.axes[0].get_legend().get_texts()]
-    assert leyenda[:3] == ["VER", "NOR", "LEC"]
-    assert leyenda[3:] == ["Blanda", "Media"]
-    marcadores = {tuple(c.get_paths()[0].vertices[0]) for c in fig.axes[0].collections}
-    assert len(marcadores) >= 3
+    assert [ax.get_title(loc="left") for ax in fig.axes] == ["VER", "NOR", "LEC"]
+
+
+def test_dispersion_cada_panel_dibuja_solo_los_puntos_y_rectas_de_su_piloto(espana):
+    fig = dispersion_edad(espana["vueltas"], espana["degradacion"], [1, 4, 16])
+
+    for ax, piloto in zip(fig.axes, [1, 4, 16], strict=True):
+        propias = espana["vueltas"][
+            (espana["vueltas"]["piloto"] == piloto) & espana["vueltas"]["edad_goma"].notna()
+        ]
+        assert sum(len(c.get_offsets()) for c in ax.collections) == len(propias)
+        rectas = espana["degradacion"][
+            (espana["degradacion"]["piloto"] == piloto) & ~espana["degradacion"]["insuficiente"]
+        ]
+        assert len(ax.lines) == len(rectas)
+
+
+def test_dispersion_los_paneles_comparten_la_escala_de_los_ejes(espana):
+    fig = dispersion_edad(espana["vueltas"], espana["degradacion"], [1, 4, 16])
+
+    primero = fig.axes[0]
+    for ax in fig.axes[1:]:
+        assert ax.get_shared_x_axes().joined(primero, ax)
+        assert ax.get_shared_y_axes().joined(primero, ax)
+        assert ax.get_ylim() == primero.get_ylim()
+    # El título del eje x va una sola vez, en el panel de abajo.
+    assert [ax.get_xlabel() for ax in fig.axes[:-1]] == ["", ""]
+    assert fig.axes[-1].get_xlabel() == "Edad de la goma (vueltas)"
+
+
+def test_dispersion_la_leyenda_nombra_los_compuestos_usados(espana):
+    fig = dispersion_edad(espana["vueltas"], espana["degradacion"], [1, 4, 16])
+
+    nombres = [t.get_text() for t in fig.legends[0].get_texts()]
+    assert nombres == ["Blanda", "Media"]
+
+
+def test_dispersion_con_un_solo_piloto_no_pone_titulo_de_piloto(espana):
+    fig = dispersion_edad(espana["vueltas"], espana["degradacion"], [1], titulo="España")
+
+    assert len(fig.axes) == 1
+    assert fig.axes[0].get_title(loc="left") == ""
+    assert fig.get_suptitle() == "España"
 
 
 def test_dispersion_acepta_de_uno_a_tres_pilotos(espana):

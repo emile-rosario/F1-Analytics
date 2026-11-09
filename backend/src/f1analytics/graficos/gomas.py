@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
 from f1analytics.graficos.estilo import COLORES, COLORES_COMPUESTO
@@ -21,8 +20,6 @@ NOMBRE_COMPUESTO = {
     "WET": "Lluvia",
 }
 LETRA_COMPUESTO = {"SOFT": "B", "MEDIUM": "M", "HARD": "D", "INTERMEDIATE": "I", "WET": "LL"}
-# Un marcador distinto por piloto: el color ya lo usa el compuesto.
-MARCADORES = ["o", "s", "^"]
 MAX_PILOTOS_DISPERSION = 3
 
 
@@ -121,27 +118,47 @@ def dispersion_edad(
     *,
     columna: str = "tiempo_corregido_s",
     titulo: str | None = None,
-    ax: Axes | None = None,
 ) -> Figure:
     """Tiempo de vuelta contra edad de la goma, hasta con 3 pilotos y una recta por stint.
 
-    Cada punto es una vuelta limpia: el color es el compuesto y el marcador, el piloto. Las rectas
-    son las de ``degradacion_por_stint``, así que su inclinación es la degradación. ``codigos``
-    traduce número de piloto a código (VER) para la leyenda.
+    Cada piloto tiene su propio panel, con los mismos ejes en todos para poder compararlos: en una
+    sola gráfica, tres pilotos con las mismas gomas se confunden. Cada punto es una vuelta limpia
+    y su color es el compuesto. Las rectas son las de ``degradacion_por_stint``, así que su
+    inclinación es la degradación. ``codigos`` traduce número de piloto a código (VER) para el
+    título de cada panel.
+
+    Dibuja en su propia figura (un panel por piloto), por eso no recibe un ``ax``.
     """
     if not 1 <= len(pilotos) <= MAX_PILOTOS_DISPERSION:
         raise ValueError(f"Se pueden comparar de 1 a {MAX_PILOTOS_DISPERSION} pilotos")
-    fig, ax = _preparar(ax, titulo, (10, 5.5))
     codigos = codigos if codigos is not None else {}
+    varios = len(pilotos) > 1
+    fig, ejes = plt.subplots(
+        len(pilotos),
+        1,
+        sharex=True,
+        sharey=True,
+        figsize=(10, 2.9 * len(pilotos) + 1.4 if varios else 5.5),
+        squeeze=False,
+        layout="constrained",
+    )
+    etiqueta_y = (
+        "Tiempo de vuelta (s)\ncorregido por combustible"
+        if columna == "tiempo_corregido_s"
+        else "Tiempo de vuelta (s)"
+    )
 
     usados = []
-    for piloto, marcador in zip(pilotos, MARCADORES, strict=False):
+    for ax, piloto in zip(ejes[:, 0], pilotos, strict=True):
+        ax.set_axisbelow(True)  # la rejilla va debajo de los puntos
+        ax.set_ylabel(etiqueta_y)
+        if varios:
+            ax.set_title(str(codigos.get(piloto, piloto)), loc="left", fontsize=13)
         propias = vueltas[(vueltas["piloto"] == piloto) & vueltas["edad_goma"].notna()]
         for compuesto, grupo in propias.groupby("compuesto"):
             ax.scatter(
                 grupo["edad_goma"],
                 grupo[columna],
-                marker=marcador,
                 s=28,
                 color=COLORES_COMPUESTO.get(compuesto, COLORES["texto_suave"]),
                 edgecolors=COLORES["asfalto"],
@@ -161,25 +178,12 @@ def dispersion_edad(
                 zorder=2,
             )
 
-    ax.set_xlabel("Edad de la goma (vueltas)")
-    ax.set_ylabel(
-        "Tiempo de vuelta corregido por combustible (s)"
-        if columna == "tiempo_corregido_s"
-        else "Tiempo de vuelta (s)"
-    )
-    pilotos_leyenda = [
-        Line2D(
-            [],
-            [],
-            marker=marcador,
-            linestyle="",
-            color=COLORES["texto"],
-            markeredgecolor=COLORES["asfalto"],
-            label=str(codigos.get(piloto, piloto)),
-        )
-        for piloto, marcador in zip(pilotos, MARCADORES, strict=False)
-    ]
-    ax.legend(handles=[*pilotos_leyenda, *_leyenda_compuestos(usados)], frameon=False, ncol=2)
+    ejes[-1, 0].set_xlabel("Edad de la goma (vueltas)")
+    if titulo:
+        fig.suptitle(titulo, x=0.01, ha="left", fontsize=14)
+    leyenda = _leyenda_compuestos(usados)
+    if leyenda:
+        fig.legend(handles=leyenda, loc="outside lower center", ncol=len(leyenda), frameon=False)
     return fig
 
 
