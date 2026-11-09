@@ -407,6 +407,233 @@ describe("tooltip al pasar el mouse", () => {
   });
 });
 
+describe("zoom por rango", () => {
+  // Misma caja simulada que en el tooltip: 800 × 600 px, un píxel por unidad del SVG.
+  const xDe = (metros: number, desde = 0, hasta = 1000) => 84 + ((metros - desde) / (hasta - desde)) * 696;
+
+  beforeEach(() => {
+    vi.spyOn(Element.prototype, "getBoundingClientRect").mockReturnValue({
+      left: 0,
+      top: 0,
+      right: 800,
+      bottom: 600,
+      width: 800,
+      height: 600,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const desde = () => screen.getByRole("slider", { name: "Desde" });
+  const hasta = () => screen.getByRole("slider", { name: "Hasta" });
+  const estado = () => screen.getByRole("status");
+  const restablecer = () => screen.getByRole("button", { name: "Toda la vuelta" });
+  const zona = () => screen.getByTestId("zona-cursor");
+  const marcas = () => screen.getAllByTestId("marca-x").map((m) => m.textContent);
+  const mouse = (tipo: "pointerDown" | "pointerMove" | "pointerUp", metros: number) =>
+    fireEvent[tipo](zona(), { pointerType: "mouse", button: 0, clientX: xDe(metros), clientY: 100 });
+
+  it("empieza con la vuelta entera y el botón de restablecer apagado", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    expect(estado()).toHaveTextContent("Mostrando la vuelta entera (1000 m)");
+    expect(restablecer()).toBeDisabled();
+    expect(desde()).toHaveValue("0");
+    expect(hasta()).toHaveValue("1000");
+    expect(marcas().at(0)).toBe("0");
+    expect(marcas().at(-1)).toBe("1000");
+  });
+
+  it("los deslizadores tienen nombre y dicen los metros", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    fireEvent.change(desde(), { target: { value: "400" } });
+
+    expect(desde()).toHaveAttribute("aria-valuetext", "400 m de la meta");
+    expect(hasta()).toHaveAttribute("aria-valuetext", "1000 m de la meta");
+  });
+
+  it("elegir «desde» acerca el eje y lo dice", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    fireEvent.change(desde(), { target: { value: "400" } });
+
+    expect(estado()).toHaveTextContent("Mostrando de 400 a 1000 m de la meta");
+    expect(marcas()).toEqual(["400", "500", "600", "700", "800", "900", "1000"]);
+    expect(restablecer()).toBeEnabled();
+  });
+
+  it("el cursor se queda dentro del tramo y su deslizador solo recorre ese tramo", async () => {
+    pintar();
+    await esperarAnalisis();
+    expect(cursor()).toHaveValue("40"); // en la meta, a 1000 m
+
+    fireEvent.change(hasta(), { target: { value: "600" } });
+
+    expect(cursor()).toHaveValue("24"); // 600 m
+    expect(cursor()).toHaveAttribute("min", "0");
+    expect(cursor()).toHaveAttribute("max", "24");
+
+    fireEvent.change(desde(), { target: { value: "400" } });
+    expect(cursor()).toHaveAttribute("min", "16");
+    expect(cursor()).toHaveAttribute("max", "24");
+    fireEvent.change(cursor(), { target: { value: "16" } });
+    expect(screen.getByRole("group", { name: "Valores en la posición elegida" })).toHaveTextContent(
+      "A 400 m de la meta",
+    );
+  });
+
+  it("no deja acercar a menos de 100 m", async () => {
+    pintar();
+    await esperarAnalisis();
+    fireEvent.change(desde(), { target: { value: "500" } });
+
+    fireEvent.change(hasta(), { target: { value: "520" } });
+
+    expect(estado()).toHaveTextContent("Mostrando de 500 a 600 m de la meta");
+  });
+
+  it("si «desde» pasa a «hasta», cede «desde»", async () => {
+    pintar();
+    await esperarAnalisis();
+    fireEvent.change(hasta(), { target: { value: "600" } });
+
+    fireEvent.change(desde(), { target: { value: "590" } });
+
+    expect(estado()).toHaveTextContent("Mostrando de 500 a 600 m de la meta");
+  });
+
+  it("«Toda la vuelta» vuelve a la vuelta entera sin mover el cursor", async () => {
+    pintar();
+    await esperarAnalisis();
+    fireEvent.change(desde(), { target: { value: "400" } });
+    fireEvent.change(hasta(), { target: { value: "600" } });
+    fireEvent.change(cursor(), { target: { value: "18" } });
+
+    fireEvent.click(restablecer());
+
+    expect(estado()).toHaveTextContent("Mostrando la vuelta entera (1000 m)");
+    expect(restablecer()).toBeDisabled();
+    expect(marcas().at(0)).toBe("0");
+    expect(cursor()).toHaveValue("18");
+    expect(cursor()).toHaveAttribute("max", "40");
+  });
+
+  it("al acercar, la gráfica recorta lo que queda fuera del tramo", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    fireEvent.change(desde(), { target: { value: "400" } });
+
+    const recorte = document.querySelector("clipPath");
+    expect(recorte).not.toBeNull();
+    // Las líneas de velocidad y de acelerador, los frenos y el delta usan ese recorte.
+    expect(document.querySelectorAll(`[clip-path="url(#${recorte!.id})"]`).length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("arrastrar con el mouse dibuja una banda y al soltar acerca ese tramo", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse("pointerDown", 250);
+    mouse("pointerMove", 500);
+    expect(screen.getByTestId("banda-zoom")).toBeInTheDocument();
+    expect(estado()).toHaveTextContent("Mostrando la vuelta entera (1000 m)");
+    mouse("pointerUp", 500);
+
+    expect(screen.queryByTestId("banda-zoom")).not.toBeInTheDocument();
+    expect(estado()).toHaveTextContent("Mostrando de 250 a 500 m de la meta");
+    expect(desde()).toHaveValue("250");
+    expect(hasta()).toHaveValue("500");
+  });
+
+  it("arrastrar de derecha a izquierda da el mismo tramo", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse("pointerDown", 500);
+    mouse("pointerMove", 250);
+    mouse("pointerUp", 250);
+
+    expect(estado()).toHaveTextContent("Mostrando de 250 a 500 m de la meta");
+  });
+
+  it("un arrastre muy corto se ensancha hasta el mínimo de 100 m", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse("pointerDown", 250);
+    mouse("pointerMove", 264); // unos 10 px
+    mouse("pointerUp", 264);
+
+    expect(estado()).toHaveTextContent("Mostrando de 250 a 350 m de la meta");
+  });
+
+  it("un clic sin arrastrar solo mueve el cursor", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    mouse("pointerDown", 500);
+    mouse("pointerMove", 502); // 2 px: menos que el umbral
+    mouse("pointerUp", 502);
+
+    expect(estado()).toHaveTextContent("Mostrando la vuelta entera (1000 m)");
+    expect(cursor()).toHaveValue("20");
+  });
+
+  it("durante el arrastre no se muestra el tooltip", async () => {
+    pintar();
+    await esperarAnalisis();
+    mouse("pointerMove", 100);
+    expect(screen.getByTestId("tooltip-telemetria")).toBeInTheDocument();
+
+    mouse("pointerDown", 100);
+    mouse("pointerMove", 400);
+
+    expect(screen.queryByTestId("tooltip-telemetria")).not.toBeInTheDocument();
+  });
+
+  it("con el tacto no hay arrastre: no dibuja banda ni acerca", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    fireEvent.pointerDown(zona(), { pointerType: "touch", clientX: xDe(250), clientY: 100 });
+    fireEvent.pointerMove(zona(), { pointerType: "touch", clientX: xDe(500), clientY: 100 });
+    fireEvent.pointerUp(zona(), { pointerType: "touch", clientX: xDe(500), clientY: 100 });
+
+    expect(screen.queryByTestId("banda-zoom")).not.toBeInTheDocument();
+    expect(estado()).toHaveTextContent("Mostrando la vuelta entera (1000 m)");
+  });
+
+  it("con el tramo acercado, el mouse y el tooltip usan la escala del tramo", async () => {
+    pintar();
+    await esperarAnalisis();
+    fireEvent.change(desde(), { target: { value: "400" } });
+    fireEvent.change(hasta(), { target: { value: "600" } });
+
+    fireEvent.pointerMove(zona(), { pointerType: "mouse", clientX: xDe(500, 400, 600), clientY: 100 });
+
+    expect(screen.getByTestId("tooltip-telemetria")).toHaveTextContent("A 500 m de la meta");
+    expect(cursor()).toHaveValue("20");
+  });
+
+  it("está traducido al inglés", async () => {
+    pintar("en");
+    await screen.findByRole("heading", { name: "The two laps, metre by metre" });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Showing the whole lap (1,000 m)");
+    fireEvent.change(screen.getByRole("slider", { name: "From" }), { target: { value: "400" } });
+
+    expect(screen.getByRole("status")).toHaveTextContent("Showing 400 to 1,000 m from the line");
+    expect(screen.getByRole("button", { name: "Whole lap" })).toBeEnabled();
+  });
+});
+
 describe("mapa de minisectores", () => {
   it("pinta un tramo por minisector con el color de su ganador", async () => {
     pintar();

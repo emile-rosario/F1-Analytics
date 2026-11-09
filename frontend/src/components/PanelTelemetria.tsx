@@ -1,12 +1,21 @@
 "use client";
 
 import { useFormatter, useTranslations } from "next-intl";
-import { memo, useMemo, useState, type PointerEvent } from "react";
+import { memo, useId, useMemo, useRef, useState, type PointerEvent } from "react";
 
+import ControlesRango from "@/components/ControlesRango";
 import type { AnalisisTelemetria } from "@/lib/api";
 import { COLORES_PILOTO } from "@/lib/colores";
 import { marcasEje } from "@/lib/gomas";
-import { indiceMasCercano, pilotoPorDelante, tramosActivos } from "@/lib/telemetria";
+import {
+  indiceEnRango,
+  indiceMasCercano,
+  indicesDelRango,
+  pilotoPorDelante,
+  rangoDeArrastre,
+  tramosActivos,
+  type Rango,
+} from "@/lib/telemetria";
 
 const ANCHO = 800;
 const IZQ = 84;
@@ -32,12 +41,19 @@ type Puntero = { x: number; y: number; ancho: number; alto: number };
 
 type Canales = AnalisisTelemetria["canales"];
 
-/** Posiciones y escalas de las cuatro gráficas. Solo dependen de los datos, no del cursor. */
-function geometria(canales: Canales) {
+/** Cuántos píxeles hay que arrastrar con el mouse para que cuente como elegir un tramo y no como un clic. */
+const UMBRAL_ARRASTRE_PX = 6;
+
+/**
+ * Posiciones y escalas de las cuatro gráficas. Solo dependen de los datos y del tramo visible,
+ * no del cursor. Las escalas verticales son siempre las de la vuelta entera: al acercar, los
+ * valores siguen siendo comparables con los de antes y nada salta.
+ */
+function geometria(canales: Canales, rango: Rango) {
   const distancias = canales.distancia_m;
   const largo = distancias[distancias.length - 1];
   const anchoUtil = ANCHO - IZQ - DER;
-  const px = (distancia: number) => IZQ + (distancia / largo) * anchoUtil;
+  const px = (distancia: number) => IZQ + ((distancia - rango.desde) / (rango.hasta - rango.desde)) * anchoUtil;
 
   let y = ARRIBA;
   const paneles = PANELES.map(({ clave, alto }) => {
@@ -69,7 +85,7 @@ function geometria(canales: Canales) {
     yDelta: escala(-maxDelta, maxDelta, delta),
     marcasVelocidad: marcasEje(velMin, velMax, 4),
     marcasDelta: marcasEje(-maxDelta, maxDelta, 4),
-    marcasX: marcasEje(0, largo, 6),
+    marcasX: marcasEje(rango.desde, rango.hasta, 6),
     velocidad,
     acelerador,
     freno,
@@ -98,22 +114,25 @@ const Capas = memo(function Capas({
   const x = (i: number) => g.px(g.distancias[i]);
   const numero = (valor: number) =>
     formato.number(valor, { signDisplay: "exceptZero", maximumFractionDigits: 2 });
+  // Al acercar, lo que queda fuera del tramo visible se recorta con este rectángulo.
+  const idRecorte = `recorte-${useId().replace(/:/g, "")}`;
+  const recorte = `url(#${idRecorte})`;
 
   const lineas = (
     claveA: "velocidad_a" | "acelerador_a",
     claveB: "velocidad_b" | "acelerador_b",
     y: (valor: number) => number,
   ) => (
-    <g fill="none" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round">
+    <g fill="none" strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" clipPath={recorte}>
       <path d={trazo(canales[claveB], x, y)} stroke={COLORES_PILOTO.b} />
       <path d={trazo(canales[claveA], x, y)} stroke={COLORES_PILOTO.a} />
     </g>
   );
 
   const cero = g.yDelta(0);
-  const area = (recorte: (valor: number) => number) =>
+  const area = (limite: (valor: number) => number) =>
     `M${g.px(0)} ${cero}` +
-    canales.delta_s.map((valor, i) => `L${x(i).toFixed(1)} ${g.yDelta(recorte(valor)).toFixed(1)}`).join("") +
+    canales.delta_s.map((valor, i) => `L${x(i).toFixed(1)} ${g.yDelta(limite(valor)).toFixed(1)}`).join("") +
     `L${g.px(g.largo)} ${cero}Z`;
 
   const carrilFreno = (g.freno.alto - 6) / 2;
@@ -124,6 +143,17 @@ const Capas = memo(function Capas({
 
   return (
     <>
+      <defs>
+        <clipPath id={idRecorte}>
+          <rect
+            x={IZQ}
+            y={g.velocidad.arriba - 3}
+            width={g.anchoUtil}
+            height={g.delta.arriba + g.delta.alto - g.velocidad.arriba + 6}
+          />
+        </clipPath>
+      </defs>
+
       {/* Rejilla vertical común y números del eje de la distancia (solo abajo). */}
       <g className="text-suave" fill="currentColor" fontSize={15}>
         {g.marcasX.map((m) => (
@@ -135,7 +165,7 @@ const Capas = memo(function Capas({
               y2={g.delta.arriba + g.delta.alto}
               stroke="var(--color-linea)"
             />
-            <text x={g.px(m)} y={g.delta.arriba + g.delta.alto + 22} textAnchor="middle">
+            <text data-testid="marca-x" x={g.px(m)} y={g.delta.arriba + g.delta.alto + 22} textAnchor="middle">
               {m}
             </text>
           </g>
@@ -209,7 +239,7 @@ const Capas = memo(function Capas({
       {lineas("velocidad_a", "velocidad_b", g.yVelocidad)}
       {lineas("acelerador_a", "acelerador_b", g.yAcelerador)}
 
-      <g data-testid="frenos">
+      <g data-testid="frenos" clipPath={recorte}>
         {frenos.map(({ codigo, color, activo, arriba }) =>
           tramosActivos(activo, g.distancias).map(([desde, hasta]) => (
             <rect
@@ -225,15 +255,17 @@ const Capas = memo(function Capas({
         )}
       </g>
 
-      <path d={area((v) => Math.max(v, 0))} fill={COLORES_PILOTO.a} fillOpacity={0.35} />
-      <path d={area((v) => Math.min(v, 0))} fill={COLORES_PILOTO.b} fillOpacity={0.35} />
-      <path
-        d={trazo(canales.delta_s, x, g.yDelta)}
-        fill="none"
-        stroke="var(--color-texto)"
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
+      <g clipPath={recorte}>
+        <path d={area((v) => Math.max(v, 0))} fill={COLORES_PILOTO.a} fillOpacity={0.35} />
+        <path d={area((v) => Math.min(v, 0))} fill={COLORES_PILOTO.b} fillOpacity={0.35} />
+        <path
+          d={trazo(canales.delta_s, x, g.yDelta)}
+          fill="none"
+          stroke="var(--color-texto)"
+          strokeWidth={2}
+          strokeLinejoin="round"
+        />
+      </g>
       <g fontSize={15} fontWeight={600}>
         <text x={IZQ + 8} y={g.delta.arriba + 18} fill={COLORES_PILOTO.a}>
           ↑ {t("delta.adelante", { piloto: codigoA })}
@@ -253,22 +285,30 @@ const Capas = memo(function Capas({
  * El cursor se mueve de tres formas: con el mouse (pasándolo por encima), tocando la gráfica y
  * con un deslizador con teclado, que además lo anuncia a los lectores de pantalla. En el móvil
  * arrastrar sobre la gráfica la desplaza, y por eso el deslizador es el control principal.
+ *
+ * El tramo visible (`rango`) se elige con dos deslizadores o, con el mouse, arrastrando sobre las
+ * gráficas; el cursor siempre queda dentro de ese tramo.
  */
 export default function PanelTelemetria({
   analisis,
   indice,
   onCambiar,
+  rango,
+  onRango,
   descripcion,
 }: {
   analisis: AnalisisTelemetria;
   indice: number;
   onCambiar: (indice: number) => void;
+  rango: Rango;
+  onRango: (rango: Rango) => void;
   descripcion: string;
 }) {
   const t = useTranslations("Telemetria");
   const formato = useFormatter();
   const { canales } = analisis;
-  const g = useMemo(() => geometria(canales), [canales]);
+  const g = useMemo(() => geometria(canales, rango), [canales, rango]);
+  const [primero, ultimo] = indicesDelRango(canales.distancia_m, rango);
   const codigoA = analisis.piloto_a.piloto.codigo;
   const codigoB = analisis.piloto_b.piloto.codigo;
 
@@ -294,16 +334,66 @@ export default function PanelTelemetria({
   const volteoX = puntero !== null && puntero.x > puntero.ancho * FRACCION_VOLTEO;
   const volteoY = puntero !== null && puntero.y > puntero.alto * FRACCION_VOLTEO;
 
-  function desdePuntero(e: PointerEvent<SVGRectElement>) {
+  // Arrastre con el mouse para elegir un tramo: dónde empezó y, si ya se movió lo bastante, la
+  // banda que se va dibujando. Con el tacto no hay arrastre: desplazaría la página.
+  const arrastre = useRef<{ desde: number; x: number } | null>(null);
+  const [banda, setBanda] = useState<Rango | null>(null);
+
+  /** Distancia (m) bajo el puntero, dentro del tramo visible, y la caja del SVG en pantalla. */
+  function distanciaBajo(e: PointerEvent<SVGRectElement>) {
     const svg = e.currentTarget.ownerSVGElement;
-    if (!svg) return;
+    if (!svg) return null;
     const caja = svg.getBoundingClientRect();
     const xSvg = ((e.clientX - caja.left) / caja.width) * ANCHO;
-    const d = ((xSvg - IZQ) / g.anchoUtil) * g.largo;
-    onCambiar(indiceMasCercano(g.distancias, Math.min(g.largo, Math.max(0, d))));
+    const d = rango.desde + ((xSvg - IZQ) / g.anchoUtil) * (rango.hasta - rango.desde);
+    return { caja, distancia: Math.min(rango.hasta, Math.max(rango.desde, d)) };
+  }
+
+  function desdePuntero(e: PointerEvent<SVGRectElement>) {
+    const lugar = distanciaBajo(e);
+    if (!lugar) return;
+    onCambiar(indiceEnRango(indiceMasCercano(g.distancias, lugar.distancia), [primero, ultimo]));
     if (e.pointerType === "mouse") {
+      const { caja } = lugar;
       setPuntero({ x: e.clientX - caja.left, y: e.clientY - caja.top, ancho: caja.width, alto: caja.height });
     }
+  }
+
+  function alPresionar(e: PointerEvent<SVGRectElement>) {
+    desdePuntero(e);
+    if (e.pointerType !== "mouse" || e.button !== 0) return;
+    const lugar = distanciaBajo(e);
+    if (!lugar) return;
+    arrastre.current = { desde: lugar.distancia, x: e.clientX };
+    // Con el puntero «capturado» el arrastre sigue aunque el mouse salga de la gráfica.
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
+    } catch {
+      // Sin captura el arrastre solo llega hasta el borde de la gráfica.
+    }
+  }
+
+  function alMover(e: PointerEvent<SVGRectElement>) {
+    if (e.pointerType !== "mouse") return;
+    const inicio = arrastre.current;
+    if (inicio && Math.abs(e.clientX - inicio.x) > UMBRAL_ARRASTRE_PX) {
+      const lugar = distanciaBajo(e);
+      if (!lugar) return;
+      setPuntero(null);
+      setBanda({
+        desde: Math.min(inicio.desde, lugar.distancia),
+        hasta: Math.max(inicio.desde, lugar.distancia),
+      });
+      onCambiar(indiceEnRango(indiceMasCercano(g.distancias, lugar.distancia), [primero, ultimo]));
+      return;
+    }
+    if (!inicio) desdePuntero(e);
+  }
+
+  function alSoltar() {
+    if (arrastre.current && banda) onRango(rangoDeArrastre(banda.desde, banda.hasta, g.largo));
+    arrastre.current = null;
+    setBanda(null);
   }
 
   const filas = [
@@ -332,8 +422,8 @@ export default function PanelTelemetria({
         <input
           id="cursor-telemetria"
           type="range"
-          min={0}
-          max={canales.distancia_m.length - 1}
+          min={primero}
+          max={ultimo}
           step={1}
           value={indice}
           onChange={(e) => onCambiar(Number(e.target.value))}
@@ -395,6 +485,8 @@ export default function PanelTelemetria({
         </div>
       </div>
 
+      <ControlesRango rango={rango} largo={g.largo} onCambiar={onRango} />
+
       {/* En pantallas angostas la gráfica conserva un ancho mínimo y se desplaza. */}
       <div
         className="overflow-x-auto rounded-lg bg-panel"
@@ -402,7 +494,8 @@ export default function PanelTelemetria({
         role="region"
         aria-label={t("region")}
       >
-        <div className="relative min-w-[40rem]">
+        {/* Sin selección de texto: arrastrar para acercar no debe resaltar el tooltip ni los ejes. */}
+        <div className="relative min-w-[40rem] select-none">
           <svg
             viewBox={`0 0 ${ANCHO} ${g.altoTotal}`}
             role="img"
@@ -427,6 +520,20 @@ export default function PanelTelemetria({
               <circle cx={x} cy={g.yDelta(delta)} r={5} fill="var(--color-texto)" stroke="var(--color-asfalto)" strokeWidth={1.5} />
             </g>
 
+            {banda && (
+              <rect
+                data-testid="banda-zoom"
+                x={g.px(banda.desde)}
+                y={g.velocidad.arriba}
+                width={Math.max(1, g.px(banda.hasta) - g.px(banda.desde))}
+                height={g.delta.arriba + g.delta.alto - g.velocidad.arriba}
+                fill="var(--color-acento)"
+                fillOpacity={0.25}
+                stroke="var(--color-acento)"
+                pointerEvents="none"
+              />
+            )}
+
             <rect
               data-testid="zona-cursor"
               x={IZQ}
@@ -434,8 +541,10 @@ export default function PanelTelemetria({
               width={g.anchoUtil}
               height={g.altoTotal - PIE - g.velocidad.arriba + 14}
               fill="transparent"
-              onPointerDown={desdePuntero}
-              onPointerMove={(e) => e.pointerType === "mouse" && desdePuntero(e)}
+              onPointerDown={alPresionar}
+              onPointerMove={alMover}
+              onPointerUp={alSoltar}
+              onPointerCancel={alSoltar}
               onPointerLeave={() => setPuntero(null)}
             />
           </svg>
