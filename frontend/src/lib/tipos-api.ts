@@ -110,6 +110,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/analisis/telemetria": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Analisis Telemetria
+         * @description Compara la vuelta más rápida de dos pilotos: velocidad, pedales y delta metro a metro.
+         *
+         *     El piloto A es la referencia y el B el que se compara. Sin ``segmento`` se usa la mejor
+         *     vuelta de la sesión; con él, la mejor de Q1, Q2 o Q3 (SQ1, SQ2 o SQ3 en la clasificación
+         *     sprint), que solo existe en esas sesiones. Solo para sesiones terminadas. Responde
+         *     ``analisis_no_disponible`` en los circuitos que todavía no están en ``circuitos.json``.
+         */
+        get: operations["analisis_telemetria_api_analisis_telemetria_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/salud": {
         parameters: {
             query?: never;
@@ -191,6 +216,59 @@ export interface components {
             compuestos: components["schemas"]["DegradacionCompuesto"][];
             resumen: components["schemas"]["ResumenGomas"];
             resumen_sin_corregir: components["schemas"]["ResumenGomas"];
+        };
+        /**
+         * AnalisisTelemetria
+         * @description La comparación de la vuelta rápida de dos pilotos, metro a metro.
+         */
+        AnalisisTelemetria: {
+            /** Sesion */
+            sesion: number;
+            /** Segmento */
+            segmento: string | null;
+            piloto_a: components["schemas"]["VueltaComparada"];
+            piloto_b: components["schemas"]["VueltaComparada"];
+            /** Longitud M */
+            longitud_m: number;
+            /** Paso M */
+            paso_m: number;
+            canales: components["schemas"]["CanalesAlineados"];
+            /** Curvas */
+            curvas: components["schemas"]["CurvaMapa"][];
+            /** Minisectores */
+            minisectores: components["schemas"]["Minisector"][];
+            resumen: components["schemas"]["ResumenTelemetria"];
+        };
+        /**
+         * CanalesAlineados
+         * @description Las dos vueltas sobre la misma rejilla de distancia, un valor por punto.
+         *
+         *     Van en columnas (un arreglo por canal) y no en una lista de objetos: son ~1000 puntos y
+         *     así la respuesta pesa mucho menos. Todos los arreglos tienen el mismo largo. El piloto A es
+         *     la referencia y el B el que se compara; ``delta_s`` es positivo cuando B va por detrás.
+         *     ``x`` e ``y`` son la posición de la vuelta de A, ya girada como en la transmisión.
+         */
+        CanalesAlineados: {
+            /** Distancia M */
+            distancia_m: number[];
+            /** Velocidad A */
+            velocidad_a: number[];
+            /** Velocidad B */
+            velocidad_b: number[];
+            /** Acelerador A */
+            acelerador_a: number[];
+            /** Acelerador B */
+            acelerador_b: number[];
+            /** Freno A */
+            freno_a: boolean[];
+            /** Freno B */
+            freno_b: boolean[];
+            /** Delta S */
+            delta_s: number[];
+            /** X */
+            x: number[];
+            /** Y */
+            y: number[];
         };
         /** CompuestoPendiente */
         CompuestoPendiente: {
@@ -293,6 +371,11 @@ export interface components {
              */
             inicio: string;
         };
+        /** ExtremoPorPiloto */
+        ExtremoPorPiloto: {
+            a: components["schemas"]["ExtremoVelocidad"];
+            b: components["schemas"]["ExtremoVelocidad"];
+        };
         /** ExtremoVelocidad */
         ExtremoVelocidad: {
             /** Kmh */
@@ -311,6 +394,25 @@ export interface components {
             /** Vel Salida */
             vel_salida: number;
         };
+        /**
+         * Minisector
+         * @description Un tramo de igual longitud y quién lo recorrió más rápido (``a``, ``b`` o ``empate``).
+         */
+        Minisector: {
+            /** Sector */
+            sector: number;
+            /** Inicio M */
+            inicio_m: number;
+            /** Fin M */
+            fin_m: number;
+            /** Diferencia S */
+            diferencia_s: number;
+            /**
+             * Ganador
+             * @enum {string}
+             */
+            ganador: "a" | "b" | "empate";
+        };
         /** Piloto */
         Piloto: {
             /** Numero */
@@ -323,6 +425,13 @@ export interface components {
             equipo: string;
             /** Color */
             color: string;
+        };
+        /** PorcentajePorPiloto */
+        PorcentajePorPiloto: {
+            /** A */
+            a: number;
+            /** B */
+            b: number;
         };
         /**
          * PuntoMapa
@@ -368,12 +477,39 @@ export interface components {
             /** Paradas Por Piloto */
             paradas_por_piloto: number;
         };
+        /**
+         * ResumenTelemetria
+         * @description Datos para la conclusión: la web los convierte en una frase.
+         */
+        ResumenTelemetria: {
+            /** Delta Final S */
+            delta_final_s: number;
+            /**
+             * Ganador
+             * @enum {string}
+             */
+            ganador: "a" | "b" | "empate";
+            sectores_ganados: components["schemas"]["SectoresGanados"];
+            mayor_ventaja: components["schemas"]["VentajaPorPiloto"];
+            pct_a_fondo: components["schemas"]["PorcentajePorPiloto"];
+            vel_maxima: components["schemas"]["ExtremoPorPiloto"];
+            vel_minima: components["schemas"]["ExtremoPorPiloto"];
+        };
         /** Salud */
         Salud: {
             /** Estado */
             estado: string;
             /** Version */
             version: string;
+        };
+        /** SectoresGanados */
+        SectoresGanados: {
+            /** A */
+            a: number;
+            /** B */
+            b: number;
+            /** Empate */
+            empate: number;
         };
         /**
          * Sesion
@@ -427,6 +563,36 @@ export interface components {
             compuesto: string;
             /** Vueltas */
             vueltas: number;
+        };
+        /**
+         * VentajaPorPiloto
+         * @description El minisector donde cada piloto sacó más tiempo; vacío si no ganó ninguno.
+         */
+        VentajaPorPiloto: {
+            a: components["schemas"]["VentajaSector"] | null;
+            b: components["schemas"]["VentajaSector"] | null;
+        };
+        /** VentajaSector */
+        VentajaSector: {
+            /** Sector */
+            sector: number;
+            /** Inicio M */
+            inicio_m: number;
+            /** Fin M */
+            fin_m: number;
+            /** Ventaja S */
+            ventaja_s: number;
+        };
+        /**
+         * VueltaComparada
+         * @description La vuelta de un piloto en la comparación de telemetría y su tiempo oficial.
+         */
+        VueltaComparada: {
+            piloto: components["schemas"]["Piloto"];
+            /** Vuelta */
+            vuelta: number;
+            /** Tiempo Vuelta S */
+            tiempo_vuelta_s: number;
         };
         /**
          * VueltaGoma
@@ -743,6 +909,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnalisisGomas"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorApi"];
+                };
+            };
+        };
+    };
+    analisis_telemetria_api_analisis_telemetria_get: {
+        parameters: {
+            query: {
+                sesion: number;
+                piloto_a: number;
+                piloto_b: number;
+                segmento?: ("Q1" | "Q2" | "Q3" | "SQ1" | "SQ2" | "SQ3") | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnalisisTelemetria"];
                 };
             };
             /** @description Not Found */
