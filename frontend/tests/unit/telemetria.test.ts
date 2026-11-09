@@ -2,8 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 
 import { pedirAnalisisTelemetria } from "@/lib/api";
 import {
+  ajustarRango,
+  esRangoCompleto,
+  indiceEnRango,
   indiceMasCercano,
+  indicesDelRango,
   pilotoPorDelante,
+  rangoCompleto,
+  rangoDeArrastre,
   sectorDe,
   segmentosDe,
   tramosActivos,
@@ -96,6 +102,92 @@ describe("sectorDe", () => {
   it("lo que se pasa del final cae en el último", () => {
     expect(sectorDe(minisectores, 1000)).toBe(24);
     expect(sectorDe(minisectores, 1500)).toBe(24);
+  });
+});
+
+describe("rango visible", () => {
+  const LARGO = 5344.8;
+
+  it("la vuelta entera es de 0 al largo", () => {
+    expect(rangoCompleto(LARGO)).toEqual({ desde: 0, hasta: LARGO });
+    expect(esRangoCompleto(rangoCompleto(LARGO), LARGO)).toBe(true);
+    expect(esRangoCompleto({ desde: 0, hasta: 3000 }, LARGO)).toBe(false);
+    expect(esRangoCompleto({ desde: 10, hasta: LARGO }, LARGO)).toBe(false);
+  });
+
+  describe("ajustarRango", () => {
+    it("deja pasar un rango válido sin tocarlo", () => {
+      expect(ajustarRango({ desde: 500, hasta: 1500 }, LARGO, "desde")).toEqual({ desde: 500, hasta: 1500 });
+    });
+
+    it("lo mantiene dentro de la vuelta", () => {
+      expect(ajustarRango({ desde: -50, hasta: 9000 }, LARGO, "desde")).toEqual({ desde: 0, hasta: LARGO });
+    });
+
+    it("exige al menos 100 m: si se mueve «desde» de más, cede «desde»", () => {
+      expect(ajustarRango({ desde: 1450, hasta: 1500 }, LARGO, "desde")).toEqual({ desde: 1400, hasta: 1500 });
+      expect(ajustarRango({ desde: 2000, hasta: 1500 }, LARGO, "desde")).toEqual({ desde: 1400, hasta: 1500 });
+    });
+
+    it("si se mueve «hasta» de menos, cede «hasta»", () => {
+      expect(ajustarRango({ desde: 1000, hasta: 1020 }, LARGO, "hasta")).toEqual({ desde: 1000, hasta: 1100 });
+      expect(ajustarRango({ desde: 1000, hasta: 200 }, LARGO, "hasta")).toEqual({ desde: 1000, hasta: 1100 });
+    });
+
+    it("en el borde de la vuelta cede el otro extremo", () => {
+      expect(ajustarRango({ desde: 0, hasta: 30 }, LARGO, "desde")).toEqual({ desde: 0, hasta: 100 });
+      expect(ajustarRango({ desde: LARGO - 20, hasta: LARGO }, LARGO, "hasta")).toEqual({
+        desde: LARGO - 100,
+        hasta: LARGO,
+      });
+    });
+
+    it("en una vuelta más corta que el mínimo, el rango es la vuelta entera", () => {
+      expect(ajustarRango({ desde: 10, hasta: 20 }, 60, "hasta")).toEqual({ desde: 0, hasta: 60 });
+    });
+  });
+
+  describe("rangoDeArrastre", () => {
+    it("ordena los extremos, arrastres de derecha a izquierda incluidos", () => {
+      expect(rangoDeArrastre(1000, 2000, LARGO)).toEqual({ desde: 1000, hasta: 2000 });
+      expect(rangoDeArrastre(2000, 1000, LARGO)).toEqual({ desde: 1000, hasta: 2000 });
+    });
+
+    it("un arrastre muy corto se ensancha hasta el mínimo", () => {
+      const rango = rangoDeArrastre(1000, 1030, LARGO);
+      expect(rango.hasta - rango.desde).toBe(100);
+      expect(rango.desde).toBe(1000);
+    });
+
+    it("un arrastre corto en el final de la vuelta no se sale", () => {
+      expect(rangoDeArrastre(LARGO - 10, LARGO, LARGO)).toEqual({ desde: LARGO - 100, hasta: LARGO });
+    });
+  });
+
+  describe("indicesDelRango", () => {
+    const distancias = [0, 5, 10, 15, 20, 25, 30];
+
+    it("da el primer y el último punto que caen dentro", () => {
+      expect(indicesDelRango(distancias, { desde: 7, hasta: 22 })).toEqual([2, 4]);
+    });
+
+    it("incluye los extremos exactos", () => {
+      expect(indicesDelRango(distancias, { desde: 5, hasta: 25 })).toEqual([1, 5]);
+    });
+
+    it("la vuelta entera abarca todos los puntos", () => {
+      expect(indicesDelRango(distancias, { desde: 0, hasta: 30.4 })).toEqual([0, 6]);
+    });
+
+    it("un rango sin ningún punto exacto queda en un solo índice", () => {
+      expect(indicesDelRango(distancias, { desde: 11, hasta: 13 })).toEqual([3, 3]);
+    });
+  });
+
+  it("indiceEnRango deja el cursor dentro del rango", () => {
+    expect(indiceEnRango(40, [10, 20])).toBe(20);
+    expect(indiceEnRango(2, [10, 20])).toBe(10);
+    expect(indiceEnRango(15, [10, 20])).toBe(15);
   });
 });
 
