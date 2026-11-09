@@ -180,7 +180,7 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 | GET | `/api/sesiones/{sesion}/pilotos` | Pilotos de la sesión |
 | GET | `/api/analisis/circuito?sesion&piloto` | La vuelta más rápida del piloto: puntos `x`/`y` (ya girados), velocidad y marcha; curvas con su etiqueta; zonas de frenado; resumen. Solo sesiones terminadas |
 | GET | `/api/analisis/gomas?sesion&pilotos` | Estrategias de los 20 pilotos por posición final, vueltas limpias de los pilotos elegidos (hasta 3, repitiendo `pilotos`; sin él, el podio), degradación de cada stint y por compuesto y resumen, todo con y sin corrección por combustible. Solo carreras y sprints terminados |
-| GET | `/api/analisis/telemetria?sesion&piloto_a&piloto_b&segmento` | Canales alineados, delta, minisectores, resumen |
+| GET | `/api/analisis/telemetria?sesion&piloto_a&piloto_b&segmento` | Canales alineados, delta, minisectores, resumen (ver abajo) |
 
 - Las sesiones se identifican con el `session_key` de OpenF1, que es estable y corto.
 - Los modelos van en `esquemas.py`, y los tipos TS del frontend se generan desde el OpenAPI con `openapi-typescript`.
@@ -190,7 +190,8 @@ Respuestas síncronas (5–8 s la primera vez, instantáneas con caché).
 - Validación: año entre 2023 y el actual, tipo de sesión y segmento de listas cerradas, pilotos que existan en la sesión, el análisis de gomas solo en carreras y sprints, y los segmentos Q/SQ solo en clasificaciones.
 - **Limitador de concurrencia** (semáforo, máximo 2 análisis a la vez), para no saturar OpenF1 ni el servidor. Implementado en `api/limites.py`; los dos análisis comparten dependencias y el gancho del límite en `api/rutas/comunes.py`.
 - **Límite por IP:** máximo 10 análisis sin caché por minuto por IP (las respuestas en caché no cuentan), leyendo la IP de `X-Forwarded-For` porque en Render la API está detrás de un proxy. Se cuenta cuando el análisis va a pedir a la red lo que pesa de él (la telemetría, `car_data` y `location`, en el circuito; las vueltas de toda la carrera, `laps`, en gomas): el cliente de OpenF1 avisa justo antes de cada petición (`antes_de_pedir`) y lo que sale de la caché nunca llega ahí. Se toma la primera IP de la lista; una cabecera inventada permitiría repartir peticiones entre IPs falsas, pero el límite de concurrencia sigue en pie. Al pasarlo responde 429 con `limite_peticiones`.
-- Gzip desde el PR 6a (respuestas de más de 1 KB). El remuestreo a 5 m llega con la telemetría (PR 9); el análisis del circuito manda las ~300 muestras de la vuelta tal cual.
+- Gzip desde el PR 6a (respuestas de más de 1 KB). El análisis del circuito manda las ~300 muestras de la vuelta tal cual.
+- **`/api/analisis/telemetria`** (PR 10a): `piloto_a` es la referencia y `piloto_b` el que se compara; `segmento` (`Q1`/`Q2`/`Q3`, `SQ1`/`SQ2`/`SQ3`) es opcional y solo vale en esas sesiones (si no, `analisis_no_disponible`); `piloto_a == piloto_b` da `parametro_invalido`. Elige la vuelta rápida de cada piloto, baja su telemetría y alinea las dos cada 5 m. La respuesta lleva `piloto_a` y `piloto_b` (con su vuelta y tiempo oficial), `canales` en **columnas** (un arreglo por canal: ~1000 puntos en 60 KB, 14 KB con gzip, contra varios cientos de KB si fuera una lista de objetos), las `curvas`, los 25 `minisectores` y el `resumen`. `x` e `y` son la posición de la vuelta de A, ya girada como en la transmisión; el freno va como booleano. Una petición cuenta como **un** cupo del límite por IP aunque baje 4 consultas pesadas (`car_data` y `location` de cada piloto). Como el circuito, solo funciona en circuitos que estén en `circuitos.json`.
 - CORS: `allow_origins` con el dominio de producción y `localhost:3000`, y `allow_origin_regex` para las URLs de preview del proyecto en Vercel, que cambian en cada PR.
 
 ## 5. Frontend
@@ -325,7 +326,8 @@ Cómo se agrupan en fases: ver `contexto.md` §10.
 | 8a | `feat/api-gomas` | Endpoint `/api/analisis/gomas` | API con el análisis de gomas (hecho) |
 | 8b | `feat/web-gomas` | Página `/gomas` (estrategias de todos, dispersión en SVG propio, interruptor de combustible, tablas, conclusión y limitaciones) | **Proyecto 2 vivo** (hecho) |
 | 9 | `feat/analisis-telemetria` | `analisis/telemetria`, `graficos/telemetria`, notebook 03 | Igual (notebook) (hecho) |
-| 10 | `feat/web-telemetria` | Endpoint + página `/telemetria` | **Proyecto 3 vivo** |
+| 10a | `feat/api-telemetria` | Endpoint `/api/analisis/telemetria` | API con la comparación de telemetría (hecho) |
+| 10b | `feat/web-telemetria` | Página `/telemetria` (selector de segmento, paneles con cursor en SVG propio, mapa de minisectores, conclusión y limitaciones) | **Proyecto 3 vivo** |
 | 11 | `docs/readme` | `README.md` (ES) y `README.en.md` (EN) con link, capturas y conclusiones | Repo listo para portafolio |
 
 Definition of Done de cada PR:
