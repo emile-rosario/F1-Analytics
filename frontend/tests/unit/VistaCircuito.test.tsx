@@ -128,6 +128,26 @@ describe("VistaCircuito", () => {
     expect(api.pedirAnalisisCircuito).toHaveBeenCalledTimes(2);
   });
 
+  it("con el servidor ocupado lo explica en cada idioma y deja reintentar", async () => {
+    api.pedirAnalisisCircuito.mockRejectedValueOnce(new ErrorApi("servidor_ocupado", 503));
+    pintar(<VistaCircuito />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "El servidor está atendiendo a muchas personas a la vez",
+    );
+
+    await userEvent.click(screen.getByRole("button", { name: "Reintentar" }));
+
+    expect(await screen.findByText("NOR")).toBeInTheDocument();
+    expect(api.pedirAnalisisCircuito).toHaveBeenCalledTimes(2);
+  });
+
+  it("con el servidor ocupado en inglés el mensaje sale en inglés", async () => {
+    api.pedirAnalisisCircuito.mockRejectedValue(new ErrorApi("servidor_ocupado", 503));
+    pintar(<VistaCircuito />, "en");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("The server is busy");
+  });
+
   it("un circuito sin datos propios muestra el mensaje de análisis no disponible", async () => {
     api.pedirAnalisisCircuito.mockRejectedValue(new ErrorApi("analisis_no_disponible", 422));
 

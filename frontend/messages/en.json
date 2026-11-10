@@ -40,6 +40,7 @@
     "sin_telemetria": "There is no telemetry for that selection.",
     "sesion_no_terminada": "That session has not finished yet.",
     "limite_peticiones": "There are too many requests to OpenF1 right now. Wait a moment and try again.",
+    "servidor_ocupado": "The server is busy with many people at once. Wait a few seconds and try again.",
     "fallo_openf1": "OpenF1 is not responding properly. Try again in a while.",
     "openf1_en_vivo": "A live F1 session is in progress and OpenF1 blocks queries until it ends. Come back in a while."
   },
