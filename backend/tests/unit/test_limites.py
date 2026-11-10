@@ -136,78 +136,114 @@ def _esperar_a_que(condicion, segundos: float = 3.0) -> None:
         time.sleep(0.005)
 
 
-def test_con_la_cola_llena_el_siguiente_recibe_servidor_ocupado_al_instante():
-    limitador = LimitadorConcurrencia(maximo=2, max_en_espera=4)
-    soltar = threading.Event()
-    terminados, errores = [], []
+def _lanzar(limitador, registro: list[str], nombre: str, soltar: threading.Event | None = None):
+    """Un análisis en su propio hilo: anota cuándo entra y se queda hasta ``soltar`` (si lo hay)."""
 
-    def analisis():
+    def correr():
         try:
             with limitador.turno():
-                soltar.wait(timeout=5)
-            terminados.append(1)
+                registro.append(nombre)
+                if soltar is not None:
+                    soltar.wait(timeout=5)
         except ErrorDatos as error:
-            errores.append(error.codigo)
+            registro.append(f"{nombre}:{error.codigo}")
+
+    hilo = threading.Thread(target=correr, daemon=True)
+    hilo.start()
+    return hilo
+
+
+def test_con_la_cola_llena_el_siguiente_recibe_servidor_ocupado_sin_esperar():
+    limitador = LimitadorConcurrencia(maximo=2, max_en_espera=4)
+    soltar, registro = threading.Event(), []
 
     # 2 corriendo + 4 esperando = 6 dentro.
-    hilos = [threading.Thread(target=analisis) for _ in range(6)]
-    for hilo in hilos:
-        hilo.start()
+    hilos = [_lanzar(limitador, registro, f"a{i}", soltar) for i in range(6)]
     _esperar_a_que(lambda: limitador.en_espera == 4)
 
-    inicio = time.monotonic()
-    with pytest.raises(ErrorDatos) as error, limitador.turno():
-        pass
-    assert error.value.codigo == "servidor_ocupado"
-    assert time.monotonic() - inicio < 0.5  # no se quedó esperando
+    septimo = _lanzar(limitador, registro, "septimo")
+    septimo.join(timeout=3)
+    # Terminó sin que nadie soltara el turno: no se quedó esperando.
+    assert not septimo.is_alive()
+    assert "septimo:servidor_ocupado" in registro
 
     soltar.set()
     for hilo in hilos:
-        hilo.join()
-    # Los 6 que estaban dentro terminan bien: el rechazo no les quitó el turno.
-    assert len(terminados) == 6
-    assert errores == []
+        hilo.join(timeout=5)
+    # Los 6 que estaban dentro terminaron bien: el rechazo no les quitó el turno.
+    assert sorted(n for n in registro if n.startswith("a")) == [f"a{i}" for i in range(6)]
+    assert limitador.en_espera == 0
 
 
 def test_un_rechazo_no_ocupa_lugar_y_al_vaciarse_la_cola_se_vuelve_a_aceptar():
-    limitador = LimitadorConcurrencia(maximo=1, max_en_espera=0)
+    # Espera corta: si el tope de cantidad fallara, el test fallaría rápido y no se colgaría.
+    limitador = LimitadorConcurrencia(maximo=1, max_en_espera=0, espera_maxima_s=0.5)
 
     with limitador.turno():
         for _ in range(3):
-            with pytest.raises(ErrorDatos), limitador.turno():
+            with pytest.raises(ErrorDatos) as error, limitador.turno():
                 pass
+            assert error.value.codigo == "servidor_ocupado"
         assert limitador.en_espera == 0
 
     with limitador.turno():  # el turno se liberó y los rechazos no dejaron rastro
         pass
 
 
-def test_quien_espera_sin_pasar_el_maximo_no_es_rechazado():
-    limitador = LimitadorConcurrencia(maximo=1, max_en_espera=1)
-    soltar = threading.Event()
-    resultado = []
+def test_la_cola_respeta_el_orden_de_llegada():
+    limitador = LimitadorConcurrencia(maximo=1, max_en_espera=3)
+    soltar_primero, registro = threading.Event(), []
 
-    def primero():
-        with limitador.turno():
-            soltar.wait(timeout=5)
+    primero = _lanzar(limitador, registro, "H", soltar_primero)
+    _esperar_a_que(lambda: registro == ["H"])
+    esperando = []
+    for i, nombre in enumerate(("A", "B", "C"), start=1):
+        esperando.append(_lanzar(limitador, registro, nombre))
+        _esperar_a_que(lambda i=i: limitador.en_espera == i)  # entra a la cola antes del siguiente
 
-    def segundo():
-        with limitador.turno():
-            resultado.append("pasó")
+    soltar_primero.set()
+    for hilo in [primero, *esperando]:
+        hilo.join(timeout=5)
 
-    hilo_1 = threading.Thread(target=primero)
-    hilo_1.start()
-    time.sleep(0.05)
-    hilo_2 = threading.Thread(target=segundo)
-    hilo_2.start()
+    assert registro == ["H", "A", "B", "C"]
+
+
+def test_quien_llega_cuando_se_libera_un_turno_no_se_cuela_delante_de_los_que_esperan():
+    limitador = LimitadorConcurrencia(maximo=1, max_en_espera=2)
+    soltar_primero, registro = threading.Event(), []
+
+    primero = _lanzar(limitador, registro, "H", soltar_primero)
+    _esperar_a_que(lambda: registro == ["H"])
+    esperando = _lanzar(limitador, registro, "W")
     _esperar_a_que(lambda: limitador.en_espera == 1)
 
-    soltar.set()
-    hilo_1.join()
-    hilo_2.join()
+    # Se libera el turno y, sin pausa, llega otro. El turno liberado ya es de W.
+    soltar_primero.set()
+    recien_llegado = _lanzar(limitador, registro, "N")
+    for hilo in (primero, esperando, recien_llegado):
+        hilo.join(timeout=5)
 
-    assert resultado == ["pasó"]
+    assert registro == ["H", "W", "N"]
+
+
+def test_nadie_espera_mas_que_la_espera_maxima():
+    limitador = LimitadorConcurrencia(maximo=1, max_en_espera=4, espera_maxima_s=0.2)
+    soltar, registro = threading.Event(), []
+
+    primero = _lanzar(limitador, registro, "H", soltar)
+    _esperar_a_que(lambda: registro == ["H"])
+    impaciente = _lanzar(limitador, registro, "W")
+    impaciente.join(timeout=3)
+
+    # Se rindió solo, con el turno todavía ocupado, y dejó la cola limpia.
+    assert not impaciente.is_alive()
+    assert "W:servidor_ocupado" in registro
     assert limitador.en_espera == 0
+
+    soltar.set()
+    primero.join(timeout=5)
+    with limitador.turno():  # y el turno no quedó retenido por nadie
+        pass
 
 
 # --- ip_del_cliente ------------------------------------------------------------------
