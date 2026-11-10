@@ -217,7 +217,7 @@ No hay base de datos. Todo sale de OpenF1 y se guarda en caché.
 
 - **Caché:** en memoria mientras el servidor está despierto, y en disco en local y en notebooks. En Render se borra al dormirse, y es aceptable porque bajar una sesión tarda 5–8 s.
 - Solo se cachean sesiones **terminadas**.
-- Los **números de curva** y la rotación del mapa no vienen en OpenF1: se guardan en `backend/src/f1analytics/datos/circuitos.json`, una copia estática de [MultiViewer](https://multiviewer.app) (24 de los 26 circuitos; faltan los dos nuevos de 2026).
+- Los **números de curva** y la rotación del mapa no vienen en OpenF1: se guardan en `backend/src/f1analytics/datos/circuitos.json`, una copia estática de [MultiViewer](https://multiviewer.app) (24 de los 26 circuitos; faltan Kuala Lumpur y Madring, nuevos de 2026, que MultiViewer todavía no tiene). **Decisión del 2026-11-10:** en esos dos circuitos el análisis no se rechaza (antes daba `analisis_no_disponible`): se hace sin números de curva, sin tabla de frenadas, con el mapa sin girar y el largo medido en la telemetría, y la web avisa de ello. Lo que no depende de las curvas (mapa de velocidad y de marchas, resumen, comparación de telemetría) sigue igual.
 
 Detalle en [`diseno-tecnico.md`](diseno-tecnico.md).
 
@@ -310,7 +310,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [ ] Revisar `npm audit`: 16 vulnerabilidades moderadas, solo en herramientas de desarrollo (0 en producción).
 - [ ] Reemplazar `httpx` por `httpx2` en los tests del backend cuando se pueda verificar (Starlette avisa que `httpx` está en desuso para `TestClient`).
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
-- [ ] Armar a mano las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026 que MultiViewer no tiene), o revisar de nuevo MultiViewer más adelante. Mientras tanto, esos mapas salen sin curvas numeradas.
+- [ ] Conseguir las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026): revisar de nuevo MultiViewer más adelante y correr `scripts/generar_circuitos.py`, o armarlas a mano. MultiViewer no las tenía el 2026-11-10 (tampoco en años anteriores). Mientras tanto esos circuitos se analizan sin curvas numeradas (decisión del 2026-11-10).
 - [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
 - [x] **Gráficos de la web en SVG propio, sin Plotly** (decidido el 2026-11-05 al aprobar el plan del PR 8): el mapa del circuito ya era SVG; la estrategia de gomas y la dispersión también. Confirmado en el PR 10b: la telemetría (cuatro paneles con eje compartido y un cursor que recorre la vuelta) también va en SVG propio, sin Plotly.
 - [x] **La conclusión de gomas no elige un compuesto cuando los datos no alcanzan** (2026-11-06): si la mitad o más de los stints válidos no se gasta (Qatar 2024: 17 de 20) o la diferencia entre el que más y el que menos se gasta es menor de 0,02 s por vuelta, dice que no se puede medir o que se gastaron casi igual. El umbral de 0,02 s es una estimación a ojo del ruido de los stints; se revisa con más carreras.

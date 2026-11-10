@@ -152,7 +152,7 @@ Los notebooks necesitan internet y que no haya una sesión de F1 en vivo (OpenF1
 ## Límites conocidos
 
 - No hay sesiones en vivo: mientras una sesión está en curso, OpenF1 bloquea las consultas y la web lo avisa.
-- Los circuitos que no están en `circuitos.json` (por ejemplo, Kuala Lumpur y Madring) no tienen mapa y devuelven «análisis no disponible».
+- Los circuitos que no están en `circuitos.json` (por ejemplo, Kuala Lumpur y Madring, nuevos de 2026) se analizan **sin números de curva**: no hay tabla de frenadas, el mapa no lleva números y no está girado como en la transmisión, y el largo es el medido en la telemetría. La web lo avisa. MultiViewer todavía no tiene sus datos.
 - La comparación de telemetría no explica el porqué de una diferencia: una mejor frenada, una mejor trazada o un pie levantado se ven igual en el delta.
 - Los 25 tramos son de igual longitud, no los minisectores oficiales (casi la mitad de los circuitos no tiene ninguno).
 
