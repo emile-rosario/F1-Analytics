@@ -260,8 +260,8 @@
       "titulo": "Qué no mide este análisis",
       "intro": "El delta dice quién fue más rápido y dónde, con estas salvedades:",
       "muestras": "Pocas muestras: la telemetría pública trae unas 3,7 por segundo, una cada ~20 m a 250 km/h.",
-      "picos": "Picos en las frenadas: el delta sube y baja de golpe en las frenadas fuertes. Es en parte ruido de muestreo; lo que cuenta es el nivel en que se estabiliza después de la curva.",
-      "exactitud": "Exactitud: el delta final es exacto porque se ajusta al tiempo oficial de cada vuelta. A mitad de vuelta se equivoca unos 0,03 s de media (0,11 s como máximo) contra los tiempos oficiales de sector.",
+      "picos": "Lomos en las curvas lentas: el delta sube y vuelve a bajar en las frenadas fuertes. Es en parte ruido de muestreo y de alineación de las dos vueltas; lo que cuenta es el nivel en que se estabiliza después de la curva. Para reducirlo el delta se promedia en ventanas de ~100 m, lo que quita el dentado pero también redondea los cambios reales y bruscos.",
+      "exactitud": "Exactitud: el delta final es exacto porque se ajusta al tiempo oficial de cada vuelta. A mitad de vuelta se equivoca unos 0,04 s de media (0,13 s como máximo) contra los tiempos oficiales de sector.",
       "porque": "No dice por qué: muestra quién fue más rápido en un tramo, no si fue por frenar más tarde, trazar mejor o levantar el pie.",
       "condiciones": "Condiciones distintas: sin elegir segmento cada piloto usa su mejor vuelta de la sesión, que puede ser de otro momento, con otra goma o más combustible. El tráfico no se corrige.",
       "tramos": "Los tramos son de igual longitud, no los minisectores oficiales de la transmisión."
