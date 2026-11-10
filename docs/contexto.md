@@ -284,12 +284,12 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 | 2. Diseño técnico y visual | Arquitectura, API, tests, roadmap, prototipo en canvas | — | ✅ |
 | 3. Aprobación | Revisión de Emile | — | ✅ (2026-10-29) |
 | 4. Fundamentos y despliegue | Monorepo, CI, Docker, FastAPI con `/api/salud`, Next.js con i18n, `CLAUDE.md`, deploy en Vercel + Render, CORS, página `/estado`, despertar la API en segundo plano con reintento | 0, 1 | ✅ (2026-10-31) |
-| 5. Datos y base de la web | Cliente de OpenF1, carga y caché, `circuitos.json`, calendario y pilotos, tema visual, selector de sesión, panel de carga con el semáforo | 2, 3, 4 | Siguiente |
-| 6. Circuito | Análisis, notebook 01, página `/circuito` | 5, 6 | |
-| 7. Gomas | Limpieza, análisis, notebook 02, página `/gomas` | 7, 8 | |
-| 8. Telemetría | Análisis, notebook 03, página `/telemetria` | 9, 10 | |
-| 9. Publicación | README es/en con link, capturas y conclusiones; pruebas en Windows y móvil | 11 | |
-| 10. Mejoras | Lista del §3, una por PR | — | |
+| 5. Datos y base de la web | Cliente de OpenF1, carga y caché, `circuitos.json`, calendario y pilotos, tema visual, selector de sesión, panel de carga con el semáforo | 2, 3, 4 | ✅ (2026-11-04) |
+| 6. Circuito | Análisis, notebook 01, página `/circuito` | 5, 6 | ✅ (2026-11-05) |
+| 7. Gomas | Limpieza, análisis, notebook 02, página `/gomas` | 7, 8 | ✅ (2026-11-07) |
+| 8. Telemetría | Análisis, notebook 03, página `/telemetria` | 9, 10 | ✅ (2026-11-09) |
+| 9. Publicación | README es/en con link, capturas y conclusiones; pruebas en Windows y móvil | 11 | ✅ (2026-11-09) |
+| 10. Mejoras | Lista del §3, una por PR. Antes de ella se cerraron las pulidas del lanzamiento (tooltip y zoom de la telemetría, medición en Render Free, `npm audit` y Dependabot, delta alisado, favicon, circuitos nuevos sin curvas, cola acotada) | 21, 22, 23, 24, 29, 30, 34, 35 y 36 | En curso: faltan las 9 mejoras de producto de `diseno-tecnico.md` §10, cada una con su plan |
 
 ---
 
@@ -308,11 +308,12 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Ping para que la API no se duerma: **no se agrega** (decidido el 2026-10-31). La web despierta la API al abrir y muestra «Despertando el servidor». Se puede reabrir si la primera visita resulta muy molesta; un monitor externo gratis sería más confiable que un cron de GitHub Actions, que se atrasa y se desactiva a los 60 días sin actividad.
 - [x] **OpenF1 bloqueado por una sesión en vivo** (descubierto el 2026-10-31; dura unas horas por fin de semana de carrera). **Decisión de Emile (2026-10-31): opción (a) ahora** — aceptarlo y mostrar un mensaje claro en es/en (la API ya responde `openf1_en_vivo`; la web lo explica en el PR 4; la caché sirve lo ya consultado mientras el servidor esté despierto). **La opción (b) queda para después**: guardar como archivos estáticos las sesiones destacadas para que la demo nunca se caiga. Se reconsidera cuando haya un fin de semana de carrera en que el bloqueo moleste de verdad. La opción (c), pagar una clave, se descarta porque rompe el costo de $0.
 - [ ] **Sesiones destacadas estáticas (opción b)**: pendiente de agendar tras el MVP.
-- [ ] Revisar `npm audit`: 16 vulnerabilidades moderadas, solo en herramientas de desarrollo (0 en producción).
+- [x] `npm audit` cerrado (2026-11-09, PR 24): 0 vulnerabilidades con un `override` de `minimatch` (quitarlo cuando `@typescript-eslint/typescript-estree` suba a minimatch 11); el CI audita las dependencias de producción y Dependabot revisa cada lunes.
 - [ ] Reemplazar `httpx` por `httpx2` en los tests del backend cuando se pueda verificar (Starlette avisa que `httpx` está en desuso para `TestClient`).
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
 - [ ] Conseguir las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026): revisar de nuevo MultiViewer más adelante y correr `scripts/generar_circuitos.py`, o armarlas a mano. MultiViewer no las tenía el 2026-11-10 (tampoco en años anteriores). Mientras tanto esos circuitos se analizan sin curvas numeradas (decisión del 2026-11-10).
 - [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
+- [x] **Lomos del delta en las frenadas: límite conocido** (2026-11-10). Alisar el delta a 105 m quitó el dentado pero no los lomos anchos de las curvas lentas; alinear por posición X/Y es peor (error medio 0,161 s contra 0,042 s) por la tolerancia de 300 ms al unir `car_data` y `location`. No hay arreglo barato con ~3,7 muestras por segundo; la página lo explica en sus limitaciones (detalle en `diseno-tecnico.md`).
 - [x] **Gráficos de la web en SVG propio, sin Plotly** (decidido el 2026-11-05 al aprobar el plan del PR 8): el mapa del circuito ya era SVG; la estrategia de gomas y la dispersión también. Confirmado en el PR 10b: la telemetría (cuatro paneles con eje compartido y un cursor que recorre la vuelta) también va en SVG propio, sin Plotly.
 - [x] **La conclusión de gomas no elige un compuesto cuando los datos no alcanzan** (2026-11-06): si la mitad o más de los stints válidos no se gasta (Qatar 2024: 17 de 20) o la diferencia entre el que más y el que menos se gasta es menor de 0,02 s por vuelta, dice que no se puede medir o que se gastaron casi igual. El umbral de 0,02 s es una estimación a ojo del ruido de los stints; se revisa con más carreras.
 - [ ] Verificar si OpenF1 tiene límites de peticiones no documentados (Fase 5).
