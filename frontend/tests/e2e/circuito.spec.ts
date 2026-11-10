@@ -241,4 +241,9 @@ test("un circuito nuevo, sin curvas numeradas, se explica y mantiene el mapa y e
   await expect(page.getByText(/sin sus curvas numeradas no se pueden medir las frenadas/)).toBeVisible();
   await expect(page.getByText(/NOR fue a fondo el/)).toBeVisible();
   await expect(page.getByRole("table")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Frenadas" })).toHaveCount(0);
+  // El aviso describe el mapa, así que va encima de él.
+  const aviso = await page.getByTestId("aviso-circuito-nuevo").boundingBox();
+  const mapa = await page.getByRole("img", { name: /coloreada por velocidad/ }).boundingBox();
+  expect(aviso!.y).toBeLessThan(mapa!.y);
 });

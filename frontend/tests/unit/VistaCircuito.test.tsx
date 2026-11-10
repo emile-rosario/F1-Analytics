@@ -156,6 +156,8 @@ describe("circuito nuevo, sin curvas numeradas", () => {
       "Este circuito es nuevo y todavía no tenemos sus curvas numeradas",
     );
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    // Sin tabla tampoco queda una sección «Frenadas» vacía.
+    expect(screen.queryByRole("heading", { name: "Frenadas" })).not.toBeInTheDocument();
     // No es que no se frenara: no se puede medir.
     expect(screen.getByText(/sin sus curvas numeradas no se pueden medir las frenadas/)).toBeInTheDocument();
     expect(screen.queryByText(/no se detectaron frenadas fuertes/)).not.toBeInTheDocument();
@@ -184,6 +186,7 @@ describe("circuito nuevo, sin curvas numeradas", () => {
 
     expect(await screen.findByText("NOR")).toBeInTheDocument();
     expect(screen.queryByTestId("aviso-circuito-nuevo")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Frenadas" })).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 });

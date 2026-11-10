@@ -27,6 +27,8 @@ function Resultado({ analisis }: { analisis: AnalisisCircuito }) {
   const [modo, setModo] = useState<ModoMapa>("velocidad");
   const { titulo } = useConclusionCircuito(analisis);
   const { piloto } = analisis;
+  // Un circuito real siempre trae curvas: vacío significa que es nuevo y aún no están (ver la API).
+  const sinCurvas = analisis.curvas.length === 0;
 
   function moverFoco(tecla: string) {
     if (tecla !== "ArrowRight" && tecla !== "ArrowLeft") return;
@@ -61,6 +63,8 @@ function Resultado({ analisis }: { analisis: AnalisisCircuito }) {
       </div>
 
       <div className="space-y-3">
+        {/* El aviso describe el mapa (sin números ni giro), así que va encima de él. */}
+        {sinCurvas && <AvisoCircuitoNuevo pagina="circuito" />}
         <div role="tablist" aria-label={t("pestanas.etiqueta")} className="flex gap-2">
           {MODOS.map((m) => (
             <button
@@ -86,16 +90,15 @@ function Resultado({ analisis }: { analisis: AnalisisCircuito }) {
 
       <Conclusion analisis={analisis} />
 
-      <section aria-labelledby="titulo-frenadas" className="space-y-3">
-        <h2 id="titulo-frenadas" className="font-titulo text-3xl font-bold">
-          {t("tabla.titulo")}
-        </h2>
-        {analisis.curvas.length === 0 ? (
-          <AvisoCircuitoNuevo pagina="circuito" />
-        ) : (
+      {/* Sin curvas numeradas no hay tabla de frenadas: el aviso de arriba ya lo explica. */}
+      {!sinCurvas && (
+        <section aria-labelledby="titulo-frenadas" className="space-y-3">
+          <h2 id="titulo-frenadas" className="font-titulo text-3xl font-bold">
+            {t("tabla.titulo")}
+          </h2>
           <TablaFrenadas frenadas={analisis.frenadas} />
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }
