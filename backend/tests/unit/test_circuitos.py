@@ -47,9 +47,15 @@ def test_circuito_o_sin_datos_da_un_trazado_vacio_si_el_circuito_no_esta():
         trazado = circuito_o_sin_datos(clave, 2026)
 
         assert trazado is SIN_DATOS
+        assert trazado.conocido is False
         assert trazado.curvas == ()
         assert trazado.rotacion == 0  # el mapa no se gira
-        assert trazado.longitud_m == 0  # las rutas usan el largo medido en la telemetría
+
+
+def test_el_largo_sale_del_circuito_si_se_conoce_y_de_la_medida_si_no():
+    assert circuito(MONZA, 2024).conocido is True
+    assert circuito(MONZA, 2024).longitud_o(1234.5) == circuito(MONZA, 2024).longitud_m
+    assert SIN_DATOS.longitud_o(1234.5) == 1234.5
 
 
 def test_un_circuito_desconocido_no_se_confunde_con_uno_que_existe():

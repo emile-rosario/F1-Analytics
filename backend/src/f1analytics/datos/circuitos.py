@@ -30,12 +30,18 @@ class Circuito:
     rotacion: float  # grados, para orientar el mapa como en la transmisión
     longitud_m: float
     curvas: tuple[Curva, ...]
+    # False solo en ``SIN_DATOS``: el circuito no está en el archivo y el resto de campos son
+    # relleno (nombre vacío, largo 0...), no datos reales.
+    conocido: bool = True
+
+    def longitud_o(self, medida_m: float) -> float:
+        """El largo oficial si se conoce el circuito y, si no, el medido en la telemetría."""
+        return self.longitud_m if self.conocido else medida_m
 
 
 # Para un circuito que no está en ``circuitos.json`` (uno nuevo que MultiViewer todavía no tiene):
-# sin curvas, sin girar el mapa y con el largo sin definir (0), que las rutas sustituyen por el
-# medido en la telemetría.
-SIN_DATOS = Circuito(nombre="", anios=(), rotacion=0.0, longitud_m=0.0, curvas=())
+# sin curvas y sin girar el mapa.
+SIN_DATOS = Circuito(nombre="", anios=(), rotacion=0.0, longitud_m=0.0, curvas=(), conocido=False)
 
 
 @lru_cache(maxsize=1)
@@ -76,6 +82,7 @@ def circuito_o_sin_datos(circuit_key: int, anio: int) -> Circuito:
     El análisis sigue adelante sin números de curva ni tabla de frenadas, en vez de fallar. Cuando
     MultiViewer tenga el circuito basta volver a correr ``scripts/generar_circuitos.py``.
     """
-    if str(circuit_key) not in _leer()["circuitos"]:
+    try:
+        return circuito(circuit_key, anio)
+    except ErrorDatos:  # ``circuito`` solo lanza este error cuando el circuito no está
         return SIN_DATOS
-    return circuito(circuit_key, anio)

@@ -68,8 +68,8 @@ def _construir_analisis_circuito(cargador: Cargador, sesion: int, piloto: int) -
         piloto=Piloto(**datos_piloto.iloc[0].to_dict()),
         vuelta=vuelta,
         tiempo_vuelta_s=float(vueltas.loc[vuelta, "tiempo_vuelta_s"]),
-        # Sin datos del circuito el largo no se conoce: se usa el medido (integrando la velocidad).
-        longitud_m=trazado.longitud_m or float(tel["distancia_m"].iloc[-1]),
+        # Sin datos del circuito no hay largo oficial: se usa el medido (integrando la velocidad).
+        longitud_m=trazado.longitud_o(float(tel["distancia_m"].iloc[-1])),
         puntos=[
             PuntoMapa(
                 x=round(fila.x, 1),

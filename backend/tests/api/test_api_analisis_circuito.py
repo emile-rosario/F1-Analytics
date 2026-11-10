@@ -5,7 +5,7 @@ from conftest import CLASIFICACION, LEC, VER, crear_cargador, crear_cliente
 
 from f1analytics.api.dependencias import obtener_limitador_concurrencia, obtener_limitador_ip
 from f1analytics.api.limites import LimitadorConcurrencia, LimitadorPorIp
-from f1analytics.datos.circuitos import SIN_DATOS
+from f1analytics.datos.telemetria_vuelta import telemetria_de_vuelta
 
 RUTA = "/api/analisis/circuito"
 
@@ -124,9 +124,18 @@ def test_una_sesion_sin_terminar_da_409(openf1, tmp_path):
     assert pedidos_de_telemetria(openf1) == 0
 
 
-def test_un_circuito_que_no_esta_en_circuitos_json_se_analiza_sin_curvas(cliente, monkeypatch):
+@pytest.fixture
+def sin_circuitos(monkeypatch):
+    """Un circuitos.json vacío: el circuito del calendario (Monza) pasa a ser uno desconocido.
+
+    Así se recorre la búsqueda real (clave entera del calendario contra claves de texto del JSON),
+    en vez de sustituir la función de las rutas.
+    """
+    monkeypatch.setattr("f1analytics.datos.circuitos._leer", lambda: {"circuitos": {}})
+
+
+def test_un_circuito_que_no_esta_en_circuitos_json_se_analiza_sin_curvas(cliente, sin_circuitos):
     # Se simula un circuito nuevo con la telemetría de Monza.
-    monkeypatch.setattr("f1analytics.api.rutas.analisis.circuito_o_sin_datos", lambda *_: SIN_DATOS)
 
     respuesta = pedir(cliente)
 
@@ -143,15 +152,13 @@ def test_un_circuito_que_no_esta_en_circuitos_json_se_analiza_sin_curvas(cliente
     assert datos["longitud_m"] == pytest.approx(datos["puntos"][-1]["distancia_m"], abs=0.1)
 
 
-def test_un_circuito_sin_datos_no_gira_el_mapa(cliente, monkeypatch):
-    monkeypatch.setattr("f1analytics.api.rutas.analisis.circuito_o_sin_datos", lambda *_: SIN_DATOS)
-
+def test_un_circuito_sin_datos_no_gira_el_mapa(cliente, cargador, sin_circuitos):
     puntos = pedir(cliente).json()["puntos"]
 
-    ancho = max(p["x"] for p in puntos) - min(p["x"] for p in puntos)
-    alto = max(p["y"] for p in puntos) - min(p["y"] for p in puntos)
-    # Con los 95° de la transmisión Monza queda apaisado; sin girar es más alto que ancho.
-    assert alto > ancho
+    crudo = telemetria_de_vuelta(cargador, CLASIFICACION, LEC, 20)
+    # Las coordenadas llegan tal como las manda OpenF1, sin la rotación de la transmisión.
+    assert [p["x"] for p in puntos] == pytest.approx(crudo["x"].round(1).tolist(), abs=0.05)
+    assert [p["y"] for p in puntos] == pytest.approx(crudo["y"].round(1).tolist(), abs=0.05)
 
 
 @pytest.mark.parametrize(

@@ -123,8 +123,8 @@ def _construir_analisis_telemetria(
         piloto_b=VueltaComparada(
             piloto=datos_b, vuelta=vueltas[piloto_b], tiempo_vuelta_s=tiempos[piloto_b]
         ),
-        # Sin datos del circuito el largo no se conoce: se usa el de las vueltas alineadas.
-        longitud_m=trazado.longitud_m or float(alineadas["distancia_m"].iloc[-1]),
+        # Sin datos del circuito no hay largo oficial: se usa el de las vueltas alineadas.
+        longitud_m=trazado.longitud_o(float(alineadas["distancia_m"].iloc[-1])),
         paso_m=PASO_M,
         canales=CanalesAlineados(
             distancia_m=alineadas["distancia_m"].round(1).tolist(),
