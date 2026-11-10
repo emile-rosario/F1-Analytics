@@ -285,6 +285,16 @@ describe("gráficas y cursor", () => {
   });
 });
 
+/**
+ * El desplazamiento del tooltip como [x, y], sin depender de cómo lo escribe jsdom: según la
+ * versión `translate(0, 0)` sale como `translate(0px)` o `translate(-100%, 0)` como `translate(-100%)`.
+ */
+function desplazamientoDelTooltip(): string[] {
+  const dentro = /^translate\((.*)\)$/.exec(screen.getByTestId("tooltip-telemetria").style.transform);
+  const [x, y = "0"] = (dentro?.[1] ?? "").split(",").map((p) => p.trim().replace(/^0px$/, "0"));
+  return [x, y];
+}
+
 describe("tooltip al pasar el mouse", () => {
   const canales = crearAnalisisTelemetria().canales;
   // La gráfica mide 800 × 600 px en pantalla, así que un píxel es una unidad del SVG (ANCHO = 800).
@@ -387,13 +397,13 @@ describe("tooltip al pasar el mouse", () => {
     await esperarAnalisis();
 
     mouse(100, 100);
-    expect(screen.getByTestId("tooltip-telemetria").style.transform).toBe("translate(0, 0)");
+    expect(desplazamientoDelTooltip()).toEqual(["0", "0"]);
 
     mouse(950, 100);
-    expect(screen.getByTestId("tooltip-telemetria").style.transform).toBe("translate(-100%, 0)");
+    expect(desplazamientoDelTooltip()).toEqual(["-100%", "0"]);
 
     mouse(100, 500);
-    expect(screen.getByTestId("tooltip-telemetria").style.transform).toBe("translate(0, -100%)");
+    expect(desplazamientoDelTooltip()).toEqual(["0", "-100%"]);
   });
 
   it("está traducido al inglés", async () => {
