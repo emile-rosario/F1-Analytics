@@ -7,14 +7,18 @@ caché es instantáneo y no cuesta nada.
 import threading
 import time
 from collections import deque
-from collections.abc import Callable
-from contextlib import AbstractContextManager
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager
 
 from fastapi import Request
 
 from f1analytics.datos.errores import ErrorDatos
 
 MAX_ANALISIS_A_LA_VEZ = 2
+# Cuántos pueden esperar su turno. Con 2 a la vez, 5 peticiones simultáneas en frío tardaron hasta
+# 59 s en Render Free (medido); con 2 corriendo y 4 esperando el peor caso queda por debajo de los
+# 90 s que espera el frontend (extrapolado de esa medición, no medido).
+MAX_ANALISIS_EN_ESPERA = 4
 MAX_ANALISIS_POR_IP = 10
 VENTANA_S = 60.0
 # Cada tantas IPs distintas se borran las que ya no tienen nada reciente.
@@ -60,13 +64,47 @@ class LimitadorPorIp:
 
 
 class LimitadorConcurrencia:
-    """Deja correr como máximo ``maximo`` análisis a la vez; los demás esperan su turno."""
+    """Deja correr como máximo ``maximo`` análisis a la vez.
 
-    def __init__(self, maximo: int = MAX_ANALISIS_A_LA_VEZ):
+    Los demás esperan su turno, pero solo hasta ``max_en_espera``: si ya hay tantos esperando,
+    el siguiente recibe ``servidor_ocupado`` al instante en vez de quedarse más de lo que aguanta
+    el frontend.
+    """
+
+    def __init__(
+        self, maximo: int = MAX_ANALISIS_A_LA_VEZ, max_en_espera: int = MAX_ANALISIS_EN_ESPERA
+    ):
         self._semaforo = threading.BoundedSemaphore(maximo)
+        self._max_en_espera = max_en_espera
+        self._en_espera = 0
+        self._cerrojo = threading.Lock()
+
+    @property
+    def en_espera(self) -> int:
+        """Cuántos análisis esperan su turno ahora mismo."""
+        with self._cerrojo:
+            return self._en_espera
 
     def turno(self) -> AbstractContextManager[bool]:
-        return self._semaforo
+        return self._turno()
+
+    @contextmanager
+    def _turno(self) -> Iterator[bool]:
+        # Primero se intenta entrar sin esperar; solo si no hay hueco se hace cola.
+        if not self._semaforo.acquire(blocking=False):
+            with self._cerrojo:
+                if self._en_espera >= self._max_en_espera:
+                    raise ErrorDatos("servidor_ocupado")
+                self._en_espera += 1
+            try:
+                self._semaforo.acquire()
+            finally:
+                with self._cerrojo:
+                    self._en_espera -= 1
+        try:
+            yield True
+        finally:
+            self._semaforo.release()
 
 
 def ip_del_cliente(peticion: Request) -> str:
