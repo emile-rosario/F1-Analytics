@@ -188,6 +188,7 @@ Render gratis no tiene previews del backend: los cambios de API se prueban en lo
 | `sin_telemetria` | OpenF1 no tiene telemetría de esa vuelta |
 | `telemetria_incompleta` | Hay telemetría, pero con muy pocas muestras |
 | `limite_peticiones` | OpenF1 respondió 429, o el usuario superó el límite por IP (§9) |
+| `servidor_ocupado` | Ya hay 2 análisis corriendo y 4 esperando su turno (§9): se puede reintentar en unos segundos |
 | `openf1_en_vivo` | Hay una sesión de F1 en vivo y OpenF1 no deja consultar sin clave hasta que termine |
 | `fallo_openf1` | OpenF1 caído o con error |
 
@@ -267,7 +268,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 1. **No hay secretos:** OpenF1 histórico no pide clave, salvo mientras hay una sesión en vivo (ver §11). Si alguna vez hace falta una, va solo en variables de entorno de Render, nunca en el repo ni en el frontend.
 2. **CORS** restringido al dominio de producción de Vercel, a las URLs de preview del proyecto (con una expresión regular, porque cada preview tiene una URL distinta) y a `localhost:3000` en desarrollo.
 3. **Validación de entrada:** año entre 2023 y el actual, tipo de sesión de una lista cerrada, pilotos que existan en la sesión, análisis de gomas solo en carreras y sprints, segmentos Q solo en clasificaciones. Cada rechazo tiene su código (§5.2).
-4. **Respeto a OpenF1:** caché, reintentos con espera ante 429 y máximo 2 análisis sin caché a la vez.
+4. **Respeto a OpenF1:** caché, reintentos con espera ante 429 y máximo 2 análisis sin caché a la vez. **La cola de espera está acotada** (decidido el 2026-11-10): como mucho 4 esperan su turno; el siguiente recibe al instante `servidor_ocupado` (503, con `Retry-After`) en vez de esperar más de lo que aguanta el frontend (90 s).
 5. **Límite por IP:** como la API es pública y sin cuentas, cada IP puede pedir como máximo 10 análisis sin caché por minuto (las respuestas en caché no cuentan). Así una sola persona no deja la API ocupada para los demás. En Render la IP real viene en `X-Forwarded-For`.
 6. La API no devuelve texto para el usuario; el frontend muestra todo como **texto**, nunca como HTML.
 7. **Datos de la F1:** uso personal y de portafolio, sin fines comerciales. Sin logo, tipografía ni marcas oficiales.
