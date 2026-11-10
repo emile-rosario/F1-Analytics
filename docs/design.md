@@ -83,6 +83,7 @@ Ambas de Google Fonts.
 ## 4. Marca
 
 - **Logo:** tres barras inclinadas en morado, verde (`#3DDC84`) y amarillo (`#F2C14E`), los colores de sector del timing (mejor absoluto, mejor personal, más lento). Va al lado del nombre «F1 Analytics» en Saira Condensed 700.
+- **Favicon:** las mismas tres barras sobre un cuadro asfalto (`#1A1C23`) con esquinas redondeadas, para que se vea en pestañas claras y oscuras. A 16 px las barras van más finas y separadas para que no se peguen. Los archivos están en `assets/favicon/` y su `LEEME.md` dice dónde va cada uno en el frontend.
 - **Pie de página en todas las páginas:** «Datos de OpenF1. Proyecto independiente, sin relación con la Fórmula 1 ni la FIA.» y «Hecho por Emile Rosario».
 
 ---
