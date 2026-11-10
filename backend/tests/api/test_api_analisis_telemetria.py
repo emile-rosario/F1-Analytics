@@ -5,7 +5,7 @@ from conftest import CARRERA, CLASIFICACION, LEC, VER, crear_cargador, crear_cli
 
 from f1analytics.api.dependencias import obtener_limitador_concurrencia, obtener_limitador_ip
 from f1analytics.api.limites import LimitadorConcurrencia, LimitadorPorIp
-from f1analytics.datos.errores import ErrorDatos
+from f1analytics.datos.circuitos import SIN_DATOS
 
 RUTA = "/api/analisis/telemetria"
 
@@ -202,16 +202,36 @@ def test_una_sesion_sin_terminar_da_409(openf1, tmp_path):
     assert pedidos_de_telemetria(openf1) == 0
 
 
-def test_un_circuito_que_no_esta_en_circuitos_json_da_422_sin_bajar_telemetria(
-    cliente, openf1, monkeypatch
-):
-    def sin_circuito(*_):
-        raise ErrorDatos("analisis_no_disponible")
+def test_un_circuito_que_no_esta_en_circuitos_json_se_compara_sin_curvas(cliente, monkeypatch):
+    # Se simula un circuito nuevo con las vueltas de Monza.
+    monkeypatch.setattr(
+        "f1analytics.api.rutas.telemetria.circuito_o_sin_datos", lambda *_: SIN_DATOS
+    )
 
-    monkeypatch.setattr("f1analytics.api.rutas.telemetria.circuito", sin_circuito)
+    respuesta = pedir(cliente)
 
-    assert codigo_y_estado(pedir(cliente)) == (422, "analisis_no_disponible")
-    assert pedidos_de_telemetria(openf1) == 0
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert datos["curvas"] == []
+    # La comparación entera sigue ahí: el delta, los 25 minisectores y el resumen.
+    assert datos["resumen"]["delta_final_s"] == pytest.approx(0.201, abs=0.001)
+    assert len(datos["minisectores"]) == 25
+    assert len(datos["canales"]["delta_s"]) == len(datos["canales"]["distancia_m"])
+    # El largo es el de las vueltas alineadas (no hay oficial).
+    assert datos["longitud_m"] == pytest.approx(datos["canales"]["distancia_m"][-1], abs=0.1)
+
+
+def test_un_circuito_sin_datos_no_gira_el_mapa_de_la_comparacion(cliente, monkeypatch):
+    monkeypatch.setattr(
+        "f1analytics.api.rutas.telemetria.circuito_o_sin_datos", lambda *_: SIN_DATOS
+    )
+
+    canales = pedir(cliente).json()["canales"]
+
+    ancho = max(canales["x"]) - min(canales["x"])
+    alto = max(canales["y"]) - min(canales["y"])
+    # Con los 95° de la transmisión Monza queda apaisado; sin girar es más alto que ancho.
+    assert alto > ancho
 
 
 def test_un_segmento_de_clasificacion_en_una_carrera_da_422_sin_bajar_telemetria(cliente, openf1):

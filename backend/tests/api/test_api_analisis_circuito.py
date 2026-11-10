@@ -5,7 +5,7 @@ from conftest import CLASIFICACION, LEC, VER, crear_cargador, crear_cliente
 
 from f1analytics.api.dependencias import obtener_limitador_concurrencia, obtener_limitador_ip
 from f1analytics.api.limites import LimitadorConcurrencia, LimitadorPorIp
-from f1analytics.datos.errores import ErrorDatos
+from f1analytics.datos.circuitos import SIN_DATOS
 
 RUTA = "/api/analisis/circuito"
 
@@ -124,16 +124,34 @@ def test_una_sesion_sin_terminar_da_409(openf1, tmp_path):
     assert pedidos_de_telemetria(openf1) == 0
 
 
-def test_un_circuito_que_no_esta_en_circuitos_json_da_422_sin_bajar_telemetria(
-    cliente, openf1, monkeypatch
-):
-    def sin_circuito(*_):
-        raise ErrorDatos("analisis_no_disponible")
+def test_un_circuito_que_no_esta_en_circuitos_json_se_analiza_sin_curvas(cliente, monkeypatch):
+    # Se simula un circuito nuevo con la telemetría de Monza.
+    monkeypatch.setattr("f1analytics.api.rutas.analisis.circuito_o_sin_datos", lambda *_: SIN_DATOS)
 
-    monkeypatch.setattr("f1analytics.api.rutas.analisis.circuito", sin_circuito)
+    respuesta = pedir(cliente)
 
-    assert codigo_y_estado(pedir(cliente)) == (422, "analisis_no_disponible")
-    assert pedidos_de_telemetria(openf1) == 0
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert datos["curvas"] == []
+    assert datos["frenadas"] == []
+    assert datos["resumen"]["frenada_mas_fuerte"] is None
+    # Lo que no depende de las curvas sigue ahí.
+    assert datos["resumen"]["vel_maxima"]["kmh"] == 351
+    assert 60 < datos["resumen"]["pct_a_fondo"] < 95
+    assert len(datos["puntos"]) > 200
+    # El largo es el medido en la telemetría (no hay oficial).
+    assert datos["longitud_m"] == pytest.approx(datos["puntos"][-1]["distancia_m"], abs=0.1)
+
+
+def test_un_circuito_sin_datos_no_gira_el_mapa(cliente, monkeypatch):
+    monkeypatch.setattr("f1analytics.api.rutas.analisis.circuito_o_sin_datos", lambda *_: SIN_DATOS)
+
+    puntos = pedir(cliente).json()["puntos"]
+
+    ancho = max(p["x"] for p in puntos) - min(p["x"] for p in puntos)
+    alto = max(p["y"] for p in puntos) - min(p["y"] for p in puntos)
+    # Con los 95° de la transmisión Monza queda apaisado; sin girar es más alto que ancho.
+    assert alto > ancho
 
 
 @pytest.mark.parametrize(

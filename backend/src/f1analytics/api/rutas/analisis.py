@@ -27,7 +27,7 @@ from f1analytics.api.rutas.comunes import (
     limitar_por_ip,
 )
 from f1analytics.datos.cargador import Cargador
-from f1analytics.datos.circuitos import circuito
+from f1analytics.datos.circuitos import circuito_o_sin_datos
 from f1analytics.datos.errores import ErrorDatos
 from f1analytics.datos.telemetria_vuelta import telemetria_de_vuelta, vuelta_rapida
 
@@ -42,13 +42,13 @@ def _construir_analisis_circuito(cargador: Cargador, sesion: int, piloto: int) -
     if not cargador.sesion_terminada(sesion):
         raise ErrorDatos("sesion_no_terminada")
 
-    # Lo más barato primero: si el circuito no está en circuitos.json no hace falta bajar nada.
     anio = int(info["anio"])
     calendario = cargador.calendario(anio)
     evento = calendario[calendario["evento"] == info["evento"]]
     if evento.empty:
         raise ErrorDatos("analisis_no_disponible")
-    trazado = circuito(int(evento.iloc[0]["circuito_clave"]), anio)
+    # Un circuito nuevo, que no está en circuitos.json, se analiza sin curvas numeradas.
+    trazado = circuito_o_sin_datos(int(evento.iloc[0]["circuito_clave"]), anio)
 
     pilotos = cargador.pilotos(sesion)
     datos_piloto = pilotos[pilotos["numero"] == piloto]
@@ -68,7 +68,8 @@ def _construir_analisis_circuito(cargador: Cargador, sesion: int, piloto: int) -
         piloto=Piloto(**datos_piloto.iloc[0].to_dict()),
         vuelta=vuelta,
         tiempo_vuelta_s=float(vueltas.loc[vuelta, "tiempo_vuelta_s"]),
-        longitud_m=trazado.longitud_m,
+        # Sin datos del circuito el largo no se conoce: se usa el medido (integrando la velocidad).
+        longitud_m=trazado.longitud_m or float(tel["distancia_m"].iloc[-1]),
         puntos=[
             PuntoMapa(
                 x=round(fila.x, 1),
@@ -132,8 +133,9 @@ def analisis_circuito(
 ) -> AnalisisCircuito:
     """Mapa de la vuelta más rápida del piloto: velocidad, marchas, curvas y frenadas.
 
-    Solo para sesiones terminadas. Responde ``analisis_no_disponible`` en los circuitos que
-    todavía no están en ``circuitos.json``.
+    Solo para sesiones terminadas. En los circuitos que todavía no están en ``circuitos.json``
+    ``curvas`` y ``frenadas`` llegan vacías (no hay números de curva), el mapa no se gira y
+    ``longitud_m`` es la medida en la telemetría.
     """
     gancho = limitar_por_ip(limitador_ip, ip_del_cliente(peticion), ENDPOINTS_PESADOS)
     with concurrencia.turno(), cargador.cliente.antes_de_pedir(gancho):

@@ -29,7 +29,7 @@ from f1analytics.api.rutas.comunes import (
     limitar_por_ip,
 )
 from f1analytics.datos.cargador import Cargador
-from f1analytics.datos.circuitos import circuito
+from f1analytics.datos.circuitos import circuito_o_sin_datos
 from f1analytics.datos.errores import ErrorDatos
 from f1analytics.datos.telemetria_vuelta import telemetria_de_vuelta, vuelta_rapida
 
@@ -83,13 +83,13 @@ def _construir_analisis_telemetria(
     if not cargador.sesion_terminada(sesion):
         raise ErrorDatos("sesion_no_terminada")
 
-    # Lo más barato primero: si el circuito no está en circuitos.json no hace falta bajar nada.
     anio = int(info["anio"])
     calendario = cargador.calendario(anio)
     evento = calendario[calendario["evento"] == info["evento"]]
     if evento.empty:
         raise ErrorDatos("analisis_no_disponible")
-    trazado = circuito(int(evento.iloc[0]["circuito_clave"]), anio)
+    # Un circuito nuevo, que no está en circuitos.json, se compara sin curvas numeradas.
+    trazado = circuito_o_sin_datos(int(evento.iloc[0]["circuito_clave"]), anio)
 
     pilotos = cargador.pilotos(sesion)
     datos_a, datos_b = _piloto(pilotos, piloto_a), _piloto(pilotos, piloto_b)
@@ -123,7 +123,8 @@ def _construir_analisis_telemetria(
         piloto_b=VueltaComparada(
             piloto=datos_b, vuelta=vueltas[piloto_b], tiempo_vuelta_s=tiempos[piloto_b]
         ),
-        longitud_m=trazado.longitud_m,
+        # Sin datos del circuito el largo no se conoce: se usa el de las vueltas alineadas.
+        longitud_m=trazado.longitud_m or float(alineadas["distancia_m"].iloc[-1]),
         paso_m=PASO_M,
         canales=CanalesAlineados(
             distancia_m=alineadas["distancia_m"].round(1).tolist(),
@@ -176,8 +177,9 @@ def analisis_telemetria(
 
     El piloto A es la referencia y el B el que se compara. Sin ``segmento`` se usa la mejor
     vuelta de la sesión; con él, la mejor de Q1, Q2 o Q3 (SQ1, SQ2 o SQ3 en la clasificación
-    sprint), que solo existe en esas sesiones. Solo para sesiones terminadas. Responde
-    ``analisis_no_disponible`` en los circuitos que todavía no están en ``circuitos.json``.
+    sprint), que solo existe en esas sesiones. Solo para sesiones terminadas. En los circuitos
+    que todavía no están en ``circuitos.json`` ``curvas`` llega vacío, el mapa no se gira y
+    ``longitud_m`` es la medida en las vueltas.
     """
     if piloto_a == piloto_b:
         raise ErrorDatos("parametro_invalido")

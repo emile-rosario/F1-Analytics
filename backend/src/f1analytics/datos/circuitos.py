@@ -32,6 +32,12 @@ class Circuito:
     curvas: tuple[Curva, ...]
 
 
+# Para un circuito que no está en ``circuitos.json`` (uno nuevo que MultiViewer todavía no tiene):
+# sin curvas, sin girar el mapa y con el largo sin definir (0), que las rutas sustituyen por el
+# medido en la telemetría.
+SIN_DATOS = Circuito(nombre="", anios=(), rotacion=0.0, longitud_m=0.0, curvas=())
+
+
 @lru_cache(maxsize=1)
 def _leer() -> dict:
     return json.loads(RUTA.read_text(encoding="utf-8"))
@@ -62,3 +68,14 @@ def circuito(circuit_key: int, anio: int) -> Circuito:
         longitud_m=diseno["longitud_m"],
         curvas=tuple(Curva(**curva) for curva in diseno["curvas"]),
     )
+
+
+def circuito_o_sin_datos(circuit_key: int, anio: int) -> Circuito:
+    """Como ``circuito``, pero un circuito que no está en el archivo da ``SIN_DATOS``.
+
+    El análisis sigue adelante sin números de curva ni tabla de frenadas, en vez de fallar. Cuando
+    MultiViewer tenga el circuito basta volver a correr ``scripts/generar_circuitos.py``.
+    """
+    if str(circuit_key) not in _leer()["circuitos"]:
+        return SIN_DATOS
+    return circuito(circuit_key, anio)
