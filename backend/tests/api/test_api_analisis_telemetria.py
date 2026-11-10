@@ -242,6 +242,19 @@ def test_un_circuito_sin_datos_no_gira_el_mapa_de_la_comparacion(cliente, cargad
     assert canales["y"] == pytest.approx(crudas["y_a"].round(1).tolist(), abs=0.05)
 
 
+def test_con_el_servidor_saturado_responde_503_sin_pedir_nada_a_openf1(cliente, openf1):
+    # Un solo análisis a la vez y ninguno puede esperar: con el hueco ocupado, se rechaza.
+    saturado = LimitadorConcurrencia(maximo=1, max_en_espera=0)
+    cliente.app.dependency_overrides[obtener_limitador_concurrencia] = lambda: saturado
+
+    with saturado.turno():
+        respuesta = pedir(cliente)
+
+    assert codigo_y_estado(respuesta) == (503, "servidor_ocupado")
+    assert respuesta.headers["retry-after"] == "10"
+    assert pedidos_de_telemetria(openf1) == 0
+
+
 def test_un_segmento_de_clasificacion_en_una_carrera_da_422_sin_bajar_telemetria(cliente, openf1):
     respuesta = pedir(cliente, sesion=CARRERA, params={"segmento": "Q1"})
 

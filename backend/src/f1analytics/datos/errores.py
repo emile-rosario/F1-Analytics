@@ -19,7 +19,9 @@ class ErrorDatos(Exception):
     """Los datos existen, pero no sirven para el análisis pedido.
 
     Códigos: ``sesion_no_encontrada``, ``piloto_no_encontrado``, ``sin_telemetria``,
-    ``telemetria_incompleta`` y ``analisis_no_disponible``.
+    ``telemetria_incompleta`` y ``analisis_no_disponible``. También lo lanzan los límites de la
+    API (``limite_peticiones`` por IP y ``servidor_ocupado`` con la cola llena): no son un
+    problema de los datos, pero se traducen igual a un código para el usuario.
     """
 
     def __init__(self, codigo: str):

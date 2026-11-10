@@ -247,3 +247,19 @@ test("un circuito nuevo, sin curvas numeradas, se explica y mantiene el mapa y e
   const mapa = await page.getByRole("img", { name: /coloreada por velocidad/ }).boundingBox();
   expect(aviso!.y).toBeLessThan(mapa!.y);
 });
+
+test("con el servidor saturado explica que hay mucha gente y se puede reintentar", async ({ page }) => {
+  let saturado = true;
+  await simularApi(page, () =>
+    saturado
+      ? { estado: 503, cuerpo: { codigo: "servidor_ocupado" } }
+      : { estado: 200, cuerpo: ANALISIS },
+  );
+
+  await page.goto("/es/circuito?anio=2024&evento=1244&sesion=9586&piloto=4");
+
+  await expect(page.getByText("El servidor está atendiendo a muchas personas a la vez")).toBeVisible();
+  saturado = false;
+  await page.getByRole("button", { name: "Reintentar" }).click();
+  await expect(page.getByText("1:19,327")).toBeVisible();
+});

@@ -54,6 +54,18 @@ describe("pedir", () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
+  it("un 503 de servidor ocupado no se reintenta solo: la persona decide cuándo", async () => {
+    // Solo el 502 (servidor despertando) se reintenta; con la cola llena reintentar de inmediato
+    // la volvería a llenar.
+    const fetchFn = vi.fn().mockResolvedValue(respuesta(503, { codigo: "servidor_ocupado" }));
+
+    await expect(pedir("/api/x", { fetchFn, ...SIN_ESPERA })).rejects.toMatchObject({
+      codigo: "servidor_ocupado",
+      estadoHttp: 503,
+    });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
   it("usa fallo_api cuando el error no trae JSON", async () => {
     const fetchFn = vi.fn().mockResolvedValue(new Response("boom", { status: 500 }));
 

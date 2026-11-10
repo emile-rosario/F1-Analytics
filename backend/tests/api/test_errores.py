@@ -32,6 +32,7 @@ class CargadorRoto:
         (ErrorOpenF1("limite_peticiones"), 429),
         (ErrorOpenF1("fallo_openf1"), 503),
         (ErrorOpenF1("openf1_en_vivo"), 503),
+        (ErrorDatos("servidor_ocupado"), 503),
     ],
 )
 def test_cada_codigo_de_error_tiene_su_estado_http(error, estado):
@@ -41,6 +42,20 @@ def test_cada_codigo_de_error_tiene_su_estado_http(error, estado):
 
     assert respuesta.status_code == estado
     assert respuesta.json() == {"codigo": error.codigo}
+
+
+def test_servidor_ocupado_sugiere_cuando_reintentar():
+    cliente = crear_cliente(CargadorRoto(ErrorDatos("servidor_ocupado")))
+
+    respuesta = cliente.get("/api/calendario/2024")
+
+    assert respuesta.headers["retry-after"] == "10"
+
+
+def test_los_demas_errores_no_llevan_retry_after():
+    cliente = crear_cliente(CargadorRoto(ErrorOpenF1("fallo_openf1")))
+
+    assert "retry-after" not in cliente.get("/api/calendario/2024").headers
 
 
 def test_fallo_openf1_no_usa_502_porque_el_frontend_lo_reintenta_como_servidor_dormido():

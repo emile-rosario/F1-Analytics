@@ -18,14 +18,25 @@ ESTADO_POR_CODIGO = {
     "sin_telemetria": 404,
     "sesion_no_terminada": 409,
     "limite_peticiones": 429,
+    # Hay demasiados análisis en marcha y en espera; se puede reintentar en unos segundos.
+    "servidor_ocupado": 503,
     # 503 y no 502: el frontend reintenta los 502 porque Render los da al despertar.
     "fallo_openf1": 503,
     "openf1_en_vivo": 503,
 }
 
 
+# Segundos que se sugiere esperar antes de reintentar cuando el servidor está ocupado.
+REINTENTO_SERVIDOR_OCUPADO_S = 10
+
+
 def respuesta_de_error(codigo: str) -> JSONResponse:
-    return JSONResponse({"codigo": codigo}, status_code=ESTADO_POR_CODIGO.get(codigo, 500))
+    cabeceras = (
+        {"Retry-After": str(REINTENTO_SERVIDOR_OCUPADO_S)} if codigo == "servidor_ocupado" else None
+    )
+    return JSONResponse(
+        {"codigo": codigo}, status_code=ESTADO_POR_CODIGO.get(codigo, 500), headers=cabeceras
+    )
 
 
 def registrar_manejadores(app: FastAPI) -> None:
