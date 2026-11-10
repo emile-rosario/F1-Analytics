@@ -137,6 +137,57 @@ describe("VistaCircuito", () => {
   });
 });
 
+describe("circuito nuevo, sin curvas numeradas", () => {
+  function sinCurvas() {
+    const base = crearAnalisis();
+    return crearAnalisis({
+      curvas: [],
+      frenadas: [],
+      resumen: { ...base.resumen, frenada_mas_fuerte: null },
+    });
+  }
+
+  it("avisa que no hay curvas y reemplaza la tabla de frenadas", async () => {
+    api.pedirAnalisisCircuito.mockResolvedValue(sinCurvas());
+    pintar(<VistaCircuito />);
+
+    expect(await screen.findByText("NOR")).toBeInTheDocument();
+    expect(screen.getByTestId("aviso-circuito-nuevo")).toHaveTextContent(
+      "Este circuito es nuevo y todavía no tenemos sus curvas numeradas",
+    );
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    // No es que no se frenara: no se puede medir.
+    expect(screen.getByText(/sin sus curvas numeradas no se pueden medir las frenadas/)).toBeInTheDocument();
+    expect(screen.queryByText(/no se detectaron frenadas fuertes/)).not.toBeInTheDocument();
+  });
+
+  it("el mapa y el resumen siguen ahí", async () => {
+    api.pedirAnalisisCircuito.mockResolvedValue(sinCurvas());
+    pintar(<VistaCircuito />);
+
+    expect(await screen.findByText("NOR")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /vuelta más rápida de NOR coloreada por velocidad/ })).toBeInTheDocument();
+    expect(screen.getByText(/NOR fue a fondo el/)).toBeInTheDocument();
+  });
+
+  it("en inglés el aviso sale en inglés", async () => {
+    api.pedirAnalisisCircuito.mockResolvedValue(sinCurvas());
+    pintar(<VistaCircuito />, "en");
+
+    expect(await screen.findByTestId("aviso-circuito-nuevo")).toHaveTextContent(
+      "This circuit is new and we do not have its numbered turns yet",
+    );
+  });
+
+  it("con las curvas numeradas no aparece el aviso y sí la tabla", async () => {
+    pintar(<VistaCircuito />);
+
+    expect(await screen.findByText("NOR")).toBeInTheDocument();
+    expect(screen.queryByTestId("aviso-circuito-nuevo")).not.toBeInTheDocument();
+    expect(screen.getByRole("table")).toBeInTheDocument();
+  });
+});
+
 describe("pestañas del mapa", () => {
   async function conResultado() {
     pintar(<VistaCircuito />);

@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import AvisoCircuitoNuevo from "@/components/AvisoCircuitoNuevo";
 import Conclusion from "@/components/Conclusion";
 import EstadoCarga from "@/components/EstadoCarga";
 import MapaCircuito, { type ModoMapa } from "@/components/MapaCircuito";
@@ -89,7 +90,11 @@ function Resultado({ analisis }: { analisis: AnalisisCircuito }) {
         <h2 id="titulo-frenadas" className="font-titulo text-3xl font-bold">
           {t("tabla.titulo")}
         </h2>
-        <TablaFrenadas frenadas={analisis.frenadas} />
+        {analisis.curvas.length === 0 ? (
+          <AvisoCircuitoNuevo pagina="circuito" />
+        ) : (
+          <TablaFrenadas frenadas={analisis.frenadas} />
+        )}
       </section>
     </div>
   );
