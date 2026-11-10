@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import AvisoCircuitoNuevo from "@/components/AvisoCircuitoNuevo";
 import ConclusionTelemetria from "@/components/ConclusionTelemetria";
 import EstadoCarga from "@/components/EstadoCarga";
 import MapaMinisectores from "@/components/MapaMinisectores";
@@ -91,6 +92,7 @@ function Resultado({ analisis }: { analisis: AnalisisTelemetria }) {
         <h2 id="titulo-mapa" className="font-titulo text-3xl font-bold">
           {t("mapa.titulo")}
         </h2>
+        {analisis.curvas.length === 0 && <AvisoCircuitoNuevo pagina="telemetria" />}
         <MapaMinisectores
           analisis={analisis}
           indice={indice}

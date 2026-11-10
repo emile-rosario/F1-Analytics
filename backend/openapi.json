@@ -239,7 +239,7 @@
     "/api/analisis/circuito": {
       "get": {
         "summary": "Analisis Circuito",
-        "description": "Mapa de la vuelta más rápida del piloto: velocidad, marchas, curvas y frenadas.\n\nSolo para sesiones terminadas. Responde ``analisis_no_disponible`` en los circuitos que\ntodavía no están en ``circuitos.json``.",
+        "description": "Mapa de la vuelta más rápida del piloto: velocidad, marchas, curvas y frenadas.\n\nSolo para sesiones terminadas. En los circuitos que todavía no están en ``circuitos.json``\n``curvas`` y ``frenadas`` llegan vacías (no hay números de curva), el mapa no se gira y\n``longitud_m`` es la medida en la telemetría.",
         "operationId": "analisis_circuito_api_analisis_circuito_get",
         "parameters": [
           {
@@ -431,7 +431,7 @@
     "/api/analisis/telemetria": {
       "get": {
         "summary": "Analisis Telemetria",
-        "description": "Compara la vuelta más rápida de dos pilotos: velocidad, pedales y delta metro a metro.\n\nEl piloto A es la referencia y el B el que se compara. Sin ``segmento`` se usa la mejor\nvuelta de la sesión; con él, la mejor de Q1, Q2 o Q3 (SQ1, SQ2 o SQ3 en la clasificación\nsprint), que solo existe en esas sesiones. Solo para sesiones terminadas. Responde\n``analisis_no_disponible`` en los circuitos que todavía no están en ``circuitos.json``.",
+        "description": "Compara la vuelta más rápida de dos pilotos: velocidad, pedales y delta metro a metro.\n\nEl piloto A es la referencia y el B el que se compara. Sin ``segmento`` se usa la mejor\nvuelta de la sesión; con él, la mejor de Q1, Q2 o Q3 (SQ1, SQ2 o SQ3 en la clasificación\nsprint), que solo existe en esas sesiones. Solo para sesiones terminadas. En los circuitos\nque todavía no están en ``circuitos.json`` ``curvas`` llega vacío, el mapa no se gira y\n``longitud_m`` es la medida en las vueltas.",
         "operationId": "analisis_telemetria_api_analisis_telemetria_get",
         "parameters": [
           {

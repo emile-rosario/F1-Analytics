@@ -78,6 +78,10 @@
     "segundos": "{segundos} s",
     "reintentar": "Try again"
   },
+  "CircuitoNuevo": {
+    "circuito": "This circuit is new and we do not have its numbered turns yet. So the map has no turn numbers, there is no braking table and the map is not rotated as in the broadcast.",
+    "telemetria": "This circuit is new and we do not have its numbered turns yet: the map has no turn numbers and is not rotated as in the broadcast."
+  },
   "Circuito": {
     "titulo": "How fast does an F1 car go in each part of the circuit?",
     "subtitulo": "A driver's fastest lap, painted on the track map.",
@@ -96,6 +100,7 @@
     "conclusion": {
       "titulo": "The hardest braking is at turn {curva}: from {entrada} to {salida} km/h",
       "tituloSinFrenadas": "No hard braking was detected on this lap",
+      "tituloSinCurvas": "This circuit is new: without its numbered turns the braking cannot be measured",
       "detalle": "{piloto} was flat out for {porcentaje} of the lap, reached {maxima} km/h {distanciaMaxima} m after the line and dropped to {minima} km/h."
     },
     "tabla": {

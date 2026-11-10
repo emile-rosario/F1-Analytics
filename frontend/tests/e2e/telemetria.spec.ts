@@ -438,3 +438,15 @@ test("en el móvil los deslizadores del tramo acercan la vuelta y la página no 
   expect(desborde).toBeLessThanOrEqual(0);
   await contexto.close();
 });
+
+test("un circuito nuevo, sin curvas numeradas, avisa y mantiene la comparación", async ({ page }) => {
+  await simularApi(page, () => ({ estado: 200, cuerpo: crearAnalisisTelemetria({ curvas: [] }) }));
+
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+
+  await expect(page.getByTestId("aviso-circuito-nuevo")).toContainText(
+    "Este circuito es nuevo y todavía no tenemos sus curvas numeradas",
+  );
+  await expect(page.getByText("VER fue 0,228 s más rápido que LEC")).toBeVisible();
+  await expect(page.getByTestId("tramos").locator("polyline")).toHaveCount(25);
+});

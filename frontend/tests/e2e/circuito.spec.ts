@@ -218,3 +218,32 @@ test("en el móvil la página no se desborda y la tabla tiene su propio scroll",
   expect(await region.evaluate((e) => e.scrollWidth > e.clientWidth)).toBe(true);
   await contexto.close();
 });
+
+test("un circuito nuevo, sin curvas numeradas, se explica y mantiene el mapa y el resumen", async ({
+  page,
+}) => {
+  await simularApi(page, () => ({
+    estado: 200,
+    cuerpo: {
+      ...ANALISIS,
+      curvas: [],
+      frenadas: [],
+      resumen: { ...ANALISIS.resumen, frenada_mas_fuerte: null },
+    },
+  }));
+
+  await page.goto("/es/circuito?anio=2024&evento=1244&sesion=9586&piloto=4");
+
+  await expect(page.getByTestId("aviso-circuito-nuevo")).toContainText(
+    "Este circuito es nuevo y todavía no tenemos sus curvas numeradas",
+  );
+  await expect(page.getByRole("img", { name: /coloreada por velocidad/ })).toBeVisible();
+  await expect(page.getByText(/sin sus curvas numeradas no se pueden medir las frenadas/)).toBeVisible();
+  await expect(page.getByText(/NOR fue a fondo el/)).toBeVisible();
+  await expect(page.getByRole("table")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Frenadas" })).toHaveCount(0);
+  // El aviso describe el mapa, así que va encima de él.
+  const aviso = await page.getByTestId("aviso-circuito-nuevo").boundingBox();
+  const mapa = await page.getByRole("img", { name: /coloreada por velocidad/ }).boundingBox();
+  expect(aviso!.y).toBeLessThan(mapa!.y);
+});

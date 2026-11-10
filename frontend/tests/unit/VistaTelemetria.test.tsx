@@ -634,6 +634,36 @@ describe("zoom por rango", () => {
   });
 });
 
+describe("circuito nuevo, sin curvas numeradas", () => {
+  it("avisa que el mapa no lleva números de curva y sigue mostrando la comparación", async () => {
+    api.pedirAnalisisTelemetria.mockResolvedValue(crearAnalisisTelemetria({ curvas: [] }));
+    pintar();
+    await esperarAnalisis();
+
+    expect(screen.getByTestId("aviso-circuito-nuevo")).toHaveTextContent(
+      "Este circuito es nuevo y todavía no tenemos sus curvas numeradas",
+    );
+    expect(screen.getByText("VER fue 0,228 s más rápido que LEC")).toBeInTheDocument();
+    expect(screen.getByTestId("tramos").querySelectorAll("polyline")).toHaveLength(25);
+  });
+
+  it("en inglés el aviso sale en inglés", async () => {
+    api.pedirAnalisisTelemetria.mockResolvedValue(crearAnalisisTelemetria({ curvas: [] }));
+    pintar("en");
+
+    expect(await screen.findByTestId("aviso-circuito-nuevo")).toHaveTextContent(
+      "This circuit is new and we do not have its numbered turns yet",
+    );
+  });
+
+  it("con las curvas numeradas no aparece el aviso", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    expect(screen.queryByTestId("aviso-circuito-nuevo")).not.toBeInTheDocument();
+  });
+});
+
 describe("mapa de minisectores", () => {
   it("pinta un tramo por minisector con el color de su ganador", async () => {
     pintar();

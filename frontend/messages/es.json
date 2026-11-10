@@ -78,6 +78,10 @@
     "segundos": "{segundos} s",
     "reintentar": "Reintentar"
   },
+  "CircuitoNuevo": {
+    "circuito": "Este circuito es nuevo y todavía no tenemos sus curvas numeradas. Por eso el mapa no lleva números de curva, no hay tabla de frenadas y el mapa no está girado como en la transmisión.",
+    "telemetria": "Este circuito es nuevo y todavía no tenemos sus curvas numeradas: el mapa no lleva números de curva y no está girado como en la transmisión."
+  },
   "Circuito": {
     "titulo": "¿Qué tan rápido va un F1 en cada parte del circuito?",
     "subtitulo": "La vuelta más rápida de un piloto, pintada sobre el mapa de la pista.",
@@ -96,6 +100,7 @@
     "conclusion": {
       "titulo": "La frenada más fuerte es la de la curva {curva}: de {entrada} a {salida} km/h",
       "tituloSinFrenadas": "En esta vuelta no se detectaron frenadas fuertes",
+      "tituloSinCurvas": "Este circuito es nuevo: sin sus curvas numeradas no se pueden medir las frenadas",
       "detalle": "{piloto} fue a fondo el {porcentaje} de la vuelta, llegó a {maxima} km/h a los {distanciaMaxima} m de la meta y bajó hasta {minima} km/h."
     },
     "tabla": {

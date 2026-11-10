@@ -15,7 +15,8 @@ export function useConclusionCircuito(analisis: AnalisisCircuito) {
         entrada: frenada.vel_entrada,
         salida: frenada.vel_salida,
       })
-    : t("tituloSinFrenadas");
+    : // Sin curvas numeradas (circuito nuevo) no es que no se frenara: no se puede medir.
+      t(analisis.curvas.length === 0 ? "tituloSinCurvas" : "tituloSinFrenadas");
 
   const detalle = t("detalle", {
     piloto: piloto.codigo,

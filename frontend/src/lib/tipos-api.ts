@@ -75,8 +75,9 @@ export interface paths {
          * Analisis Circuito
          * @description Mapa de la vuelta más rápida del piloto: velocidad, marchas, curvas y frenadas.
          *
-         *     Solo para sesiones terminadas. Responde ``analisis_no_disponible`` en los circuitos que
-         *     todavía no están en ``circuitos.json``.
+         *     Solo para sesiones terminadas. En los circuitos que todavía no están en ``circuitos.json``
+         *     ``curvas`` y ``frenadas`` llegan vacías (no hay números de curva), el mapa no se gira y
+         *     ``longitud_m`` es la medida en la telemetría.
          */
         get: operations["analisis_circuito_api_analisis_circuito_get"];
         put?: never;
@@ -123,8 +124,9 @@ export interface paths {
          *
          *     El piloto A es la referencia y el B el que se compara. Sin ``segmento`` se usa la mejor
          *     vuelta de la sesión; con él, la mejor de Q1, Q2 o Q3 (SQ1, SQ2 o SQ3 en la clasificación
-         *     sprint), que solo existe en esas sesiones. Solo para sesiones terminadas. Responde
-         *     ``analisis_no_disponible`` en los circuitos que todavía no están en ``circuitos.json``.
+         *     sprint), que solo existe en esas sesiones. Solo para sesiones terminadas. En los circuitos
+         *     que todavía no están en ``circuitos.json`` ``curvas`` llega vacío, el mapa no se gira y
+         *     ``longitud_m`` es la medida en las vueltas.
          */
         get: operations["analisis_telemetria_api_analisis_telemetria_get"];
         put?: never;

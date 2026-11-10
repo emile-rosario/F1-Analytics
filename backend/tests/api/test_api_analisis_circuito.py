@@ -5,7 +5,7 @@ from conftest import CLASIFICACION, LEC, VER, crear_cargador, crear_cliente
 
 from f1analytics.api.dependencias import obtener_limitador_concurrencia, obtener_limitador_ip
 from f1analytics.api.limites import LimitadorConcurrencia, LimitadorPorIp
-from f1analytics.datos.errores import ErrorDatos
+from f1analytics.datos.telemetria_vuelta import telemetria_de_vuelta
 
 RUTA = "/api/analisis/circuito"
 
@@ -124,16 +124,41 @@ def test_una_sesion_sin_terminar_da_409(openf1, tmp_path):
     assert pedidos_de_telemetria(openf1) == 0
 
 
-def test_un_circuito_que_no_esta_en_circuitos_json_da_422_sin_bajar_telemetria(
-    cliente, openf1, monkeypatch
-):
-    def sin_circuito(*_):
-        raise ErrorDatos("analisis_no_disponible")
+@pytest.fixture
+def sin_circuitos(monkeypatch):
+    """Un circuitos.json vacío: el circuito del calendario (Monza) pasa a ser uno desconocido.
 
-    monkeypatch.setattr("f1analytics.api.rutas.analisis.circuito", sin_circuito)
+    Así se recorre la búsqueda real (clave entera del calendario contra claves de texto del JSON),
+    en vez de sustituir la función de las rutas.
+    """
+    monkeypatch.setattr("f1analytics.datos.circuitos._leer", lambda: {"circuitos": {}})
 
-    assert codigo_y_estado(pedir(cliente)) == (422, "analisis_no_disponible")
-    assert pedidos_de_telemetria(openf1) == 0
+
+def test_un_circuito_que_no_esta_en_circuitos_json_se_analiza_sin_curvas(cliente, sin_circuitos):
+    # Se simula un circuito nuevo con la telemetría de Monza.
+
+    respuesta = pedir(cliente)
+
+    assert respuesta.status_code == 200
+    datos = respuesta.json()
+    assert datos["curvas"] == []
+    assert datos["frenadas"] == []
+    assert datos["resumen"]["frenada_mas_fuerte"] is None
+    # Lo que no depende de las curvas sigue ahí.
+    assert datos["resumen"]["vel_maxima"]["kmh"] == 351
+    assert 60 < datos["resumen"]["pct_a_fondo"] < 95
+    assert len(datos["puntos"]) > 200
+    # El largo es el medido en la telemetría (no hay oficial).
+    assert datos["longitud_m"] == pytest.approx(datos["puntos"][-1]["distancia_m"], abs=0.1)
+
+
+def test_un_circuito_sin_datos_no_gira_el_mapa(cliente, cargador, sin_circuitos):
+    puntos = pedir(cliente).json()["puntos"]
+
+    crudo = telemetria_de_vuelta(cargador, CLASIFICACION, LEC, 20)
+    # Las coordenadas llegan tal como las manda OpenF1, sin la rotación de la transmisión.
+    assert [p["x"] for p in puntos] == pytest.approx(crudo["x"].round(1).tolist(), abs=0.05)
+    assert [p["y"] for p in puntos] == pytest.approx(crudo["y"].round(1).tolist(), abs=0.05)
 
 
 @pytest.mark.parametrize(

@@ -156,7 +156,7 @@ The notebooks need internet access and no live F1 session (OpenF1 blocks keyless
 ## Known limits
 
 - No live sessions: while a session is running, OpenF1 blocks queries and the web app says so.
-- Circuits missing from `circuitos.json` (for example Kuala Lumpur and Madring) have no map and return "analysis not available".
+- Circuits missing from `circuitos.json` (for example Kuala Lumpur and Madring, new in 2026) are analysed **without turn numbers**: there is no braking table, the map has no numbers and is not rotated as in the broadcast, and the length is the one measured from telemetry. The web app says so. MultiViewer does not have their data yet.
 - The telemetry comparison does not explain why a difference exists: a better braking point, a better line or a lifted foot all look the same in the delta.
 - The 25 sections are equal in length, not the official mini-sectors (almost half of the circuits have none).
 

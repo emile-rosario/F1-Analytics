@@ -2,7 +2,12 @@ import numpy as np
 import pytest
 from conftest import CLASIFICACION, LEC
 
-from f1analytics.datos.circuitos import circuito, claves_disponibles
+from f1analytics.datos.circuitos import (
+    SIN_DATOS,
+    circuito,
+    circuito_o_sin_datos,
+    claves_disponibles,
+)
 from f1analytics.datos.errores import ErrorDatos
 from f1analytics.datos.telemetria_vuelta import telemetria_de_vuelta
 
@@ -31,6 +36,33 @@ def test_un_circuito_que_no_esta_lanza_analisis_no_disponible():
             circuito(clave, 2026)
 
         assert error.value.codigo == "analisis_no_disponible"
+
+
+def test_circuito_o_sin_datos_da_el_mismo_trazado_si_el_circuito_esta():
+    assert circuito_o_sin_datos(MONZA, 2024) == circuito(MONZA, 2024)
+
+
+def test_circuito_o_sin_datos_da_un_trazado_vacio_si_el_circuito_no_esta():
+    for clave in (KUALA_LUMPUR, MADRING):
+        trazado = circuito_o_sin_datos(clave, 2026)
+
+        assert trazado is SIN_DATOS
+        assert trazado.conocido is False
+        assert trazado.curvas == ()
+        assert trazado.rotacion == 0  # el mapa no se gira
+
+
+def test_el_largo_sale_del_circuito_si_se_conoce_y_de_la_medida_si_no():
+    assert circuito(MONZA, 2024).conocido is True
+    assert circuito(MONZA, 2024).longitud_o(1234.5) == circuito(MONZA, 2024).longitud_m
+    assert SIN_DATOS.longitud_o(1234.5) == 1234.5
+
+
+def test_un_circuito_desconocido_no_se_confunde_con_uno_que_existe():
+    # Monza sigue entrando por ``circuito``, que no cambia: lanza error si no lo encuentra.
+    with pytest.raises(ErrorDatos):
+        circuito(KUALA_LUMPUR, 2026)
+    assert circuito_o_sin_datos(MONZA, 2024).curvas != ()
 
 
 def test_un_anio_sin_datos_usa_el_trazado_mas_cercano():
