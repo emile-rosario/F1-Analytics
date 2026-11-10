@@ -11,4 +11,6 @@ Tres barras con los colores de sector (morado, verde, amarillo) sobre asfalto `#
 | `manifest.webmanifest` | `frontend/src/app/manifest.webmanifest` | Nombre y colores al instalar la web |
 | `icon-16.svg` | — | Fuente del tamaño 16 px |
 
-Next.js detecta solo los archivos de `src/app/` y pone las etiquetas `<link>` en el `<head>`. Se integra en el PR 0.
+Next.js detecta solo los archivos de `src/app/` y pone las etiquetas `<link>` en el `<head>`.
+
+Esta carpeta guarda los originales; la web sirve las **copias** de `frontend/`. Si cambias el diseño, actualiza las dos (`tests/e2e/iconos.spec.ts` comprueba que los archivos se sirven y que el `<head>` los declara).
