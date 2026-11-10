@@ -34,9 +34,18 @@ CANALES = CANALES_CONTINUOS + CANALES_DISCRETOS
 # Por debajo de esta velocidad (m/s) no se divide: con el coche casi parado ds / v se dispara.
 VELOCIDAD_MINIMA_MS = 0.5
 # Diferencias menores que esto (segundos) se consideran empate. Contra los tiempos oficiales de
-# sector, el delta se equivoca 0,03 s de media (0,11 s como máximo) tras 1/3 de vuelta, así que
+# sector, el delta se equivoca 0,04 s de media (0,13 s como máximo) tras 1/3 de vuelta, así que
 # una diferencia de un solo minisector por debajo de 0,01 s no se puede distinguir de ese error.
 EMPATE_S = 0.01
+
+# Ancho (metros) de la media móvil que alisa el delta. La velocidad llega cada ~20 m (3,7 Hz) y en
+# las curvas lentas una sola muestra movida mueve el delta hasta 0,12 s en un tramo corto: un
+# salto que no es una ventaja real. Medido en Bahréin 2024, con 105 m ese dentado baja de 124 a
+# 23 ms (con 65 m quedaba de 51). No lo arregla todo: los lomos anchos que el delta hace en las
+# frenadas fuertes solo bajan una mediana del 26 %. Y tiene un coste: el alisado también redondea
+# cambios reales y el error contra los sectores oficiales sube de 0,035 a 0,042 s de media
+# (0,107 a 0,132 s de máximo; 10 comparaciones, ``scripts/validar_delta.py``).
+VENTANA_SUAVIZADO_M = 105.0
 
 COLUMNAS_GANADORES = ["sector", "inicio_m", "fin_m", "diferencia_s", "ganador"]
 
@@ -118,10 +127,29 @@ def _tiempo_acumulado(distancia: np.ndarray, velocidad_kmh: np.ndarray) -> np.nd
     return np.concatenate([[0.0], np.cumsum(tramos)])
 
 
+def _alisar(valores: np.ndarray, distancia: np.ndarray, ventana_m: float) -> np.ndarray:
+    """Media móvil centrada de ``ventana_m`` metros que respeta los dos extremos.
+
+    En los bordes la serie se refleja *respecto al extremo* (reflexión impar), así la media de
+    la ventana en el primer y en el último punto vale exactamente el valor del extremo: el delta
+    sigue empezando en 0 y terminando en la diferencia oficial. Una recta queda igual.
+    """
+    paso = float(np.median(np.diff(distancia)))
+    mitad = int(ventana_m / paso) // 2
+    if mitad < 1 or len(valores) < 3:
+        return valores
+    relleno = np.pad(valores, mitad, mode="reflect", reflect_type="odd")
+    alisados = np.convolve(relleno, np.ones(2 * mitad + 1) / (2 * mitad + 1), mode="valid")
+    # Matemáticamente ya valen eso; se fijan para quitar el error de redondeo de la suma.
+    alisados[[0, -1]] = valores[[0, -1]]
+    return alisados
+
+
 def delta_tiempo(
     alineadas: pd.DataFrame,
     duracion_a_s: float | None = None,
     duracion_b_s: float | None = None,
+    ventana_m: float = VENTANA_SUAVIZADO_M,
 ) -> pd.Series:
     """Delta acumulado en cada metro: segundos que B lleva de más (positivo) o de menos sobre A.
 
@@ -133,6 +161,12 @@ def delta_tiempo(
     se reparte a lo largo de la vuelta en proporción al tiempo, y el delta del medio sigue
     siendo una estimación: el final es el único punto exacto.
 
+    Por último el delta se alisa con una media móvil de ``ventana_m`` metros (0 para no alisar),
+    porque con una muestra cada ~20 m un salto de velocidad en una curva lenta deja un pico
+    de decenas de milisegundos que no es una ventaja real. El alisado no mueve ni el inicio ni
+    el final; a cambio redondea un poco los cambios reales y sube el error contra los tiempos
+    oficiales de sector (ver ``VENTANA_SUAVIZADO_M``).
+
     Devuelve una serie con el mismo índice que ``alineadas``.
     """
     distancia = alineadas["distancia_m"].to_numpy(dtype=float)
@@ -142,7 +176,8 @@ def delta_tiempo(
         tiempo_a = tiempo_a * (duracion_a_s / tiempo_a[-1])
     if duracion_b_s is not None:
         tiempo_b = tiempo_b * (duracion_b_s / tiempo_b[-1])
-    return pd.Series(tiempo_b - tiempo_a, index=alineadas.index, name="delta_s")
+    delta = _alisar(tiempo_b - tiempo_a, distancia, ventana_m)
+    return pd.Series(delta, index=alineadas.index, name="delta_s")
 
 
 def _quien_gana(diferencia_s: float, empate_s: float = EMPATE_S) -> str:

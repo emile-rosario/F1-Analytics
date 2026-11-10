@@ -63,8 +63,8 @@ Las vueltas de dos pilotos una encima de la otra, metro a metro: velocidad, acel
 **Qué se ve en la Q3 de Bahréin 2024 (Verstappen 1:29,179 contra Leclerc 1:29,407):**
 
 - Verstappen fue **0,228 s** más rápido.
-- Ganó **11 de los 25 tramos**; Leclerc ganó 7 y otros 7 quedaron empatados (menos de 0,01 s de diferencia).
-- Verstappen sacó **0,196 s** entre los 641 y los 855 m, y Leclerc recuperó **0,141 s** entre los 1497 y los 1710 m.
+- Ganó **12 de los 25 tramos**; Leclerc ganó 7 y otros 6 quedaron empatados (menos de 0,01 s de diferencia).
+- Verstappen sacó **0,154 s** entre los 641 y los 855 m, y Leclerc recuperó **0,134 s** entre los 4917 y los 5131 m.
 
 <details>
 <summary>Las mismas figuras, hechas con Matplotlib en el notebook 03</summary>
@@ -79,7 +79,8 @@ Las vueltas de dos pilotos una encima de la otra, metro a metro: velocidad, acel
 Los datos públicos de OpenF1 traen unas 3,7 muestras por segundo, una cada 20 m a 250 km/h. Por eso:
 
 - **El tiempo final de la comparación es exacto**: el cálculo se ajusta al tiempo oficial de cada vuelta.
-- **A mitad de vuelta es una estimación.** Se midió contra los tiempos oficiales de sector en 6 comparaciones de la Q3 de 5 carreras de 2024: error medio **0,03 s**, máximo **0,11 s**. Sirve para decir quién fue más rápido en un tramo largo, no para discutir una milésima.
+- **A mitad de vuelta es una estimación.** Se midió contra los tiempos oficiales de sector en 10 comparaciones de la Q3 de 5 carreras de 2024 (`backend/scripts/validar_delta.py`): error medio **0,04 s**, máximo **0,13 s**. Sirve para decir quién fue más rápido en un tramo largo, no para discutir una milésima.
+- **El delta está alisado, pero los lomos de las curvas lentas siguen.** Con una muestra cada ~20 m, una sola medida mala deja dientes de hasta 0,12 s que no son una ventaja real. Se promedia en ventanas de ~100 m: el dentado baja de 0,124 a 0,023 s, pero los lomos anchos que el delta hace en las frenadas fuertes solo bajan una mediana del 26 %. Lo que cuenta es el nivel al que se estabiliza después de la curva. El alisado también redondea cambios reales y sube el error medio de 0,035 a 0,042 s.
 - **La degradación de gomas no es desgaste real.** Es la pendiente del tiempo de vuelta contra la edad de la goma; también se mezclan el tráfico, la temperatura y que el asfalto mejora. Con estos datos no se pueden separar.
 - **Las diferencias pequeñas no se presentan como resultado.** Si dos pilotos o dos compuestos quedan a menos de un umbral, la web lo dice y no nombra ganador.
 

@@ -207,7 +207,7 @@ describe("conclusión", () => {
 
     const detalles = screen.getByText("Qué no mide este análisis").closest("details");
     expect(detalles).not.toHaveAttribute("open");
-    expect(within(detalles!).getByText(/unos 0,03 s de media/)).toBeInTheDocument();
+    expect(within(detalles!).getByText(/unos 0,04 s de media/)).toBeInTheDocument();
   });
 });
 

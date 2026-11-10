@@ -65,8 +65,8 @@ Two drivers' laps on top of each other, metre by metre: speed, throttle, brake a
 **What Bahrain 2024 Q3 shows (Verstappen 1:29.179 against Leclerc 1:29.407):**
 
 - Verstappen was **0.228 s** faster.
-- He won **11 of the 25 sections**; Leclerc won 7 and another 7 were ties (under 0.01 s apart).
-- Verstappen gained **0.196 s** between 641 and 855 m, and Leclerc took back **0.141 s** between 1497 and 1710 m.
+- He won **12 of the 25 sections**; Leclerc won 7 and another 6 were ties (under 0.01 s apart).
+- Verstappen gained **0.154 s** between 641 and 855 m, and Leclerc took back **0.134 s** between 4917 and 5131 m.
 
 <details>
 <summary>The same figures, made with Matplotlib in notebook 03</summary>
@@ -81,7 +81,8 @@ Two drivers' laps on top of each other, metre by metre: speed, throttle, brake a
 OpenF1's public data has about 3.7 samples per second, one every 20 m at 250 km/h. Because of that:
 
 - **The final time difference is exact**: the calculation is fitted to each lap's official time.
-- **Mid-lap it is an estimate.** It was measured against the official sector times in 6 Q3 comparisons from 5 races in 2024: mean error **0.03 s**, maximum **0.11 s**. Good enough to say who was faster over a long section, not to argue about a thousandth.
+- **Mid-lap it is an estimate.** It was measured against the official sector times in 10 Q3 comparisons from 5 races in 2024 (`backend/scripts/validar_delta.py`): mean error **0.04 s**, maximum **0.13 s**. Good enough to say who was faster over a long section, not to argue about a thousandth.
+- **The delta is smoothed, but the bumps in slow corners remain.** With one sample every ~20 m, a single bad reading leaves teeth of up to 0.12 s that are not a real advantage. It is averaged over ~100 m windows: the jaggedness drops from 0.124 to 0.023 s, but the wide bumps the delta makes at heavy braking zones only shrink by a median of 26 %. What matters is the level it settles at after the corner. The smoothing also rounds off real changes and raises the mean error from 0.035 to 0.042 s.
 - **Tyre degradation is not real wear.** It is the slope of lap time against tyre age; traffic, temperature and the track rubbering in are mixed in too. With this data they cannot be separated.
 - **Small differences are not presented as results.** If two drivers or two compounds are closer than a threshold, the web app says so and names no winner.
 

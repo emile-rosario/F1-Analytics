@@ -42,6 +42,7 @@ uv run jupyter nbconvert --to notebook --execute --inplace notebooks/01_velocida
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/02_degradacion_gomas.ipynb
 uv run jupyter nbconvert --to notebook --execute --inplace notebooks/03_comparacion_telemetria.ipynb
 uv run python scripts/medir_recursos.py   # RAM y tiempos con los límites de Render Free (necesita Docker)
+uv run python scripts/validar_delta.py    # error del delta contra los sectores oficiales (necesita internet)
 ```
 
 Los notebooks necesitan internet y que no haya una sesión de F1 en vivo; no corren en CI. Se suben con las salidas ya ejecutadas.

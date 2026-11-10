@@ -239,6 +239,76 @@ def test_el_coche_casi_parado_no_dispara_el_delta():
     assert np.isfinite(delta).all()
 
 
+# --- alisado del delta ---------------------------------------------------------------
+
+
+def _aspereza(delta: pd.Series) -> float:
+    """Cuánto se quiebra el delta de un punto al siguiente (mayor cambio de pendiente)."""
+    return float(np.abs(np.diff(delta.to_numpy(), n=2)).max())
+
+
+def test_el_alisado_no_toca_un_delta_que_ya_es_recto():
+    # A y B van a velocidad constante: el delta es una recta y una media móvil no la cambia.
+    alineadas = alinear_vueltas(vuelta_sintetica(180), vuelta_sintetica(162))
+
+    alisado = delta_tiempo(alineadas)
+    crudo = delta_tiempo(alineadas, ventana_m=0)
+
+    assert alisado.to_numpy() == pytest.approx(crudo.to_numpy(), abs=1e-9)
+
+
+def test_el_alisado_apaga_el_pico_de_una_sola_muestra_mala():
+    # Una muestra con la velocidad a la mitad (un fallo de medida, no una ventaja real) deja un
+    # pico en el delta crudo; con la ventana de 105 m el pico casi desaparece.
+    mala = vuelta_sintetica(180)
+    mala.loc[200, "velocidad"] = 90
+    alineadas = alinear_vueltas(vuelta_sintetica(180), mala)
+
+    crudo = delta_tiempo(alineadas, ventana_m=0)
+    alisado = delta_tiempo(alineadas)
+
+    assert _aspereza(alisado) < _aspereza(crudo) / 3
+    # El delta es acumulado: la muestra mala deja un desfase que se queda hasta el final (el
+    # alisado lo conserva), pero ya no aparece de golpe en un solo paso de 5 m.
+    assert np.abs(np.diff(alisado)).max() < np.abs(np.diff(crudo)).max() / 3
+    assert alisado.iloc[-1] == pytest.approx(crudo.iloc[-1], abs=1e-9)
+
+
+def test_el_alisado_deja_el_inicio_en_cero_y_el_final_en_la_diferencia_oficial(alineadas_reales):
+    delta = delta_tiempo(alineadas_reales, DURACION_LEC_S, DURACION_VER_S)
+
+    assert delta.iloc[0] == 0
+    assert delta.iloc[-1] == pytest.approx(DURACION_VER_S - DURACION_LEC_S, abs=1e-9)
+
+
+def test_con_datos_reales_el_alisado_quita_aspereza_y_apenas_mueve_el_delta(alineadas_reales):
+    crudo = delta_tiempo(alineadas_reales, DURACION_LEC_S, DURACION_VER_S, ventana_m=0)
+    alisado = delta_tiempo(alineadas_reales, DURACION_LEC_S, DURACION_VER_S)
+
+    assert _aspereza(alisado) < _aspereza(crudo) / 2
+    # Es el mismo delta, solo sin los picos: no se aleja más de unas centésimas.
+    assert (alisado - crudo).abs().max() < 0.05
+
+
+def test_una_ventana_menor_que_el_paso_no_alisa(alineadas_reales):
+    crudo = delta_tiempo(alineadas_reales, ventana_m=0)
+
+    assert delta_tiempo(alineadas_reales, ventana_m=4).to_numpy() == pytest.approx(
+        crudo.to_numpy(), abs=0
+    )
+
+
+def test_el_alisado_no_cambia_a_quien_gana_la_vuelta(alineadas_reales):
+    crudo = delta_tiempo(alineadas_reales, DURACION_LEC_S, DURACION_VER_S, ventana_m=0)
+    alisado = delta_tiempo(alineadas_reales, DURACION_LEC_S, DURACION_VER_S)
+
+    ganadores_crudo = ganador_por_minisector(alineadas_reales, crudo)["ganador"]
+    ganadores_alisado = ganador_por_minisector(alineadas_reales, alisado)["ganador"]
+
+    # En Monza (la vuelta de prueba) casi todos los minisectores deben coincidir.
+    assert (ganadores_crudo == ganadores_alisado).sum() >= 22
+
+
 # --- ganador_por_minisector ----------------------------------------------------------
 
 
