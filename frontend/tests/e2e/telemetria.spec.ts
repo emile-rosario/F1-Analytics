@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { descargarYRevisar } from "./descargas";
+
 import { crearAnalisisTelemetria } from "../unit/datos";
 
 test.use({ locale: "es-ES" });
@@ -449,4 +451,30 @@ test("un circuito nuevo, sin curvas numeradas, avisa y mantiene la comparación"
   );
   await expect(page.getByText("VER fue 0,228 s más rápido que LEC")).toBeVisible();
   await expect(page.getByTestId("tramos").locator("polyline")).toHaveCount(25);
+});
+
+test("descargar las gráficas baja un PNG con contenido y no deja escondido el cursor", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(page.getByText("VER fue 0,228 s más rápido que LEC")).toBeVisible();
+
+  const png = await descargarYRevisar(page, "Descargar PNG de las gráficas de telemetría");
+
+  expect(png.nombre).toBe("f1analytics-telemetria-9468-ver-lec.png");
+  expect(png.ancho).toBeGreaterThan(1500);
+  expect(png.colores).toBeGreaterThan(5);
+  // Durante la captura el cursor se esconde; al terminar tiene que volver a verse.
+  await expect(page.getByTestId("cursor")).toHaveCSS("visibility", "visible");
+});
+
+test("descargar el mapa de tramos baja un PNG con contenido", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+  await expect(page.getByText("VER fue 0,228 s más rápido que LEC")).toBeVisible();
+
+  const png = await descargarYRevisar(page, "Descargar PNG del mapa de tramos");
+
+  expect(png.nombre).toBe("f1analytics-tramos-9468-ver-lec.png");
+  expect(png.colores).toBeGreaterThan(5);
+  await expect(page.getByTestId("punto-cursor")).toHaveCSS("visibility", "visible");
 });

@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { descargarYRevisar } from "./descargas";
+
 import { crearAnalisisGomas } from "../unit/datos";
 
 test.use({ locale: "es-ES" });
@@ -239,4 +241,30 @@ test("en el móvil la página no se desborda y la gráfica y las tablas se despl
     expect(await region.evaluate((e) => e.scrollWidth > e.clientWidth)).toBe(true);
   }
   await contexto.close();
+});
+
+test("descargar la estrategia baja un PNG con contenido", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/gomas?${URL_COMPLETA}`);
+  await expect(page.getByRole("list", { name: "Estrategias de gomas por piloto" })).toBeVisible();
+
+  const png = await descargarYRevisar(page, "Descargar PNG de la estrategia de la carrera");
+
+  expect(png.nombre).toBe("f1analytics-estrategia-9539.png");
+  expect(png.ancho).toBeGreaterThan(1500);
+  expect(png.colores).toBeGreaterThan(5);
+});
+
+test("descargar la dispersión baja un PNG con contenido y el nombre dice si está corregida", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/gomas?${URL_COMPLETA}`);
+  await expect(page.getByRole("img", { name: /Tiempos de vuelta limpios de/ })).toHaveCount(3);
+
+  const corregida = await descargarYRevisar(page, "Descargar PNG de la dispersión de la goma");
+  expect(corregida.nombre).toBe("f1analytics-dispersion-9539-corregido.png");
+  expect(corregida.colores).toBeGreaterThan(5);
+
+  await page.getByRole("switch").click();
+  const sinCorregir = await descargarYRevisar(page, "Descargar PNG de la dispersión de la goma");
+  expect(sinCorregir.nombre).toBe("f1analytics-dispersion-9539-sin-corregir.png");
 });

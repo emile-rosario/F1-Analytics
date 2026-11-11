@@ -157,6 +157,21 @@ describe("VistaCircuito", () => {
   });
 });
 
+describe("descarga del mapa", () => {
+  it("ofrece bajar el mapa como PNG, con el nombre accesible del gráfico", async () => {
+    pintar(<VistaCircuito />);
+
+    expect(await screen.findByText("NOR")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Descargar PNG del mapa del circuito" })).toBeInTheDocument();
+  });
+
+  it("en inglés el botón se llama en inglés", async () => {
+    pintar(<VistaCircuito />, "en");
+
+    expect(await screen.findByRole("button", { name: "Download PNG of the circuit map" })).toBeInTheDocument();
+  });
+});
+
 describe("circuito nuevo, sin curvas numeradas", () => {
   function sinCurvas() {
     const base = crearAnalisis();
