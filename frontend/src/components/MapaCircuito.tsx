@@ -1,7 +1,10 @@
 import { useTranslations } from "next-intl";
+import { useRef } from "react";
 
+import BotonDescargarPng from "@/components/BotonDescargarPng";
 import type { AnalisisCircuito } from "@/lib/api";
 import { COLORES_MARCHA, DEGRADADO_VELOCIDAD, colorVelocidad } from "@/lib/colores";
+import { nombreArchivo } from "@/lib/exportar";
 
 export type ModoMapa = "velocidad" | "marchas";
 
@@ -29,6 +32,8 @@ export default function MapaCircuito({
   descripcion: string;
 }) {
   const t = useTranslations("Circuito");
+  const te = useTranslations("Exportar");
+  const figura = useRef<HTMLElement>(null);
   const { puntos, curvas, frenadas } = analisis;
 
   const todos: Punto[] = [...puntos, ...curvas];
@@ -60,7 +65,13 @@ export default function MapaCircuito({
   const radioCurva = 2 * unidad;
 
   return (
-    <figure className="space-y-3">
+    <div className="space-y-2">
+      <BotonDescargarPng
+        nodo={figura}
+        grafico={te("graficos.circuito")}
+        archivo={nombreArchivo("circuito", analisis.sesion, analisis.piloto.codigo, modo)}
+      />
+    <figure ref={figura} className="space-y-3">
       <svg
         viewBox={`0 0 ${ancho} ${alto}`}
         role="img"
@@ -160,5 +171,6 @@ export default function MapaCircuito({
         )}
       </figcaption>
     </figure>
+    </div>
   );
 }

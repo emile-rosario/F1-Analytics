@@ -17,6 +17,21 @@
     "autor": "Hecho por Emile Rosario",
     "estado": "Estado del servicio"
   },
+  "Exportar": {
+    "boton": "Descargar PNG",
+    "etiqueta": "Descargar PNG {grafico}",
+    "preparando": "Preparando…",
+    "listo": "Imagen descargada.",
+    "error": "No se pudo crear la imagen. Prueba de nuevo.",
+    "credito": "F1 Analytics · Datos de OpenF1",
+    "graficos": {
+      "circuito": "del mapa del circuito",
+      "telemetria": "de las gráficas de telemetría",
+      "minisectores": "del mapa de tramos",
+      "estrategia": "de la estrategia de la carrera",
+      "dispersion": "de la dispersión de la goma"
+    }
+  },
   "Estado": {
     "titulo": "Estado del servicio",
     "versionFrontend": "Versión del frontend",

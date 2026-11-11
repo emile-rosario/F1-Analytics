@@ -3,9 +3,11 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { memo, useId, useMemo, useRef, useState, type PointerEvent } from "react";
 
+import BotonDescargarPng from "@/components/BotonDescargarPng";
 import ControlesRango from "@/components/ControlesRango";
 import type { AnalisisTelemetria } from "@/lib/api";
 import { COLORES_PILOTO } from "@/lib/colores";
+import { nombreArchivo } from "@/lib/exportar";
 import { marcasEje } from "@/lib/gomas";
 import {
   indiceEnRango,
@@ -305,6 +307,8 @@ export default function PanelTelemetria({
   descripcion: string;
 }) {
   const t = useTranslations("Telemetria");
+  const te = useTranslations("Exportar");
+  const grafica = useRef<HTMLDivElement>(null);
   const formato = useFormatter();
   const { canales } = analisis;
   const g = useMemo(() => geometria(canales, rango), [canales, rango]);
@@ -487,6 +491,12 @@ export default function PanelTelemetria({
 
       <ControlesRango rango={rango} largo={g.largo} onCambiar={onRango} />
 
+      <BotonDescargarPng
+        nodo={grafica}
+        grafico={te("graficos.telemetria")}
+        archivo={nombreArchivo("telemetria", analisis.sesion, codigoA, codigoB)}
+      />
+
       {/* En pantallas angostas la gráfica conserva un ancho mínimo y se desplaza. */}
       <div
         className="overflow-x-auto rounded-lg bg-panel"
@@ -495,7 +505,7 @@ export default function PanelTelemetria({
         aria-label={t("region")}
       >
         {/* Sin selección de texto: arrastrar para acercar no debe resaltar el tooltip ni los ejes. */}
-        <div className="relative min-w-[40rem] select-none">
+        <div ref={grafica} className="relative min-w-[40rem] select-none">
           <svg
             viewBox={`0 0 ${ANCHO} ${g.altoTotal}`}
             role="img"
@@ -504,7 +514,7 @@ export default function PanelTelemetria({
           >
             <Capas analisis={analisis} g={g} />
 
-            <g data-testid="cursor" pointerEvents="none">
+            <g data-testid="cursor" data-no-exportar pointerEvents="none">
               <line x1={x} x2={x} y1={g.velocidad.arriba} y2={g.delta.arriba + g.delta.alto} stroke="var(--color-texto)" strokeWidth={1.5} strokeDasharray="4 3" />
               {(
                 [
@@ -523,6 +533,7 @@ export default function PanelTelemetria({
             {banda && (
               <rect
                 data-testid="banda-zoom"
+                data-no-exportar
                 x={g.px(banda.desde)}
                 y={g.velocidad.arriba}
                 width={Math.max(1, g.px(banda.hasta) - g.px(banda.desde))}
@@ -552,6 +563,7 @@ export default function PanelTelemetria({
           {puntero && (
             <div
               data-testid="tooltip-telemetria"
+              data-no-exportar
               aria-hidden="true"
               className="pointer-events-none absolute z-10 w-max max-w-[17rem] space-y-1 rounded-md border border-suave bg-asfalto px-3 py-2 text-sm shadow-lg"
               style={{

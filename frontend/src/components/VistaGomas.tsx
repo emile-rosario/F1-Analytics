@@ -14,7 +14,7 @@ import { useCarga } from "@/hooks/useCarga";
 import { useConclusionGomas } from "@/hooks/useConclusionGomas";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { pedirAnalisisGomas, type AnalisisGomas } from "@/lib/api";
-import { claveCompuesto, colorCompuesto, ordenCompuesto } from "@/lib/colores";
+import { ordenCompuesto } from "@/lib/colores";
 import {
   alternarPiloto,
   leerPilotos,
@@ -57,6 +57,7 @@ function Resultado({
           {t("estrategia.titulo")}
         </h2>
         <EstrategiaCarrera
+          sesion={analisis.sesion}
           estrategias={analisis.estrategias}
           nVueltas={analisis.n_vueltas}
           elegidos={elegidos}
@@ -112,6 +113,7 @@ function Resultado({
             analisis={analisis}
             elegidos={elegidos}
             corregir={corregir}
+            compuestos={compuestosEnCarrera}
             descripcion={t("dispersion.descripcion", {
               pilotos: codigos.join(", "),
               conclusion: conclusion.titulo,
@@ -123,18 +125,6 @@ function Resultado({
             {t("dispersion.actualizando")}
           </p>
         )}
-        <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-suave">
-          {compuestosEnCarrera.map((c) => (
-            <li key={c} className="flex items-center gap-2">
-              <span
-                aria-hidden="true"
-                className="h-3 w-3 rounded-full"
-                style={{ background: colorCompuesto(c) }}
-              />
-              {t(`compuestos.${claveCompuesto(c)}.nombre`)}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section aria-labelledby="titulo-tabla-stints" className="space-y-3">

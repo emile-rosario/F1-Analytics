@@ -1,10 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRef } from "react";
 
+import BotonDescargarPng from "@/components/BotonDescargarPng";
 import type { AnalisisTelemetria } from "@/lib/api";
 import { COLORES_PILOTO } from "@/lib/colores";
 import { UMBRAL_EMPATE_S } from "@/hooks/useConclusionTelemetria";
+import { nombreArchivo } from "@/lib/exportar";
 import { sectorDe } from "@/lib/telemetria";
 
 /** Si la vuelta empieza y termina a menos de esto (décimas de metro) se cierra el circuito. */
@@ -27,6 +30,8 @@ export default function MapaMinisectores({
   descripcion: string;
 }) {
   const t = useTranslations("Telemetria");
+  const te = useTranslations("Exportar");
+  const figura = useRef<HTMLElement>(null);
   const { canales, curvas, minisectores } = analisis;
   const codigos = { a: analisis.piloto_a.piloto.codigo, b: analisis.piloto_b.piloto.codigo };
 
@@ -72,7 +77,13 @@ export default function MapaMinisectores({
   ];
 
   return (
-    <figure className="space-y-3">
+    <div className="space-y-2">
+      <BotonDescargarPng
+        nodo={figura}
+        grafico={te("graficos.minisectores")}
+        archivo={nombreArchivo("tramos", analisis.sesion, codigos.a, codigos.b)}
+      />
+    <figure ref={figura} className="space-y-3">
       <svg
         viewBox={`0 0 ${maxX - minX + 2 * margen} ${maxY - minY + 2 * margen}`}
         role="img"
@@ -109,6 +120,7 @@ export default function MapaMinisectores({
 
         <circle
           data-testid="punto-cursor"
+          data-no-exportar
           cx={px(canales.x[indice])}
           cy={py(canales.y[indice])}
           r={2.2 * unidad}
@@ -132,5 +144,6 @@ export default function MapaMinisectores({
         </p>
       </figcaption>
     </figure>
+    </div>
   );
 }

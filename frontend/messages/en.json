@@ -17,6 +17,21 @@
     "autor": "Made by Emile Rosario",
     "estado": "Service status"
   },
+  "Exportar": {
+    "boton": "Download PNG",
+    "etiqueta": "Download PNG of {grafico}",
+    "preparando": "Preparing…",
+    "listo": "Image downloaded.",
+    "error": "The image could not be created. Try again.",
+    "credito": "F1 Analytics · Data from OpenF1",
+    "graficos": {
+      "circuito": "the circuit map",
+      "telemetria": "the telemetry charts",
+      "minisectores": "the sections map",
+      "estrategia": "the race strategy",
+      "dispersion": "the tyre scatter chart"
+    }
+  },
   "Estado": {
     "titulo": "Service status",
     "versionFrontend": "Frontend version",

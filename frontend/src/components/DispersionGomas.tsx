@@ -1,9 +1,12 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useRef } from "react";
 
+import BotonDescargarPng from "@/components/BotonDescargarPng";
 import type { AnalisisGomas } from "@/lib/api";
-import { colorCompuesto } from "@/lib/colores";
+import { claveCompuesto, colorCompuesto } from "@/lib/colores";
+import { nombreArchivo } from "@/lib/exportar";
 import { formatearTiempoVuelta } from "@/lib/formato";
 import { marcasEje } from "@/lib/gomas";
 
@@ -38,14 +41,20 @@ export default function DispersionGomas({
   analisis,
   elegidos,
   corregir,
+  compuestos,
   descripcion,
 }: {
   analisis: AnalisisGomas;
   elegidos: number[];
   corregir: boolean;
+  /** Los compuestos que se usaron en la carrera, para la leyenda de colores. */
+  compuestos: string[];
   descripcion: string;
 }) {
   const t = useTranslations("Gomas.dispersion");
+  const tc = useTranslations("Gomas.compuestos");
+  const te = useTranslations("Exportar");
+  const paneles = useRef<HTMLDivElement>(null);
   const idioma = useLocale();
 
   const tiempo = (v: Vuelta) => (corregir ? v.tiempo_corregido_s : v.tiempo_s);
@@ -106,17 +115,25 @@ export default function DispersionGomas({
   return (
     // En pantallas angostas los paneles conservan un ancho mínimo y se desplazan juntos, para que
     // los textos se lean.
+    <div className="space-y-2">
+      <BotonDescargarPng
+        nodo={paneles}
+        grafico={te("graficos.dispersion")}
+        archivo={nombreArchivo("dispersion", analisis.sesion, corregir ? "corregido" : "sin-corregir")}
+      />
     <div
       className="overflow-x-auto rounded-lg bg-panel"
       tabIndex={0}
       role="region"
       aria-label={t("region")}
     >
+      {/* Lo que se exporta: los paneles y la leyenda de colores. */}
+      <div ref={paneles} className="min-w-[40rem]">
       <div
         role="group"
         aria-label={descripcion}
         data-testid="puntos"
-        className="flex min-w-[40rem] flex-col"
+        className="flex flex-col"
       >
         {conVueltas.map((p, indice) => {
           const ultimo = indice === conVueltas.length - 1;
@@ -253,6 +270,20 @@ export default function DispersionGomas({
           </p>
         ))}
       </div>
+      <ul className="flex flex-wrap gap-x-4 gap-y-1 px-4 pb-3 text-sm text-suave">
+        {compuestos.map((c) => (
+          <li key={c} className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-3 w-3 rounded-full"
+              style={{ background: colorCompuesto(c) }}
+            />
+            {tc(`${claveCompuesto(c)}.nombre`)}
+          </li>
+        ))}
+      </ul>
+      </div>
+    </div>
     </div>
   );
 }
