@@ -117,7 +117,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 
 Detalle en `diseno-tecnico.md` §10. Cada una con su plan y su PR:
 
-imagen para compartir el link, exportar gráficos en PNG, glosario, posiciones vuelta a vuelta, velocidad punta por equipo, clima contra ritmo, paradas en pits y undercut, compañeros de equipo en la temporada y replay de la carrera.
+imagen para compartir el link, exportar gráficos en PNG (✅ 2026-11-10), glosario, posiciones vuelta a vuelta, velocidad punta por equipo, clima contra ritmo, paradas en pits y undercut, compañeros de equipo en la temporada y replay de la carrera.
 
 ### Fuera del MVP
 
@@ -289,7 +289,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 | 7. Gomas | Limpieza, análisis, notebook 02, página `/gomas` | 7, 8 | ✅ (2026-11-07) |
 | 8. Telemetría | Análisis, notebook 03, página `/telemetria` | 9, 10 | ✅ (2026-11-09) |
 | 9. Publicación | README es/en con link, capturas y conclusiones; pruebas en Windows y móvil | 11 | ✅ (2026-11-09) |
-| 10. Mejoras | Lista del §3, una por PR. Antes de ella se cerraron las pulidas del lanzamiento (tooltip y zoom de la telemetría, medición en Render Free, `npm audit` y Dependabot, delta alisado, favicon, circuitos nuevos sin curvas, cola acotada) | 21, 22, 23, 24, 29, 30, 34, 35 y 36 | En curso: faltan las 9 mejoras de producto de `diseno-tecnico.md` §10, cada una con su plan |
+| 10. Mejoras | Lista del §3, una por PR. Antes de ella se cerraron las pulidas del lanzamiento (tooltip y zoom de la telemetría, medición en Render Free, `npm audit` y Dependabot, delta alisado, favicon, circuitos nuevos sin curvas, cola acotada) | 21, 22, 23, 24, 29, 30, 34, 35 y 36 | En curso: 1 de las 9 mejoras de producto de `diseno-tecnico.md` §10 hecha (exportar gráficos en PNG, 2026-11-10); faltan 8, cada una con su plan |
 
 ---
 
@@ -313,6 +313,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [x] Fuente de números de curva: MultiViewer, como copia estática en `circuitos.json` (2026-10-31).
 - [ ] Conseguir las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026): revisar de nuevo MultiViewer más adelante y correr `scripts/generar_circuitos.py`, o armarlas a mano. MultiViewer no las tenía el 2026-11-10 (tampoco en años anteriores). Mientras tanto esos circuitos se analizan sin curvas numeradas (decisión del 2026-11-10).
 - [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
+- [x] **Exportar gráficos como PNG con `html-to-image`** (decidido el 2026-11-10 al aprobar el plan): librería MIT, sin dependencias propias, que incrusta las fuentes y las variables CSS (un SVG suelto las perdería). Es la primera librería de runtime agregada desde el lanzamiento: no es una librería de gráficos, la regla de SVG propio sigue. Su última versión es de febrero de 2025. El PNG sale al doble de resolución, sobre el fondo de la web, con la leyenda y la línea «F1 Analytics · Datos de OpenF1».
 - [x] **Lomos del delta en las frenadas: límite conocido** (2026-11-10). Alisar el delta a 105 m quitó el dentado pero no los lomos anchos de las curvas lentas; alinear por posición X/Y es peor (error medio 0,161 s contra 0,042 s) por la tolerancia de 300 ms al unir `car_data` y `location`. No hay arreglo barato con ~3,7 muestras por segundo; la página lo explica en sus limitaciones (detalle en `diseno-tecnico.md`).
 - [x] **Gráficos de la web en SVG propio, sin Plotly** (decidido el 2026-11-05 al aprobar el plan del PR 8): el mapa del circuito ya era SVG; la estrategia de gomas y la dispersión también. Confirmado en el PR 10b: la telemetría (cuatro paneles con eje compartido y un cursor que recorre la vuelta) también va en SVG propio, sin Plotly.
 - [x] **La conclusión de gomas no elige un compuesto cuando los datos no alcanzan** (2026-11-06): si la mitad o más de los stints válidos no se gasta (Qatar 2024: 17 de 20) o la diferencia entre el que más y el que menos se gasta es menor de 0,02 s por vuelta, dice que no se puede medir o que se gastaron casi igual. El umbral de 0,02 s es una estimación a ojo del ruido de los stints; se revisa con más carreras.
