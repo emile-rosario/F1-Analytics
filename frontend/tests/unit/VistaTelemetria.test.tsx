@@ -644,6 +644,25 @@ describe("zoom por rango", () => {
   });
 });
 
+describe("descarga de las gráficas", () => {
+  it("ofrece bajar las gráficas y el mapa de tramos como PNG", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    expect(screen.getByRole("button", { name: "Descargar PNG de las gráficas de telemetría" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Descargar PNG del mapa de tramos" })).toBeInTheDocument();
+  });
+
+  it("las marcas del cursor, el tooltip y la banda no van a la imagen", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    // Marcados para que `descargarPng` los esconda mientras captura.
+    expect(screen.getByTestId("cursor")).toHaveAttribute("data-no-exportar");
+    expect(screen.getByTestId("punto-cursor")).toHaveAttribute("data-no-exportar");
+  });
+});
+
 describe("circuito nuevo, sin curvas numeradas", () => {
   it("avisa que el mapa no lleva números de curva y sigue mostrando la comparación", async () => {
     api.pedirAnalisisTelemetria.mockResolvedValue(crearAnalisisTelemetria({ curvas: [] }));

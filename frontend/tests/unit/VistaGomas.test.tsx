@@ -54,6 +54,28 @@ beforeEach(() => {
 
 const fila = (nombre: RegExp) => screen.getByRole("button", { name: nombre });
 
+describe("descarga de los gráficos", () => {
+  it("ofrece bajar la estrategia y la dispersión como PNG", async () => {
+    pintar();
+    await screen.findByRole("heading", { name: "Estrategia de todos los pilotos" });
+
+    expect(screen.getByRole("button", { name: "Descargar PNG de la estrategia de la carrera" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Descargar PNG de la dispersión de la goma" })).toBeInTheDocument();
+  });
+
+  it("la leyenda de compuestos forma parte de la dispersión, para que salga en la imagen", async () => {
+    pintar();
+    await screen.findByRole("heading", { name: "Estrategia de todos los pilotos" });
+
+    const dispersion = screen.getByTestId("puntos").parentElement!;
+    // Los compuestos de la carrera, con su nombre, dentro de lo que se exporta.
+    expect(within(dispersion).getByText("Blanda")).toBeInTheDocument();
+    expect(within(dispersion).getByText("Dura")).toBeInTheDocument();
+    // Y solo los que se usaron: en esta carrera de prueba no hay medias.
+    expect(within(dispersion).queryByText("Media")).not.toBeInTheDocument();
+  });
+});
+
 describe("VistaGomas", () => {
   it("sin ninguna elección abre la carrera destacada", async () => {
     parametros = new URLSearchParams();

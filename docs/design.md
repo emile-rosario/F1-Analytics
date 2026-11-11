@@ -95,6 +95,7 @@ Ambas de Google Fonts.
 | **Lower third** | Bloque de color con corte en ángulo + panel claro. Se usa para los pilotos de la telemetría, las tres preguntas del inicio y las conclusiones |
 | **Panel de piloto** | Barra fina del color del equipo + código (VER) + equipo + tiempo de vuelta |
 | **Diferencia** | Pieza morada en ángulo entre los dos pilotos, con la diferencia en segundos |
+| **Botón de descarga** | Botón secundario «Descargar PNG» a la derecha, sobre cada gráfico (mapa del circuito; gráficas y mapa de tramos de la telemetría; estrategia y dispersión de gomas). Baja la imagen al doble de resolución, sobre el fondo de la web y con la leyenda; debajo, en gris, «F1 Analytics · Datos de OpenF1». No salen el cursor, el tooltip ni la banda de zoom. Al terminar dice «Imagen descargada.» |
 | **Conclusión** | Barra de acento + panel claro con un titular en Saira Condensed y una línea de detalle |
 | **Curva** | Número en un círculo blanco sobre el mapa, como en la transmisión |
 | **Selector de sesión** | Bloque oscuro con 4 campos (año, Gran Premio, sesión, piloto; en telemetría el campo de piloto pide dos, y en gomas el piloto se elige desde la estrategia) sin botón: el análisis se pide al elegir el piloto, y la elección queda en la URL (con el límite de 10 análisis por minuto y la caché, cambiar de piloto no cuesta). Por ahora son los `<select>` del navegador; las listas propias con búsqueda de Gran Premio quedan para después |

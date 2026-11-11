@@ -1,9 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRef } from "react";
 
+import BotonDescargarPng from "@/components/BotonDescargarPng";
 import type { AnalisisGomas } from "@/lib/api";
 import { claveCompuesto, colorCompuesto } from "@/lib/colores";
+import { nombreArchivo } from "@/lib/exportar";
 import { MAX_PILOTOS } from "@/lib/gomas";
 
 type Estrategia = AnalisisGomas["estrategias"][number];
@@ -141,17 +144,21 @@ function Fila({
  * del compuesto. Cada fila es un botón: elegirla agrega o quita al piloto de la dispersión.
  */
 export default function EstrategiaCarrera({
+  sesion,
   estrategias,
   nVueltas,
   elegidos,
   alternar,
 }: {
+  sesion: number;
   estrategias: Estrategia[];
   nVueltas: number;
   elegidos: number[];
   alternar: (piloto: number) => void;
 }) {
   const t = useTranslations("Gomas.estrategia");
+  const te = useTranslations("Exportar");
+  const grafica = useRef<HTMLDivElement>(null);
   const lleno = elegidos.length >= MAX_PILOTOS;
   const marcas = Array.from(
     { length: Math.floor(nVueltas / 10) },
@@ -161,7 +168,12 @@ export default function EstrategiaCarrera({
   return (
     <div className="space-y-3">
       <p className="text-suave">{t("ayuda", { max: MAX_PILOTOS })}</p>
-      <div className="rounded-lg bg-panel p-3 sm:p-4">
+      <BotonDescargarPng
+        nodo={grafica}
+        grafico={te("graficos.estrategia")}
+        archivo={nombreArchivo("estrategia", sesion)}
+      />
+      <div ref={grafica} className="rounded-lg bg-panel p-3 sm:p-4">
         <div
           className="grid grid-cols-[2rem_4.5rem_1fr] gap-3 px-2 pb-2 text-sm text-suave"
           aria-hidden="true"

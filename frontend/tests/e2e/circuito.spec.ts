@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { descargarYRevisar } from "./descargas";
+
 test.use({ locale: "es-ES" });
 
 const CORS = { "access-control-allow-origin": "*" };
@@ -262,4 +264,29 @@ test("con el servidor saturado explica que hay mucha gente y se puede reintentar
   saturado = false;
   await page.getByRole("button", { name: "Reintentar" }).click();
   await expect(page.getByText("1:19,327")).toBeVisible();
+});
+
+test("descargar el mapa baja un PNG con contenido y deja la página como estaba", async ({ page }) => {
+  await simularApi(page);
+  await page.goto("/es/circuito?anio=2024&evento=1244&sesion=9586&piloto=4");
+  await expect(page.getByText("1:19,327")).toBeVisible();
+
+  const png = await descargarYRevisar(page, "Descargar PNG del mapa del circuito");
+
+  expect(png.nombre).toBe("f1analytics-circuito-9586-nor-velocidad.png");
+  expect(png.ancho).toBeGreaterThan(1500); // al doble de resolución
+  expect(png.colores).toBeGreaterThan(5); // no está en blanco
+  await expect(page.getByRole("button", { name: "Descargar PNG del mapa del circuito" })).toBeEnabled();
+  await expect(page.getByText("Imagen descargada.")).toBeVisible();
+});
+
+test("en inglés el botón de descarga y el nombre del PNG van en inglés", async ({ page }) => {
+  await simularApi(page);
+  await page.goto("/en/circuito?anio=2024&evento=1244&sesion=9586&piloto=4");
+  await expect(page.getByText("1:19.327")).toBeVisible();
+
+  const png = await descargarYRevisar(page, "Download PNG of the circuit map");
+
+  expect(png.nombre).toBe("f1analytics-circuito-9586-nor-velocidad.png");
+  await expect(page.getByText("Image downloaded.")).toBeVisible();
 });

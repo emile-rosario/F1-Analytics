@@ -233,9 +233,10 @@ frontend/
 │   │   ├── SelectorSesion.tsx, SelectorIdioma.tsx, Conclusion.tsx
 │   │   ├── EstadoCarga.tsx       # cargando / despertando servidor / error
 │   │   ├── MapaCircuito.tsx      # SVG: mapa de velocidad/marchas, curvas y frenadas
+│   │   ├── BotonDescargarPng.tsx # «Descargar PNG» sobre cada gráfico (usa lib/exportar.ts)
 │   │   ├── VistaGomas.tsx, EstrategiaCarrera.tsx, DispersionGomas.tsx, TablasDegradacion.tsx, ConclusionGomas.tsx
 │   │   ├── VistaTelemetria.tsx, PanelTelemetria.tsx, ControlesRango.tsx, MapaMinisectores.tsx, ConclusionTelemetria.tsx
-│   └── lib/  api.ts, tipos-api.ts, colores.ts, formato.ts, gomas.ts, telemetria.ts
+│   └── lib/  api.ts, tipos-api.ts, colores.ts, exportar.ts, formato.ts, gomas.ts, telemetria.ts
 └── tests/
 ```
 
@@ -311,7 +312,14 @@ Casos clave:
 **Dependencias y seguridad:**
 - **En CI:** `frontend.yml` corre `npm audit --omit=dev --audit-level=moderate` (solo en Ubuntu: no depende del sistema). Audita únicamente lo que se publica; un aviso en una herramienta de desarrollo, como ESLint, no frena los PR. Si aparece un aviso en una dependencia de producción, todos los PR fallan hasta arreglarlo, que es lo que se quiere.
 - **Dependabot** (`.github/dependabot.yml`): cada lunes revisa `npm` (frontend), `uv` (backend) y GitHub Actions. Las versiones menores y de parche van agrupadas en un solo PR por ecosistema; las mayores llegan una por PR; máximo 3 abiertos por ecosistema. Emile revisa y mergea, como siempre.
+- **`html-to-image` (2026-11-10):** MIT, sin dependencias propias, `npm audit` en 0. Su última versión es de febrero de 2025, así que el mantenimiento es lento; si algún día se abandona, el código que lo usa está en un solo archivo (`lib/exportar.ts`).
 - **`minimatch` en `overrides` (2026-11-09):** `npm audit` marcaba `minimatch` 10.2.6 (denegación de servicio con patrones glob, parchado en 11.0.1) dentro de `@typescript-eslint/typescript-estree`, que todavía pide `^10.2.2`. Se fuerza a `^11.0.5` solo para ese paquete en `frontend/package.json`. Solo afecta a las herramientas de lint (producción ya salía con 0 avisos) y `npm audit fix --force` no sirve: propone bajar `eslint-config-next` a la 15. **Cuando `typescript-estree` suba su dependencia a `minimatch` 11, quitar el `override`.** Backend: `pip-audit` sobre `uv.lock`, con y sin desarrollo, no encontró vulnerabilidades.
+
+**Exportar gráficos como PNG (2026-11-10):** `lib/exportar.ts` convierte el nodo del gráfico con `html-to-image` (`toCanvas`, al doble de resolución y con el fondo de la web), le pone margen y dibuja debajo, sobre el lienzo, la línea de crédito, y lo baja con un nombre como `f1analytics-telemetria-9468-ver-lec.png`. Tres detalles que costaron descubrirlos con datos reales:
+- **La opción `filter` de la librería no sirve dentro de un SVG:** clona todo el subárbol de una vez y nunca la llama. Los elementos de interacción (cursor, tooltip, banda de zoom) llevan `data-no-exportar` y se esconden en la página (`visibility: hidden`) mientras dura la captura y se restauran después, también si falla. Cuesta un parpadeo del cursor de unas décimas de segundo.
+- **Las animaciones se terminan antes de capturar** (`getAnimations().finish()`), para no exportar el mapa a medio dibujar.
+- **El crédito no toca el DOM visible:** se dibuja en el lienzo final, así no hay parpadeo ni cambios de diseño.
+Cada botón apunta al nodo que contiene el gráfico **y su leyenda** (por eso la leyenda de compuestos de la dispersión vive dentro de `DispersionGomas`). No se probó la descarga en un iPhone ni en Android: el dibujo se probó con Chromium.
 
 **Local:** `docker compose up` (API en `:8000`, web en `:3000`), o cada uno por separado con `uv run` y `npm run dev`.
 
@@ -376,7 +384,7 @@ No entran en el roadmap actual. Se hacen cuando los 3 proyectos estén en produc
 | # | Mejora | Qué hace | Datos de OpenF1 | Dificultad |
 |---|--------|----------|-----------------|------------|
 | 1 | Imagen para compartir | Al pegar el link en LinkedIn o WhatsApp sale una imagen con el gráfico y la conclusión, generada con `next/og` en Vercel | Los mismos del análisis | Baja |
-| 2 | Exportar gráfico | Botón para bajar cualquier gráfico como PNG | — | Muy baja |
+| 2 | Exportar gráfico ✅ (2026-11-10) | Botón para bajar cualquier gráfico como PNG | — | Muy baja |
 | 3 | Glosario | "¿Qué es esto?" junto a cada término (undercut, degradación, delta), en ES y EN | — | Baja |
 | 4 | Posiciones vuelta a vuelta | Gráfico de líneas cruzadas con la posición de cada piloto en cada vuelta y las paradas marcadas | `position`, `laps`, `pit` | Baja |
 | 5 | Velocidad punta por equipo | Velocidad máxima en la trampa de velocidad contra tiempo de vuelta, para ver qué equipo va con menos carga | `laps` (`st_speed`, `i1_speed`, `i2_speed`) | Baja |

@@ -1,9 +1,12 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useRef } from "react";
 
+import BotonDescargarPng from "@/components/BotonDescargarPng";
 import type { AnalisisGomas } from "@/lib/api";
-import { colorCompuesto } from "@/lib/colores";
+import { claveCompuesto, colorCompuesto } from "@/lib/colores";
+import { nombreArchivo } from "@/lib/exportar";
 import { formatearTiempoVuelta } from "@/lib/formato";
 import { marcasEje } from "@/lib/gomas";
 
@@ -38,14 +41,20 @@ export default function DispersionGomas({
   analisis,
   elegidos,
   corregir,
+  compuestos,
   descripcion,
 }: {
   analisis: AnalisisGomas;
   elegidos: number[];
   corregir: boolean;
+  /** Los compuestos que se usaron en la carrera, para la leyenda de colores. */
+  compuestos: string[];
   descripcion: string;
 }) {
   const t = useTranslations("Gomas.dispersion");
+  const tc = useTranslations("Gomas.compuestos");
+  const te = useTranslations("Exportar");
+  const paneles = useRef<HTMLDivElement>(null);
   const idioma = useLocale();
 
   const tiempo = (v: Vuelta) => (corregir ? v.tiempo_corregido_s : v.tiempo_s);
@@ -106,152 +115,179 @@ export default function DispersionGomas({
   return (
     // En pantallas angostas los paneles conservan un ancho mínimo y se desplazan juntos, para que
     // los textos se lean.
-    <div
-      className="overflow-x-auto rounded-lg bg-panel"
-      tabIndex={0}
-      role="region"
-      aria-label={t("region")}
-    >
+    <div className="space-y-2">
+      <BotonDescargarPng
+        nodo={paneles}
+        grafico={te("graficos.dispersion")}
+        archivo={nombreArchivo(
+          "dispersion",
+          analisis.sesion,
+          ...conVueltas.map((p) => p.codigo),
+          corregir ? "corregido" : "sin-corregir",
+        )}
+      />
       <div
-        role="group"
-        aria-label={descripcion}
-        data-testid="puntos"
-        className="flex min-w-[40rem] flex-col"
+        className="overflow-x-auto rounded-lg bg-panel"
+        tabIndex={0}
+        role="region"
+        aria-label={t("region")}
       >
-        {conVueltas.map((p, indice) => {
-          const ultimo = indice === conVueltas.length - 1;
-          const abajo = ultimo ? ABAJO_ULTIMO : ABAJO_PANEL;
-          const alto = arriba + altoUtil + abajo;
-          return (
-            <svg
-              key={p.numero}
-              viewBox={`0 0 ${ANCHO} ${alto}`}
-              role="img"
-              aria-label={t("descripcionPanel", { piloto: p.codigo })}
-              className="w-full"
-            >
-              <g className="text-suave" fill="currentColor" fontSize={15}>
-                {marcasY.map((m) => (
-                  <g key={m}>
-                    <line
-                      x1={MARGEN.izquierda}
-                      x2={ANCHO - MARGEN.derecha}
-                      y1={py(m)}
-                      y2={py(m)}
-                      stroke="var(--color-linea)"
-                    />
+        {/* Lo que se exporta: los paneles y la leyenda de colores. */}
+        <div ref={paneles} className="min-w-[40rem]">
+          <div
+            role="group"
+            aria-label={descripcion}
+            data-testid="puntos"
+            className="flex flex-col"
+          >
+            {conVueltas.map((p, indice) => {
+              const ultimo = indice === conVueltas.length - 1;
+              const abajo = ultimo ? ABAJO_ULTIMO : ABAJO_PANEL;
+              const alto = arriba + altoUtil + abajo;
+              return (
+                <svg
+                  key={p.numero}
+                  viewBox={`0 0 ${ANCHO} ${alto}`}
+                  role="img"
+                  aria-label={t("descripcionPanel", { piloto: p.codigo })}
+                  className="w-full"
+                >
+                  <g className="text-suave" fill="currentColor" fontSize={15}>
+                    {marcasY.map((m) => (
+                      <g key={m}>
+                        <line
+                          x1={MARGEN.izquierda}
+                          x2={ANCHO - MARGEN.derecha}
+                          y1={py(m)}
+                          y2={py(m)}
+                          stroke="var(--color-linea)"
+                        />
+                        <text
+                          x={MARGEN.izquierda - 10}
+                          y={py(m)}
+                          textAnchor="end"
+                          dominantBaseline="central"
+                        >
+                          {formatearTiempoVuelta(m, idioma, 1)}
+                        </text>
+                      </g>
+                    ))}
+                    {marcasX.map((m) => (
+                      <text
+                        key={m}
+                        x={px(m)}
+                        y={arriba + altoUtil + 20}
+                        textAnchor="middle"
+                      >
+                        {m}
+                      </text>
+                    ))}
+                    {ultimo && (
+                      <text
+                        x={MARGEN.izquierda + anchoUtil / 2}
+                        y={alto - 10}
+                        textAnchor="middle"
+                        fontSize={16}
+                      >
+                        {t("ejeX")}
+                      </text>
+                    )}
                     <text
-                      x={MARGEN.izquierda - 10}
-                      y={py(m)}
-                      textAnchor="end"
-                      dominantBaseline="central"
+                      transform={`translate(16 ${arriba + altoUtil / 2}) rotate(-90)`}
+                      textAnchor="middle"
+                      fontSize={16}
                     >
-                      {formatearTiempoVuelta(m, idioma, 1)}
+                      {t("ejeY")}
                     </text>
                   </g>
-                ))}
-                {marcasX.map((m) => (
-                  <text
-                    key={m}
-                    x={px(m)}
-                    y={arriba + altoUtil + 20}
-                    textAnchor="middle"
-                  >
-                    {m}
-                  </text>
-                ))}
-                {ultimo && (
-                  <text
-                    x={MARGEN.izquierda + anchoUtil / 2}
-                    y={alto - 10}
-                    textAnchor="middle"
-                    fontSize={16}
-                  >
-                    {t("ejeX")}
-                  </text>
-                )}
-                <text
-                  transform={`translate(16 ${arriba + altoUtil / 2}) rotate(-90)`}
-                  textAnchor="middle"
-                  fontSize={16}
-                >
-                  {t("ejeY")}
-                </text>
-              </g>
 
-              {varios && (
-                <g>
-                  {/* La barra del color del equipo, como junto al código en la estrategia. */}
-                  {p.color && (
-                    <rect
-                      x={MARGEN.izquierda}
-                      y={6}
-                      width={4}
-                      height={20}
-                      rx={2}
-                      fill={p.color}
-                    />
+                  {varios && (
+                    <g>
+                      {/* La barra del color del equipo, como junto al código en la estrategia. */}
+                      {p.color && (
+                        <rect
+                          x={MARGEN.izquierda}
+                          y={6}
+                          width={4}
+                          height={20}
+                          rx={2}
+                          fill={p.color}
+                        />
+                      )}
+                      <text
+                        x={MARGEN.izquierda + (p.color ? 14 : 0)}
+                        y={22}
+                        fill="var(--color-texto)"
+                        fontSize={20}
+                        fontWeight={700}
+                      >
+                        {p.codigo}
+                      </text>
+                    </g>
                   )}
-                  <text
-                    x={MARGEN.izquierda + (p.color ? 14 : 0)}
-                    y={22}
-                    fill="var(--color-texto)"
-                    fontSize={20}
-                    fontWeight={700}
-                  >
-                    {p.codigo}
-                  </text>
-                </g>
-              )}
 
-              {/* Las rectas llevan la corrección en la clave: al cambiarla se vuelven a dibujar. */}
-              <g
-                key={corregir ? "con" : "sin"}
-                data-testid="rectas"
-                strokeWidth={2.5}
-                strokeLinecap="round"
-              >
-                {p.rectas.map(({ d, ajuste }) => (
-                  <line
-                    key={`${d.piloto}-${d.stint}`}
-                    className="recta-goma"
-                    x1={px(d.edad_inicial)}
-                    x2={px(d.edad_final)}
-                    y1={py(valorRecta(ajuste, d.edad_inicial))}
-                    y2={py(valorRecta(ajuste, d.edad_final))}
-                    stroke={colorCompuesto(d.compuesto)}
-                  />
-                ))}
-              </g>
-
-              <g>
-                {p.vueltas.map((v, i) => (
+                  {/* Las rectas llevan la corrección en la clave: al cambiarla se vuelven a dibujar. */}
                   <g
-                    key={`${v.piloto}-${v.vuelta}`}
-                    className="punto-goma"
-                    data-piloto={v.piloto}
-                    style={{
-                      transform: `translate(${px(v.edad_goma)}px, ${py(tiempo(v))}px)`,
-                      animationDelay: `${Math.min(i * 0.012, 0.8).toFixed(3)}s`,
-                      fill: colorCompuesto(v.compuesto),
-                    }}
+                    key={corregir ? "con" : "sin"}
+                    data-testid="rectas"
+                    strokeWidth={2.5}
+                    strokeLinecap="round"
                   >
-                    <circle
-                      r={RADIO}
-                      stroke="var(--color-asfalto)"
-                      strokeWidth={1}
-                    />
+                    {p.rectas.map(({ d, ajuste }) => (
+                      <line
+                        key={`${d.piloto}-${d.stint}`}
+                        className="recta-goma"
+                        x1={px(d.edad_inicial)}
+                        x2={px(d.edad_final)}
+                        y1={py(valorRecta(ajuste, d.edad_inicial))}
+                        y2={py(valorRecta(ajuste, d.edad_final))}
+                        stroke={colorCompuesto(d.compuesto)}
+                      />
+                    ))}
                   </g>
-                ))}
-              </g>
-            </svg>
-          );
-        })}
-        {sinVueltas.map((p) => (
-          <p key={p.numero} className="px-4 pb-3 text-sm text-suave">
-            {t("sinVueltasPiloto", { piloto: p.codigo })}
-          </p>
-        ))}
+
+                  <g>
+                    {p.vueltas.map((v, i) => (
+                      <g
+                        key={`${v.piloto}-${v.vuelta}`}
+                        className="punto-goma"
+                        data-piloto={v.piloto}
+                        style={{
+                          transform: `translate(${px(v.edad_goma)}px, ${py(tiempo(v))}px)`,
+                          animationDelay: `${Math.min(i * 0.012, 0.8).toFixed(3)}s`,
+                          fill: colorCompuesto(v.compuesto),
+                        }}
+                      >
+                        <circle
+                          r={RADIO}
+                          stroke="var(--color-asfalto)"
+                          strokeWidth={1}
+                        />
+                      </g>
+                    ))}
+                  </g>
+                </svg>
+              );
+            })}
+            {sinVueltas.map((p) => (
+              <p key={p.numero} className="px-4 pb-3 text-sm text-suave">
+                {t("sinVueltasPiloto", { piloto: p.codigo })}
+              </p>
+            ))}
+          </div>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 px-4 pb-3 text-sm text-suave">
+            {compuestos.map((c) => (
+              <li key={c} className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="h-3 w-3 rounded-full"
+                  style={{ background: colorCompuesto(c) }}
+                />
+                {tc(`${claveCompuesto(c)}.nombre`)}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
