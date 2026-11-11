@@ -13,6 +13,7 @@
     "tipos": "openapi-typescript ../backend/openapi.json -o src/lib/tipos-api.ts"
   },
   "dependencies": {
+    "html-to-image": "^1.11.13",
     "next": "16.4.3",
     "next-intl": "^4.14.9",
     "react": "19.3.0",
