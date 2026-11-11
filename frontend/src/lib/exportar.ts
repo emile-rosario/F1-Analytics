@@ -8,6 +8,8 @@ const ESCALA = 2;
 const ALTO_CREDITO = 36; // px de la web, antes de multiplicar por la escala
 /** Aire alrededor del gráfico: sin él, los textos que empiezan en el borde del nodo quedan pegados. */
 const MARGEN = 20;
+/** Cuánto se conserva el enlace del archivo antes de liberarlo. */
+const REVOCAR_TRAS_MS = 30_000;
 
 /**
  * Nombre de archivo a partir de partes sueltas: sin tildes, en minúsculas y con guiones.
@@ -18,7 +20,7 @@ export function nombreArchivo(...partes: (string | number)[]): string {
     .map((p) =>
       String(p)
         .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "")
+        .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, ""),
@@ -37,11 +39,16 @@ export function nombreArchivo(...partes: (string | number)[]): string {
 export async function sinElementosInteractivos<T>(nodo: HTMLElement, tarea: () => Promise<T>): Promise<T> {
   const ocultos = [...nodo.querySelectorAll<HTMLElement | SVGElement>("[data-no-exportar]")];
   const antes = ocultos.map((elemento) => elemento.style.visibility);
+  // Sin puntero mientras dura la captura: si el mouse entra al gráfico a mitad, no se monta un
+  // tooltip ni una banda de zoom que acabarían en la imagen.
+  const punteroAntes = nodo.style.pointerEvents;
+  nodo.style.pointerEvents = "none";
   for (const elemento of ocultos) elemento.style.visibility = "hidden";
   try {
     return await tarea();
   } finally {
     ocultos.forEach((elemento, i) => (elemento.style.visibility = antes[i]));
+    nodo.style.pointerEvents = punteroAntes;
   }
 }
 
@@ -50,8 +57,10 @@ function terminarAnimaciones(nodo: HTMLElement) {
   for (const animacion of nodo.getAnimations?.({ subtree: true }) ?? []) {
     try {
       animacion.finish();
-    } catch {
-      // Las animaciones infinitas (el semáforo de carga) no se pueden terminar; no están en los gráficos.
+    } catch (error) {
+      // Las animaciones infinitas no se pueden terminar (InvalidStateError): no están en los
+      // gráficos. Cualquier otro error sí se avisa.
+      if (!(error instanceof DOMException && error.name === "InvalidStateError")) throw error;
     }
   }
 }
@@ -100,5 +109,7 @@ export async function descargarPng(nodo: HTMLElement, nombre: string, credito: s
   document.body.appendChild(enlace);
   enlace.click();
   enlace.remove();
-  URL.revokeObjectURL(direccion);
+  // No se revoca al instante: en Safari y Firefox la descarga arranca en otro momento y un enlace
+  // ya revocado da un archivo vacío.
+  setTimeout(() => URL.revokeObjectURL(direccion), REVOCAR_TRAS_MS);
 }

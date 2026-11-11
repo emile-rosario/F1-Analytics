@@ -83,67 +83,67 @@ export default function MapaMinisectores({
         grafico={te("graficos.minisectores")}
         archivo={nombreArchivo("tramos", analisis.sesion, codigos.a, codigos.b)}
       />
-    <figure ref={figura} className="space-y-3">
-      <svg
-        viewBox={`0 0 ${maxX - minX + 2 * margen} ${maxY - minY + 2 * margen}`}
-        role="img"
-        aria-label={descripcion}
-        className="max-h-[70vh] w-full rounded-lg bg-panel"
-      >
-        <g data-testid="tramos" fill="none" strokeWidth={1.1 * unidad} strokeLinecap="round" strokeLinejoin="round">
-          {puntosPorSector.map((puntos, i) => (
-            <polyline
-              key={minisectores[i].sector}
-              data-ganador={minisectores[i].ganador}
-              points={puntos.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}
-              stroke={colorDe(minisectores[i].ganador)}
-            />
-          ))}
-        </g>
+      <figure ref={figura} className="space-y-3">
+        <svg
+          viewBox={`0 0 ${maxX - minX + 2 * margen} ${maxY - minY + 2 * margen}`}
+          role="img"
+          aria-label={descripcion}
+          className="max-h-[70vh] w-full rounded-lg bg-panel"
+        >
+          <g data-testid="tramos" fill="none" strokeWidth={1.1 * unidad} strokeLinecap="round" strokeLinejoin="round">
+            {puntosPorSector.map((puntos, i) => (
+              <polyline
+                key={minisectores[i].sector}
+                data-ganador={minisectores[i].ganador}
+                points={puntos.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ")}
+                stroke={colorDe(minisectores[i].ganador)}
+              />
+            ))}
+          </g>
 
-        <g className="font-titulo font-bold" textAnchor="middle">
-          {curvas.map((c) => (
-            <g key={c.etiqueta}>
-              <circle cx={px(c.x)} cy={py(c.y)} r={2 * unidad} fill="var(--color-texto)" />
-              <text
-                x={px(c.x)}
-                y={py(c.y)}
-                dominantBaseline="central"
-                fontSize={(c.etiqueta.length > 2 ? 1.5 : 2) * unidad}
-                fill="var(--color-asfalto)"
-              >
-                {c.etiqueta}
-              </text>
-            </g>
-          ))}
-        </g>
+          <g className="font-titulo font-bold" textAnchor="middle">
+            {curvas.map((c) => (
+              <g key={c.etiqueta}>
+                <circle cx={px(c.x)} cy={py(c.y)} r={2 * unidad} fill="var(--color-texto)" />
+                <text
+                  x={px(c.x)}
+                  y={py(c.y)}
+                  dominantBaseline="central"
+                  fontSize={(c.etiqueta.length > 2 ? 1.5 : 2) * unidad}
+                  fill="var(--color-asfalto)"
+                >
+                  {c.etiqueta}
+                </text>
+              </g>
+            ))}
+          </g>
 
-        <circle
-          data-testid="punto-cursor"
-          data-no-exportar
-          cx={px(canales.x[indice])}
-          cy={py(canales.y[indice])}
-          r={2.2 * unidad}
-          fill="var(--color-texto)"
-          stroke="var(--color-asfalto)"
-          strokeWidth={0.5 * unidad}
-        />
-      </svg>
+          <circle
+            data-testid="punto-cursor"
+            data-no-exportar
+            cx={px(canales.x[indice])}
+            cy={py(canales.y[indice])}
+            r={2.2 * unidad}
+            fill="var(--color-texto)"
+            stroke="var(--color-asfalto)"
+            strokeWidth={0.5 * unidad}
+          />
+        </svg>
 
-      <figcaption className="space-y-2 text-sm text-suave">
-        <ul className="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label={t("mapa.leyenda")}>
-          {leyenda.map(({ clave, color, texto }) => (
-            <li key={clave} className="flex items-center gap-2">
-              <span aria-hidden="true" className="h-3 w-6 rounded-full" style={{ background: color }} />
-              {texto}
-            </li>
-          ))}
-        </ul>
-        <p className="max-w-3xl">
-          {t("mapa.ayuda", { tramos: minisectores.length, umbral: UMBRAL_EMPATE_S })}
-        </p>
-      </figcaption>
-    </figure>
+        <figcaption className="space-y-2 text-sm text-suave">
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label={t("mapa.leyenda")}>
+            {leyenda.map(({ clave, color, texto }) => (
+              <li key={clave} className="flex items-center gap-2">
+                <span aria-hidden="true" className="h-3 w-6 rounded-full" style={{ background: color }} />
+                {texto}
+              </li>
+            ))}
+          </ul>
+          <p className="max-w-3xl">
+            {t("mapa.ayuda", { tramos: minisectores.length, umbral: UMBRAL_EMPATE_S })}
+          </p>
+        </figcaption>
+      </figure>
     </div>
   );
 }

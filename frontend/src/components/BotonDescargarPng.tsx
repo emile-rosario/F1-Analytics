@@ -1,9 +1,12 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
 
 import { descargarPng } from "@/lib/exportar";
+
+/** Cuánto se queda el aviso «Imagen descargada.»: después ya no dice nada de lo que hay en pantalla. */
+const AVISO_MS = 5_000;
 
 type Estado = "reposo" | "trabajando" | "listo" | "error";
 
@@ -23,13 +26,21 @@ export default function BotonDescargarPng({
   const t = useTranslations("Exportar");
   const [estado, setEstado] = useState<Estado>("reposo");
 
+  useEffect(() => {
+    if (estado !== "listo") return;
+    const temporizador = setTimeout(() => setEstado("reposo"), AVISO_MS);
+    return () => clearTimeout(temporizador);
+  }, [estado]);
+
   async function descargar() {
     if (!nodo.current) return;
     setEstado("trabajando");
     try {
       await descargarPng(nodo.current, archivo, t("credito"));
       setEstado("listo");
-    } catch {
+    } catch (error) {
+      // El mensaje de la pantalla es genérico; el detalle queda en la consola para diagnosticar.
+      console.error("No se pudo exportar el gráfico a PNG", error);
       setEstado("error");
     }
   }
