@@ -255,16 +255,16 @@ test("descargar la estrategia baja un PNG con contenido", async ({ page }) => {
   expect(png.colores).toBeGreaterThan(5);
 });
 
-test("descargar la dispersión baja un PNG con contenido y el nombre dice si está corregida", async ({ page }) => {
+test("descargar la dispersión baja un PNG con contenido y el nombre dice los pilotos y si está corregida", async ({ page }) => {
   await simularApi(page);
   await page.goto(`/es/gomas?${URL_COMPLETA}`);
   await expect(page.getByRole("img", { name: /Tiempos de vuelta limpios de/ })).toHaveCount(3);
 
   const corregida = await descargarYRevisar(page, "Descargar PNG de la dispersión de la goma");
-  expect(corregida.nombre).toBe("f1analytics-dispersion-9539-corregido.png");
+  expect(corregida.nombre).toBe("f1analytics-dispersion-9539-ver-nor-ham-corregido.png");
   expect(corregida.colores).toBeGreaterThan(5);
 
   await page.getByRole("switch").click();
   const sinCorregir = await descargarYRevisar(page, "Descargar PNG de la dispersión de la goma");
-  expect(sinCorregir.nombre).toBe("f1analytics-dispersion-9539-sin-corregir.png");
+  expect(sinCorregir.nombre).toBe("f1analytics-dispersion-9539-ver-nor-ham-sin-corregir.png");
 });

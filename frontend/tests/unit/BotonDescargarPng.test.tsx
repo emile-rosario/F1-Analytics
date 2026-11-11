@@ -1,7 +1,7 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import BotonDescargarPng from "@/components/BotonDescargarPng";
 
@@ -27,6 +27,11 @@ function pintar(idioma: "es" | "en" = "es", nodo: { current: HTMLElement | null 
 beforeEach(() => {
   vi.clearAllMocks();
   exportar.descargarPng.mockResolvedValue(undefined);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
 });
 
 describe("BotonDescargarPng", () => {
@@ -64,17 +69,33 @@ describe("BotonDescargarPng", () => {
     await waitFor(() => expect(screen.getByRole("button")).toBeEnabled());
   });
 
-  it("si falla lo dice y deja volver a intentar", async () => {
+  it("si falla lo dice, deja el detalle en la consola y deja volver a intentar", async () => {
+    const consola = vi.spyOn(console, "error").mockImplementation(() => undefined);
     exportar.descargarPng.mockRejectedValueOnce(new Error("sin lienzo"));
     pintar();
 
     await userEvent.click(screen.getByRole("button"));
 
     expect(await screen.findByText("No se pudo crear la imagen. Prueba de nuevo.")).toBeInTheDocument();
+    expect(consola).toHaveBeenCalledWith("No se pudo exportar el gráfico a PNG", expect.any(Error));
     expect(screen.getByRole("button")).toBeEnabled();
 
     await userEvent.click(screen.getByRole("button"));
     expect(await screen.findByText("Imagen descargada.")).toBeInTheDocument();
+  });
+
+  it("el aviso de descarga se quita solo a los pocos segundos", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const usuario = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    pintar();
+
+    await usuario.click(screen.getByRole("button"));
+    expect(await screen.findByText("Imagen descargada.")).toBeInTheDocument();
+
+    await act(async () => {
+      vi.advanceTimersByTime(5_000);
+    });
+    expect(screen.queryByText("Imagen descargada.")).not.toBeInTheDocument();
   });
 
   it("en inglés todo el texto va en inglés", async () => {
