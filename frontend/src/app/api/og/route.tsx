@@ -18,7 +18,6 @@ async function cargarRecursos(idioma: string) {
   return Promise.all([
     cargarFuentes(),
     getTranslations({ locale: idioma, namespace: "Meta" }),
-    getTranslations({ locale: idioma, namespace: "Inicio" }),
     getTranslations({ locale: idioma, namespace: "Compartir" }),
     getTranslations({ locale: idioma, namespace: "Circuito" }),
     getTranslations({ locale: idioma, namespace: "Circuito.conclusion" }),
@@ -28,12 +27,12 @@ async function cargarRecursos(idioma: string) {
 
 type Recursos = Awaited<ReturnType<typeof cargarRecursos>>;
 
-function tarjetaMarca([fuentes, meta, inicio, compartir]: Recursos, cache: string) {
+function tarjetaMarca([fuentes, meta, compartir]: Recursos, cache: string) {
   return new ImageResponse(
     (
       <TarjetaMarca
         nombre={meta("titulo")}
-        lema={inicio("titulo")}
+        lema={meta("eslogan")}
         descripcion={meta("descripcion")}
         credito={compartir("credito")}
       />
@@ -85,7 +84,7 @@ export async function GET(peticion: Request) {
     return tarjetaMarca(recursos, CACHE_CORTA);
   }
 
-  const [fuentes, meta, , compartir, circuito, conclusion, sesiones] = recursos;
+  const [fuentes, meta, compartir, circuito, conclusion, sesiones] = recursos;
   const { analisis, contexto } = datos;
   const velocidades = analisis.puntos.map((p) => p.velocidad);
   const { titulo } = conclusionCircuito(analisis, conclusion, createFormatter({ locale: idioma }));

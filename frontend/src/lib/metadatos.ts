@@ -50,6 +50,7 @@ export async function metadatos(
   tarjeta?: { ruta: string; alt: "altCircuito" },
 ): Promise<Metadata> {
   const compartir = await getTranslations({ locale, namespace: "Compartir" });
+  const nombre = (await getTranslations({ locale, namespace: "Meta" }))("titulo");
   const imagen = {
     url: tarjeta?.ruta ?? rutaTarjeta(locale),
     width: ANCHO,
@@ -62,7 +63,7 @@ export async function metadatos(
     description: descripcion,
     openGraph: {
       type: "website",
-      siteName: "F1 Analytics",
+      siteName: nombre,
       locale: LOCALE_OG[locale] ?? LOCALE_OG.es,
       title: titulo,
       description: descripcion,
@@ -80,10 +81,11 @@ export async function metadatosDePagina(
   consulta?: Consulta,
 ): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace });
+  const nombre = (await getTranslations({ locale, namespace: "Meta" }))("titulo");
   const ruta = namespace === "Circuito" && consulta ? rutaTarjetaCircuito(locale, consulta) : null;
   return metadatos(
     locale,
-    `${t("titulo")} · F1 Analytics`,
+    `${t("titulo")} · ${nombre}`,
     t("subtitulo"),
     ruta ? { ruta, alt: "altCircuito" } : undefined,
   );

@@ -1,6 +1,7 @@
 {
   "Meta": {
-    "titulo": "F1 Analytics",
+    "titulo": "Sector One",
+    "eslogan": "Beyond The Lap",
     "descripcion": "Understand a Formula 1 session with real data: speed around the circuit, tyre wear and telemetry comparison."
   },
   "Inicio": {
@@ -19,8 +20,8 @@
     "glosario": "Glossary"
   },
   "Compartir": {
-    "alt": "F1 Analytics card: every lap, metre by metre",
-    "altCircuito": "F1 Analytics card with the circuit map coloured by speed and the conclusion of a driver's lap",
+    "alt": "Sector One card: Beyond The Lap",
+    "altCircuito": "Sector One card with the circuit map coloured by speed and the conclusion of a driver's lap",
     "credito": "Data from OpenF1"
   },
   "Exportar": {
@@ -29,7 +30,7 @@
     "preparando": "Preparing…",
     "listo": "Image downloaded.",
     "error": "The image could not be created. Try again.",
-    "credito": "F1 Analytics · Data from OpenF1",
+    "credito": "Sector One · Data from OpenF1",
     "graficos": {
       "circuito": "the circuit map",
       "telemetria": "the telemetry charts",

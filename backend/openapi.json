@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "F1 Analytics API",
+    "title": "Sector One API",
     "version": "1"
   },
   "paths": {

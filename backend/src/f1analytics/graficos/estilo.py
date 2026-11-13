@@ -48,7 +48,7 @@ def colores_marcha(marchas: int = 8) -> dict[int, str]:
 
 
 def aplicar_estilo() -> None:
-    """Deja los gráficos de Matplotlib con el fondo asfalto y los colores de F1 Analytics."""
+    """Deja los gráficos de Matplotlib con el fondo asfalto y los colores de Sector One."""
     mpl.rcParams.update(
         {
             "figure.facecolor": COLORES["asfalto"],

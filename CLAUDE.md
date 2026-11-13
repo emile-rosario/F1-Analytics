@@ -1,4 +1,4 @@
-# F1 Analytics — instrucciones para Claude Code
+# Sector One — instrucciones para Claude Code
 
 Aplicación web que analiza sesiones de Fórmula 1 con datos reales de OpenF1: mapa de velocidad del circuito, degradación de gomas y comparación de telemetría entre dos pilotos. Bilingüe (es/en).
 

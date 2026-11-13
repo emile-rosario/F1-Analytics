@@ -1,14 +1,14 @@
-# F1 Analytics — Contexto del proyecto
+# Sector One — Contexto del proyecto
 
 > Referencia principal del proyecto para Emile Rosario y para Claude Code.
 > **Estado:** diseño funcional, técnico y visual aprobado por Emile el 2026-10-29. Auditado y corregido el 2026-10-30. Fase 4 terminada el 2026-10-31: la app está en internet ([web](https://f1-analytics-eta.vercel.app) y [API](https://f1-analytics-api-a6xc.onrender.com/api/salud)). Siguiente: Fase 5.
-> Nombre del producto: **F1 Analytics**.
+> Nombre del producto: **Sector One** (antes F1 Analytics; ver la decisión del 2026-11-13). Eslogan: *Beyond The Lap*.
 
 ### Prioridad entre documentos
 
 Si dos documentos se contradicen, manda el de más arriba:
 
-1. **`contexto.md`** (este): qué es F1 Analytics, decisiones y alcance.
+1. **`contexto.md`** (este): qué es Sector One, decisiones y alcance.
 2. [`diseno-tecnico.md`](diseno-tecnico.md): cómo se construye.
 3. [`design.md`](design.md): cómo se ve.
 
@@ -74,7 +74,7 @@ Cada análisis se construye en dos pasos: primero se explora y valida en un **no
 | Hosting API | **Render Free**, sin tarjeta. Se duerme a los 15 min sin tráfico; la web lo despierta en segundo plano |
 | Costo mensual | **$0** |
 | Diseño visual | **Estilo gráficos de transmisión de TV**, con mucha animación, definido en [`design.md`](design.md). Prototipo aprobado en el canvas [«F1 Analytics — diseño web»](https://claude.ai/artifact/Qr1xr4NPcmRtjvLAjwViDn) |
-| Marca | Nombre y logo propios. **Sin logo, tipografía ni marcas oficiales de la F1.** Pie de página: «Proyecto independiente, sin relación con la Fórmula 1 ni la FIA». El nombre usa «F1», que es marca registrada: Emile decidió mantenerlo el 2026-10-30 (riesgo bajo en un portafolio sin fines comerciales, con el aviso del pie de página) |
+| Marca | Nombre **Sector One**, eslogan *Beyond The Lap* y logo monograma S1 (2026-11-13). **Sin logo, tipografía ni marcas oficiales de la F1.** Pie de página: «Proyecto independiente, sin relación con la Fórmula 1 ni la FIA». Al quitar «F1» del nombre ya no aplica el riesgo de marca registrada que Emile aceptó el 2026-10-30 con el nombre anterior |
 | Calidad | **GitHub Actions** en cada PR, en Ubuntu y Windows: `ruff` + `pytest` (backend) y ESLint + `tsc` + Vitest + build + Playwright (frontend) |
 | Uso comercial | **No.** Proyecto personal y de portafolio |
 
@@ -295,7 +295,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 
 ## 11. Pendientes
 
-- [x] Nombre del producto: **F1 Analytics**.
+- [x] ~~Nombre del producto: **F1 Analytics**.~~ Reemplazado el 2026-11-13 por **Sector One** (ver más abajo).
 - [x] Fuente de datos: OpenF1, probada el 2026-10-29.
 - [x] Hosting: Vercel + Render gratis.
 - [x] Diseño visual aprobado.
@@ -314,6 +314,7 @@ Diseño visual en [`design.md`](design.md): fondo asfalto, paneles con corte en 
 - [ ] Conseguir las curvas de Kuala Lumpur y Madring (circuitos nuevos de 2026): revisar de nuevo MultiViewer más adelante y correr `scripts/generar_circuitos.py`, o armarlas a mano. MultiViewer no las tenía el 2026-11-10 (tampoco en años anteriores). Mientras tanto esos circuitos se analizan sin curvas numeradas (decisión del 2026-11-10).
 - [x] Carrera destacada de gomas: España 2024 (2026-11-05), elegida con `scripts/buscar_carrera_gomas.py`.
 - [x] **Exportar gráficos como PNG con `html-to-image`** (decidido el 2026-11-10 al aprobar el plan): librería MIT, sin dependencias propias, que incrusta las fuentes y las variables CSS (un SVG suelto las perdería). Es la primera librería de runtime agregada desde el lanzamiento: no es una librería de gráficos, la regla de SVG propio sigue. Su última versión es de febrero de 2025. El PNG sale al doble de resolución, sobre el fondo de la web, con la leyenda y la línea «F1 Analytics · Datos de OpenF1».
+- [x] **Nombre y marca: Sector One**, eslogan *Beyond The Lap*, logo monograma S1 (decidido el 2026-11-13; identidad aprobada por Emile en el canvas [«Sector One — identidad»](https://claude.ai/artifact/9rYitqRRzqjseNrxPryiD4) y la [guía de marca](https://docs.google.com/document/d/1bynVJGsijZuItwXXxZAZlBgtrIQFCImzcH3nLOGuaE0/edit)). Cambian el nombre, el logo, el favicon y la tarjeta para compartir; la paleta y las fuentes (Saira y Saira Condensed) siguen igual. El eslogan va en inglés también en la versión en español. El paquete de Python sigue llamándose `f1analytics` y las URLs de Vercel y Render no cambian por ahora; cambiar el dominio lo hace Emile en los paneles.
 - [x] **Imagen para compartir: tarjeta generada con `next/og`** (decidido el 2026-11-12 al aprobar el plan; en 4 PR, aprobados los dos primeros): al pegar un enlace en WhatsApp o LinkedIn sale una tarjeta de 1200×630 en el idioma del enlace, sin dependencias nuevas (`next/og` viene con Next). PR 1: etiquetas Open Graph y Twitter en todas las páginas y una tarjeta de marca fija (`/api/og?idioma=es`) que no depende del backend. PR 2: tarjeta del circuito con el mapa coloreado por velocidad, el piloto, su vuelta y el titular de la conclusión; la imagen la pide `generateMetadata` leyendo `searchParams` de la URL (así está en el `<head>` que ven los rastreadores, que no ejecutan JavaScript) y la ruta de la imagen consulta al backend con un plazo de 8 s. La vista sigue pintándose en el navegador: lo único que pasa a ser dinámico es la página `/circuito`. Gomas y telemetría se deciden tras ver el resultado. La ruta de la imagen solo recibe códigos y números, nunca texto, y si el backend duerme o falla devuelve la tarjeta de marca con caché corta. Las fuentes (Saira Condensed, licencia OFL) viven en el repo como TTF porque Satori no lee WOFF2. La dirección pública se toma de `NEXT_PUBLIC_URL_SITIO`, del despliegue en las previsualizaciones o de la web de producción.
 - [x] **Glosario: página `/glosario` y términos en línea** (decidido el 2026-11-12 al aprobar el plan, en dos PR): la página lista cada término con su definición y un ejemplo, en es/en, con ancla por término (`/glosario#degradacion`) y un enlace en el pie; después los términos se explican en las vistas, como botones desplegables y no como tooltip flotante (sirve con el tacto y el teclado y no necesita calcular posiciones): una fila «Qué significa: …» bajo el título de cada sección y tabla (`AyudaTerminos`) y, dentro de las salvedades, la palabra subrayada (`Termino`). Al probarlo con datos reales se vio que abrir la definición pegada a la palabra parte la frase en dos, así que `ConTerminos` la abre al final del párrafo o de la viñeta; solo hay una abierta a la vez y Esc la cierra. Entran solo los términos que la web ya usa (stint, compuesto, edad de la goma, vuelta limpia, degradación, corrección por combustible, R², safety car, telemetría, delta, tramo, frenada); *undercut* no está porque todavía no aparece en la web y entra con la mejora de paradas, y cada mejora nueva añade los suyos. Los números de las definiciones (0,06 s por vuelta de combustible, 5 vueltas mínimas, 25 tramos…) se repiten en `frontend/src/lib/glosario.ts` y un test los compara con el código del backend.
 - [x] **Lomos del delta en las frenadas: límite conocido** (2026-11-10). Alisar el delta a 105 m quitó el dentado pero no los lomos anchos de las curvas lentas; alinear por posición X/Y es peor (error medio 0,161 s contra 0,042 s) por la tolerancia de 300 ms al unir `car_data` y `location`. No hay arreglo barato con ~3,7 muestras por segundo; la página lo explica en sus limitaciones (detalle en `diseno-tecnico.md`).

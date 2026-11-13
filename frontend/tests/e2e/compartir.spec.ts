@@ -21,7 +21,7 @@ test.describe("etiquetas para compartir en el HTML", () => {
   const casos = [
     { ruta: "/es", idioma: "es", locale: "es_ES" },
     { ruta: "/en", idioma: "en", locale: "en_US" },
-    { ruta: "/es/glosario", idioma: "es", locale: "es_ES", titulo: "Glosario · F1 Analytics" },
+    { ruta: "/es/glosario", idioma: "es", locale: "es_ES", titulo: "Glosario · Sector One" },
     { ruta: "/en/gomas", idioma: "en", locale: "en_US" },
     { ruta: "/es/telemetria", idioma: "es", locale: "es_ES" },
     { ruta: "/es/circuito", idioma: "es", locale: "es_ES" },

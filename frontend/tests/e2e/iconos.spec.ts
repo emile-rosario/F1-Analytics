@@ -40,7 +40,7 @@ test("el manifest nombra la web y apunta a iconos que existen", async ({ request
   expect(respuesta.status()).toBe(200);
   const manifest = await respuesta.json();
 
-  expect(manifest.name).toBe("F1 Analytics");
+  expect(manifest.name).toBe("Sector One");
   expect(manifest.theme_color).toBe("#1A1C23");
   expect(manifest.icons.map((icono: { sizes: string }) => icono.sizes)).toEqual([
     "192x192",

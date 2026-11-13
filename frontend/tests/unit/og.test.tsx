@@ -15,6 +15,21 @@ vi.mock("next-intl/server", () => ({
     createTranslator({ locale, messages: locale === "es" ? es : en, namespace } as never),
 }));
 
+// `ImageResponse` dibuja de verdad, pero anota el elemento que recibe para poder mirar sus textos.
+const dibujados = vi.hoisted(() => [] as { props: Record<string, string> }[]);
+vi.mock("next/og", async (original) => {
+  const real = await original<typeof import("next/og")>();
+  return {
+    ...real,
+    ImageResponse: class extends real.ImageResponse {
+      constructor(elemento: never, opciones?: never) {
+        dibujados.push(elemento);
+        super(elemento, opciones);
+      }
+    },
+  };
+});
+
 const pedir = (consulta = "") => GET(new Request(`http://localhost:3000/api/og${consulta}`));
 
 /** Ancho y alto del PNG, leídos de su cabecera IHDR. */
@@ -42,6 +57,21 @@ describe("GET /api/og", () => {
     const ingles = new Uint8Array(await (await pedir("?idioma=en")).arrayBuffer());
 
     expect(Buffer.from(ingles).equals(Buffer.from(espanol))).toBe(false);
+  });
+
+  it("la tarjeta de marca lleva el nombre y el eslogan de Meta, en cada idioma", async () => {
+    for (const [idioma, mensajes] of [["es", es], ["en", en]] as const) {
+      dibujados.length = 0;
+      await pedir(`?idioma=${idioma}`);
+
+      expect(dibujados.at(-1)?.props).toMatchObject({
+        nombre: "Sector One",
+        lema: "Beyond The Lap",
+        descripcion: mensajes.Meta.descripcion,
+      });
+    }
+    // El eslogan queda en inglés también en la versión en español.
+    expect(es.Meta.eslogan).toBe(en.Meta.eslogan);
   });
 
   it("sin idioma usa el de por defecto", async () => {
