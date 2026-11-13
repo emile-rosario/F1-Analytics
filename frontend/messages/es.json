@@ -20,6 +20,7 @@
   },
   "Compartir": {
     "alt": "Tarjeta de F1 Analytics: cada vuelta, metro a metro",
+    "altCircuito": "Tarjeta de F1 Analytics con el mapa del circuito coloreado por velocidad y la conclusión de la vuelta de un piloto",
     "credito": "Datos de OpenF1"
   },
   "Exportar": {

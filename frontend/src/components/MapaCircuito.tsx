@@ -5,22 +5,19 @@ import BotonDescargarPng from "@/components/BotonDescargarPng";
 import type { AnalisisCircuito } from "@/lib/api";
 import { COLORES_MARCHA, DEGRADADO_VELOCIDAD, colorVelocidad } from "@/lib/colores";
 import { nombreArchivo } from "@/lib/exportar";
+import { geometriaMapa } from "@/lib/mapa";
 
 export type ModoMapa = "velocidad" | "marchas";
 
-/** Si la vuelta empieza y termina a menos de esto (décimas de metro) se cierra el circuito. */
-const CIERRE_DECIMAS_M = 1_000;
 /** Segundos que tarda en dibujarse todo el trazado. */
 const DURACION_DIBUJO_S = 1.6;
-
-type Punto = { x: number; y: number };
 
 /**
  * Mapa de la vuelta en SVG: la pista coloreada por velocidad o por marcha, las curvas
  * numeradas y un rombo donde empieza cada frenada.
  *
- * Los datos llegan con `y` hacia arriba y ya girados como en la transmisión; el SVG tiene
- * `y` hacia abajo, así que aquí solo se invierte.
+ * La geometría (cuadro, escala y trazos) sale de `lib/mapa.ts`, compartida con la tarjeta
+ * para compartir.
  */
 export default function MapaCircuito({
   analisis,
@@ -36,29 +33,8 @@ export default function MapaCircuito({
   const figura = useRef<HTMLElement>(null);
   const { puntos, curvas, frenadas } = analisis;
 
-  const todos: Punto[] = [...puntos, ...curvas];
-  const minX = Math.min(...todos.map((p) => p.x));
-  const maxX = Math.max(...todos.map((p) => p.x));
-  const minY = Math.min(...todos.map((p) => p.y));
-  const maxY = Math.max(...todos.map((p) => p.y));
-  const unidad = Math.max(maxX - minX, maxY - minY) / 100; // 1 % del lado mayor
-  const margen = 6 * unidad;
-  const ancho = maxX - minX + 2 * margen;
-  const alto = maxY - minY + 2 * margen;
-  const px = (x: number) => x - minX + margen;
-  const py = (y: number) => maxY - y + margen;
-
-  const velocidades = puntos.map((p) => p.velocidad);
-  const velMin = Math.min(...velocidades);
-  const velMax = Math.max(...velocidades);
+  const { ancho, alto, unidad, px, py, velMin, velMax, trazos } = geometriaMapa(analisis);
   const marchasUsadas = [...new Set(puntos.map((p) => p.marcha))].sort((a, b) => a - b);
-
-  const primero = puntos[0];
-  const ultimo = puntos[puntos.length - 1];
-  const cierraVuelta = Math.hypot(primero.x - ultimo.x, primero.y - ultimo.y) < CIERRE_DECIMAS_M;
-  const trazos = puntos
-    .map((desde, i) => ({ desde, hasta: i < puntos.length - 1 ? puntos[i + 1] : primero }))
-    .filter(({ desde, hasta }, i) => (i < puntos.length - 1 || cierraVuelta) && (desde.x !== hasta.x || desde.y !== hasta.y));
 
   const retraso = DURACION_DIBUJO_S / trazos.length;
   const grosor = 1.1 * unidad;

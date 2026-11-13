@@ -7,6 +7,7 @@ import EstadoCarga from "@/components/EstadoCarga";
 import { useCarga } from "@/hooks/useCarga";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { pedirCalendario, pedirPilotos, pedirSesiones } from "@/lib/api";
+import { leerEntero } from "@/lib/parametros";
 import { segmentosDe } from "@/lib/telemetria";
 
 /** Primer año con datos de OpenF1. */
@@ -15,10 +16,7 @@ export const PRIMER_ANIO = 2023;
 const CLASE_CAMPO =
   "min-h-11 w-full rounded border border-linea bg-asfalto px-3 text-texto disabled:opacity-50";
 
-export function leerEntero(texto: string | null): number | null {
-  if (texto === null || !/^\d+$/.test(texto)) return null;
-  return Number(texto);
-}
+export { leerEntero };
 
 type Eleccion = {
   anio: number;
