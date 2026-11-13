@@ -51,7 +51,7 @@ describe("BotonDescargarPng", () => {
     expect(exportar.descargarPng).toHaveBeenCalledWith(
       nodo.current,
       "f1analytics-circuito-9586-nor-velocidad.png",
-      "F1 Analytics · Datos de OpenF1",
+      "Sector One · Datos de OpenF1",
     );
     expect(await screen.findByText("Imagen descargada.")).toBeInTheDocument();
   });
@@ -108,7 +108,7 @@ describe("BotonDescargarPng", () => {
     expect(exportar.descargarPng).toHaveBeenCalledWith(
       expect.anything(),
       expect.any(String),
-      "F1 Analytics · Data from OpenF1",
+      "Sector One · Data from OpenF1",
     );
   });
 

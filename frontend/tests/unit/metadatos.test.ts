@@ -14,17 +14,17 @@ vi.mock("next-intl/server", () => ({
 
 describe("metadatos", () => {
   it("pone título, descripción y las etiquetas de Open Graph y Twitter", async () => {
-    const m = await metadatos("es", "Glosario · F1 Analytics", "Qué significa cada término");
+    const m = await metadatos("es", "Glosario · Sector One", "Qué significa cada término");
 
-    expect(m.title).toBe("Glosario · F1 Analytics");
+    expect(m.title).toBe("Glosario · Sector One");
     expect(m.openGraph).toMatchObject({
       type: "website",
-      siteName: "F1 Analytics",
+      siteName: "Sector One",
       locale: "es_ES",
-      title: "Glosario · F1 Analytics",
+      title: "Glosario · Sector One",
       description: "Qué significa cada término",
     });
-    expect(m.twitter).toMatchObject({ card: "summary_large_image", title: "Glosario · F1 Analytics" });
+    expect(m.twitter).toMatchObject({ card: "summary_large_image", title: "Glosario · Sector One" });
   });
 
   it("la imagen es la tarjeta del idioma, con su tamaño y un texto alternativo traducido", async () => {
@@ -36,12 +36,12 @@ describe("metadatos", () => {
         url: "/api/og?idioma=es",
         width: 1200,
         height: 630,
-        alt: "Tarjeta de F1 Analytics: cada vuelta, metro a metro",
+        alt: "Tarjeta de Sector One: Beyond The Lap",
       }),
     ]);
     expect(ingles.openGraph).toMatchObject({ locale: "en_US" });
     expect(ingles.openGraph?.images).toEqual([
-      expect.objectContaining({ url: "/api/og?idioma=en", alt: "F1 Analytics card: every lap, metre by metre" }),
+      expect.objectContaining({ url: "/api/og?idioma=en", alt: "Sector One card: Beyond The Lap" }),
     ]);
     expect(espanol.twitter?.images).toEqual(["/api/og?idioma=es"]);
   });
@@ -49,9 +49,9 @@ describe("metadatos", () => {
   it("una página usa su título y su subtítulo", async () => {
     const m = await metadatosDePagina("en", "Glosario");
 
-    expect(m.title).toBe("Glossary · F1 Analytics");
+    expect(m.title).toBe("Glossary · Sector One");
     expect(m.description).toBe("What each term used on this site means, with an example.");
-    expect(m.openGraph).toMatchObject({ title: "Glossary · F1 Analytics" });
+    expect(m.openGraph).toMatchObject({ title: "Glossary · Sector One" });
   });
 
   it("rutaTarjeta apunta a la ruta de la imagen", () => {

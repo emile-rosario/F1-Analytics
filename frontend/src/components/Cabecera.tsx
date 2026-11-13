@@ -12,7 +12,7 @@ export default function Cabecera() {
       <Link href="/" className="flex min-h-11 items-center gap-3 text-texto no-underline">
         <Logo className="h-7 w-[35px]" />
         {/* Las mayúsculas sostenidas y la inclinación son una excepción solo del logo (docs/design.md §4). */}
-        <span className="inline-block -skew-x-14 font-titulo text-2xl font-extrabold uppercase">
+        <span className="inline-block -skew-x-14 font-titulo text-[28px] font-extrabold uppercase leading-none">
           {t("titulo")}
         </span>
       </Link>

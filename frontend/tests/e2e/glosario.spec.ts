@@ -32,7 +32,7 @@ test("el enlace del pie lleva al glosario y se puede volver", async ({ page }) =
 
   await expect(page).toHaveURL(/\/es\/glosario$/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Glosario");
-  await expect(page).toHaveTitle("Glosario · F1 Analytics");
+  await expect(page).toHaveTitle("Glosario · Sector One");
 });
 
 test("en inglés todo va en inglés, con punto decimal", async ({ page }) => {
