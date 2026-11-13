@@ -1,4 +1,4 @@
-# Diseño técnico — F1 Analytics
+# Diseño técnico — Sector One
 
 > Estado: **Aprobado** (Emile, 2026-10-29)
 > Última actualización: 2026-10-30 (correcciones de la auditoría de `contexto.md`)

@@ -1,4 +1,4 @@
-# F1 Analytics
+# Sector One
 
 **Español** · [English](README.en.md)
 

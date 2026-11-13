@@ -1,11 +1,11 @@
-# Favicon de F1 Analytics
+# Favicon de Sector One
 
-Tres barras con los colores de sector (morado, verde, amarillo) sobre asfalto `#1A1C23`. Ver `docs/design.md` §4.
+El monograma S1 (la S en `#F2F3F6` y el 1 como barra morada `#B65CFF`, inclinados 14°) sobre asfalto `#1A1C23`. Ver `docs/design.md` §4.
 
 | Archivo | Va en | Para qué |
 |---|---|---|
 | `icon.svg` | `frontend/src/app/icon.svg` | Favicon principal (navegadores modernos) |
-| `favicon.ico` | `frontend/src/app/favicon.ico` | 16, 32 y 48 px, navegadores viejos y Windows. El de 16 px tiene las barras más separadas para que se lean |
+| `favicon.ico` | `frontend/src/app/favicon.ico` | 16, 32 y 48 px, navegadores viejos y Windows. El de 16 px sale de `icon-16.svg` |
 | `apple-icon.png` | `frontend/src/app/apple-icon.png` | 180 px, al guardar en la pantalla de inicio del iPhone (sin esquinas: iOS las redondea) |
 | `icon-192.png`, `icon-512.png` | `frontend/public/` | Android y el manifest |
 | `manifest.webmanifest` | `frontend/src/app/manifest.webmanifest` | Nombre y colores al instalar la web |
