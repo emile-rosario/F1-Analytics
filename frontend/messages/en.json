@@ -20,6 +20,7 @@
   },
   "Compartir": {
     "alt": "F1 Analytics card: every lap, metre by metre",
+    "altCircuito": "F1 Analytics card with the circuit map coloured by speed and the conclusion of a driver's lap",
     "credito": "Data from OpenF1"
   },
   "Exportar": {
