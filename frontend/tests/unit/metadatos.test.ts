@@ -1,7 +1,7 @@
 import { createTranslator } from "next-intl";
 import { describe, expect, it, vi } from "vitest";
 
-import { metadatos, metadatosDePagina, rutaTarjeta } from "@/lib/metadatos";
+import { metadatos, metadatosDePagina, rutaTarjeta, rutaTarjetaCircuito } from "@/lib/metadatos";
 import { URL_PRODUCCION, urlDelSitio } from "@/lib/sitio";
 
 import en from "../../messages/en.json";
@@ -56,6 +56,53 @@ describe("metadatos", () => {
 
   it("rutaTarjeta apunta a la ruta de la imagen", () => {
     expect(rutaTarjeta("en")).toBe("/api/og?idioma=en");
+  });
+});
+
+describe("la tarjeta de la vuelta en la página del circuito", () => {
+  const completa = { anio: "2024", evento: "1244", sesion: "9586", piloto: "4" };
+
+  it("con sesión y piloto en la URL, la imagen es la de esa vuelta", () => {
+    expect(rutaTarjetaCircuito("es", completa)).toBe(
+      "/api/og?idioma=es&tarjeta=circuito&sesion=9586&piloto=4&anio=2024&evento=1244",
+    );
+  });
+
+  it("sin año o sin evento pide solo la vuelta", () => {
+    expect(rutaTarjetaCircuito("en", { sesion: "9586", piloto: "4", anio: "2024" })).toBe(
+      "/api/og?idioma=en&tarjeta=circuito&sesion=9586&piloto=4",
+    );
+  });
+
+  it("sin sesión o sin piloto no hay tarjeta propia", () => {
+    expect(rutaTarjetaCircuito("es", {})).toBeNull();
+    expect(rutaTarjetaCircuito("es", { sesion: "9586" })).toBeNull();
+    expect(rutaTarjetaCircuito("es", { piloto: "4" })).toBeNull();
+  });
+
+  it("solo pasan enteros: nada escrito en la URL llega a la imagen", () => {
+    expect(rutaTarjetaCircuito("es", { ...completa, sesion: "9586&titulo=HOLA" })).toBeNull();
+    expect(rutaTarjetaCircuito("es", { ...completa, piloto: ["4", "5"] })).toBeNull();
+    // Un año inválido no tumba la tarjeta: solo se pierde la línea del Gran Premio.
+    expect(rutaTarjetaCircuito("es", { ...completa, anio: "<script>" })).toBe(
+      "/api/og?idioma=es&tarjeta=circuito&sesion=9586&piloto=4",
+    );
+  });
+
+  it("la página del circuito usa esa imagen, con su texto alternativo; las otras, la de marca", async () => {
+    const circuito = await metadatosDePagina("es", "Circuito", completa);
+    const sinElegir = await metadatosDePagina("es", "Circuito", {});
+    const gomas = await metadatosDePagina("es", "Gomas", completa);
+
+    expect(circuito.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: expect.stringContaining("tarjeta=circuito&sesion=9586"),
+        alt: es.Compartir.altCircuito,
+      }),
+    ]);
+    expect(circuito.twitter?.images).toEqual([expect.stringContaining("tarjeta=circuito")]);
+    expect(sinElegir.openGraph?.images).toEqual([expect.objectContaining({ url: "/api/og?idioma=es" })]);
+    expect(gomas.openGraph?.images).toEqual([expect.objectContaining({ url: "/api/og?idioma=es" })]);
   });
 });
 
