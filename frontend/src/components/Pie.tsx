@@ -9,9 +9,14 @@ export default function Pie() {
     <footer className="mx-auto w-full max-w-[1240px] space-y-1 border-t border-linea px-6 py-8 text-sm text-suave">
       <p>{t("aviso")}</p>
       <p>{t("autor")}</p>
-      <Link href="/estado" className="inline-flex min-h-11 items-center">
-        {t("estado")}
-      </Link>
+      <div className="flex flex-wrap gap-x-6">
+        <Link href="/glosario" className="inline-flex min-h-11 items-center">
+          {t("glosario")}
+        </Link>
+        <Link href="/estado" className="inline-flex min-h-11 items-center">
+          {t("estado")}
+        </Link>
+      </div>
     </footer>
   );
 }
