@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { useTranslations } from "next-intl";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { use } from "react";
 
 import { TERMINOS, VALORES_GLOSARIO } from "@/lib/glosario";
+import { metadatosDePagina } from "@/lib/metadatos";
 
 export async function generateMetadata({
   params,
@@ -11,8 +12,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Glosario" });
-  return { title: `${t("titulo")} · F1 Analytics` };
+  return metadatosDePagina(locale, "Glosario");
 }
 
 export default function Glosario({ params }: { params: Promise<{ locale: string }> }) {

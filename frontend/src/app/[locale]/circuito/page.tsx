@@ -1,8 +1,9 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense, use } from "react";
 
 import VistaCircuito from "@/components/VistaCircuito";
+import { metadatosDePagina } from "@/lib/metadatos";
 
 export async function generateMetadata({
   params,
@@ -10,8 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Circuito" });
-  return { title: `${t("titulo")} · F1 Analytics` };
+  return metadatosDePagina(locale, "Circuito");
 }
 
 export default function PaginaCircuito({ params }: { params: Promise<{ locale: string }> }) {
