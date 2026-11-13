@@ -385,7 +385,7 @@ No entran en el roadmap actual. Se hacen cuando los 3 proyectos estén en produc
 |---|--------|----------|-----------------|------------|
 | 1 | Imagen para compartir | Al pegar el link en LinkedIn o WhatsApp sale una imagen con el gráfico y la conclusión, generada con `next/og` en Vercel | Los mismos del análisis | Baja |
 | 2 | Exportar gráfico ✅ (2026-11-10) | Botón para bajar cualquier gráfico como PNG | — | Muy baja |
-| 3 | Glosario | Página `/glosario` con cada término y un "¿qué es esto?" desplegable junto a él en las vistas (degradación, stint, delta…), en ES y EN. *Undercut* entra con la mejora 7 | — | Baja |
+| 3 | Glosario ✅ (2026-11-12) | Página `/glosario` con cada término y un "¿qué es esto?" desplegable junto a él en las vistas (degradación, stint, delta…), en ES y EN. *Undercut* entra con la mejora 7 | — | Baja |
 | 4 | Posiciones vuelta a vuelta | Gráfico de líneas cruzadas con la posición de cada piloto en cada vuelta y las paradas marcadas | `position`, `laps`, `pit` | Baja |
 | 5 | Velocidad punta por equipo | Velocidad máxima en la trampa de velocidad contra tiempo de vuelta, para ver qué equipo va con menos carga | `laps` (`st_speed`, `i1_speed`, `i2_speed`) | Baja |
 | 6 | Clima contra ritmo | Temperatura de la pista superpuesta a los tiempos de vuelta, dentro de la página de gomas | `weather` | Baja |
