@@ -90,8 +90,8 @@
         "ejemplo": "If at 1,000 m the difference is +0.150 s, the compared driver is 0.150 s behind; if at 1,200 m it is +0.100 s, they recovered 0.050 s in that stretch. It is an estimate from speed and can be off by a few hundredths of a second."
       },
       "tramo": {
-        "nombre": "Segment",
-        "definicion": "Each of the {tramos, number} equal-length parts the telemetry map splits the lap into. It is painted in the colour of the driver who was faster in that segment.",
+        "nombre": "Stretch",
+        "definicion": "Each of the {tramos, number} equal-length stretches the telemetry map splits the lap into. It is painted in the colour of the driver who was faster in that stretch.",
         "ejemplo": "They are not the official minisectors of the F1 broadcast: those change from one circuit to another and not every circuit has them in the public data."
       },
       "frenada": {
