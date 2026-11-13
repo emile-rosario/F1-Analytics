@@ -18,6 +18,10 @@
     "estado": "Estado del servicio",
     "glosario": "Glosario"
   },
+  "Compartir": {
+    "alt": "Tarjeta de F1 Analytics: cada vuelta, metro a metro",
+    "credito": "Datos de OpenF1"
+  },
   "Exportar": {
     "boton": "Descargar PNG",
     "etiqueta": "Descargar PNG {grafico}",

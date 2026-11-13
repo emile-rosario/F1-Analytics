@@ -18,6 +18,10 @@
     "estado": "Service status",
     "glosario": "Glossary"
   },
+  "Compartir": {
+    "alt": "F1 Analytics card: every lap, metre by metre",
+    "credito": "Data from OpenF1"
+  },
   "Exportar": {
     "boton": "Download PNG",
     "etiqueta": "Download PNG of {grafico}",

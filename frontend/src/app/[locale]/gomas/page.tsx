@@ -1,8 +1,9 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense, use } from "react";
 
 import VistaGomas from "@/components/VistaGomas";
+import { metadatosDePagina } from "@/lib/metadatos";
 
 export async function generateMetadata({
   params,
@@ -10,8 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Gomas" });
-  return { title: `${t("titulo")} · F1 Analytics` };
+  return metadatosDePagina(locale, "Gomas");
 }
 
 export default function PaginaGomas({ params }: { params: Promise<{ locale: string }> }) {

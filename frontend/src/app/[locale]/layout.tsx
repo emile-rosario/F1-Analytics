@@ -8,6 +8,8 @@ import Cabecera from "@/components/Cabecera";
 import DespertarApi from "@/components/DespertarApi";
 import Pie from "@/components/Pie";
 import { routing } from "@/i18n/routing";
+import { metadatos } from "@/lib/metadatos";
+import { urlDelSitio } from "@/lib/sitio";
 
 import "../globals.css";
 
@@ -30,7 +32,10 @@ export async function generateMetadata({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Meta" });
 
-  return { title: t("titulo"), description: t("descripcion") };
+  return {
+    metadataBase: urlDelSitio(),
+    ...(await metadatos(locale, t("titulo"), t("descripcion"))),
+  };
 }
 
 export default async function LayoutIdioma({

@@ -383,7 +383,7 @@ No entran en el roadmap actual. Se hacen cuando los 3 proyectos estén en produc
 
 | # | Mejora | Qué hace | Datos de OpenF1 | Dificultad |
 |---|--------|----------|-----------------|------------|
-| 1 | Imagen para compartir | Al pegar el link en LinkedIn o WhatsApp sale una imagen con el gráfico y la conclusión, generada con `next/og` en Vercel | Los mismos del análisis | Baja |
+| 1 | Imagen para compartir (en curso) | Al pegar el link en LinkedIn o WhatsApp sale una tarjeta con el gráfico y la conclusión, generada con `next/og` en Vercel. En 4 PR: etiquetas y tarjeta de marca, circuito, gomas y telemetría. Pide renderizar en el servidor las vistas con tarjeta propia y pasar los titulares de las conclusiones a funciones puras | Los mismos del análisis | Media |
 | 2 | Exportar gráfico ✅ (2026-11-10) | Botón para bajar cualquier gráfico como PNG | — | Muy baja |
 | 3 | Glosario ✅ (2026-11-12) | Página `/glosario` con cada término y un "¿qué es esto?" desplegable junto a él en las vistas (degradación, stint, delta…), en ES y EN. *Undercut* entra con la mejora 7 | — | Baja |
 | 4 | Posiciones vuelta a vuelta | Gráfico de líneas cruzadas con la posición de cada piloto en cada vuelta y las paradas marcadas | `position`, `laps`, `pit` | Baja |

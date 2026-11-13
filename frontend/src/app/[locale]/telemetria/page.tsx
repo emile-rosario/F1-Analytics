@@ -1,8 +1,9 @@
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { Suspense, use } from "react";
 
 import VistaTelemetria from "@/components/VistaTelemetria";
+import { metadatosDePagina } from "@/lib/metadatos";
 
 export async function generateMetadata({
   params,
@@ -10,8 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "Telemetria" });
-  return { title: `${t("titulo")} · F1 Analytics` };
+  return metadatosDePagina(locale, "Telemetria");
 }
 
 export default function PaginaTelemetria({ params }: { params: Promise<{ locale: string }> }) {
