@@ -15,7 +15,8 @@
   "Pie": {
     "aviso": "Datos de OpenF1. Proyecto independiente, sin relación con la Fórmula 1 ni la FIA.",
     "autor": "Hecho por Emile Rosario",
-    "estado": "Estado del servicio"
+    "estado": "Estado del servicio",
+    "glosario": "Glosario"
   },
   "Exportar": {
     "boton": "Descargar PNG",
@@ -30,6 +31,74 @@
       "minisectores": "del mapa de tramos",
       "estrategia": "de la estrategia de la carrera",
       "dispersion": "de la dispersión de la goma"
+    }
+  },
+  "Glosario": {
+    "titulo": "Glosario",
+    "subtitulo": "Qué significa cada término que usa esta web, con un ejemplo.",
+    "ejemplo": "Ejemplo",
+    "indice": "Términos",
+    "terminos": {
+      "stint": {
+        "nombre": "Stint",
+        "definicion": "Cada tramo de la carrera que un piloto hace seguido con el mismo juego de gomas, entre dos paradas en boxes.",
+        "ejemplo": "Quien para una sola vez hace dos stints: sale con una goma, cambia a mitad de carrera y termina con otra."
+      },
+      "compuesto": {
+        "nombre": "Compuesto",
+        "definicion": "El tipo de goma. En seco hay blanda, media y dura: la blanda suele dar más agarre pero se gasta antes, y la dura aguanta más pero es más lenta. Para pista mojada hay intermedia y de lluvia.",
+        "ejemplo": "En la estrategia, cada barra lleva la letra de su compuesto: B (blanda), M (media), D (dura), I (intermedia) y LL (lluvia)."
+      },
+      "edadGoma": {
+        "nombre": "Edad de la goma",
+        "definicion": "Las vueltas que lleva usada la goma. Una nueva empieza en 0; una ya usada puede salir con vueltas de antes.",
+        "ejemplo": "Una goma que sale con 4 vueltas de un entrenamiento y hace 10 en carrera llega a la edad 14."
+      },
+      "vueltaLimpia": {
+        "nombre": "Vuelta limpia",
+        "definicion": "Una vuelta que sirve para medir el desgaste de la goma. Se descartan la primera, las que se hacen con safety car, safety car virtual o bandera amarilla o roja, la de entrada a boxes, la de salida y las que tardan más de un {umbral, number} % por encima de lo normal del piloto (su mediana), por tráfico o por errores.",
+        "ejemplo": "Si un piloto da casi todas sus vueltas en 90 s, una de 97 s por culpa del tráfico no cuenta."
+      },
+      "degradacion": {
+        "nombre": "Degradación",
+        "definicion": "Cuánto tiempo pierde la goma por cada vuelta que se gasta. Aquí se mide como la pendiente de la recta que mejor ajusta el tiempo de vuelta contra la edad de la goma, en segundos por vuelta. Un stint con menos de {minimo, number} vueltas limpias no se mide.",
+        "ejemplo": "Una degradación de 0,080 s por vuelta quiere decir que cada vuelta de uso cuesta unas 8 centésimas más que la anterior. No es el desgaste real de la goma: el tráfico, la temperatura y la evolución de la pista también se mezclan."
+      },
+      "combustible": {
+        "nombre": "Corrección por combustible",
+        "definicion": "Con el depósito lleno el coche pesa más y es más lento; al quemar combustible mejora vuelta a vuelta aunque la goma se gaste. La corrección quita ese efecto para que no tape el desgaste, con una aproximación fija de {segundos, number} s por vuelta para todos los coches.",
+        "ejemplo": "Sin corregir, un coche que gana 0,03 s por vuelta por el combustible y pierde 0,08 s por la goma parece perder solo 0,05 s."
+      },
+      "r2": {
+        "nombre": "R²",
+        "definicion": "Un número de 0 a 1 que dice cuánto se parece el tiempo de vuelta a la recta de la degradación. Cerca de 1, los tiempos siguen bien la recta; cerca de 0, la recta casi no explica nada y la degradación es poco fiable.",
+        "ejemplo": "Un stint con R² de 0,95 sigue casi una recta limpia; uno con 0,10 tiene vueltas muy desordenadas y conviene no fiarse de su pendiente."
+      },
+      "safetyCar": {
+        "nombre": "Safety car",
+        "definicion": "El coche que sale a pista tras un accidente para que los pilotos vayan despacio y agrupados. El safety car virtual (VSC) no saca ningún coche: obliga a todos a reducir la velocidad.",
+        "ejemplo": "Las vueltas con safety car o VSC se descartan al medir las gomas, porque nadie va a su ritmo normal."
+      },
+      "telemetria": {
+        "nombre": "Telemetría",
+        "definicion": "Los datos que el coche manda mientras corre: velocidad, acelerador, freno, marcha… OpenF1 los publica unas 3,7 veces por segundo.",
+        "ejemplo": "A 250 km/h eso es una muestra cada ~20 m, así que las gráficas no ven detalles más cortos que eso."
+      },
+      "delta": {
+        "nombre": "Diferencia de tiempo (delta)",
+        "definicion": "Cuánto tiempo lleva de diferencia un piloto sobre otro en cada punto de la vuelta, acumulado desde la meta. Positiva: el piloto comparado va más lento que la referencia. Negativa: va por delante.",
+        "ejemplo": "Si a los 1.000 m la diferencia es de +0,150 s, el comparado va 0,150 s por detrás; si a los 1.200 m es de +0,100 s, recuperó 0,050 s en ese tramo. Es una estimación a partir de la velocidad y puede errar unas centésimas de segundo."
+      },
+      "tramo": {
+        "nombre": "Tramo",
+        "definicion": "Cada una de las {tramos, number} partes de igual longitud en las que el mapa de la telemetría divide la vuelta. Se pinta del color del piloto que fue más rápido en ese tramo.",
+        "ejemplo": "No son los minisectores oficiales de la transmisión de F1: esos cambian de un circuito a otro y no todos los circuitos los tienen en los datos públicos."
+      },
+      "frenada": {
+        "nombre": "Frenada",
+        "definicion": "Una zona de la vuelta con el freno pisado de forma seguida durante al menos {metros, number} m (los toques cortos no cuentan), asociada a la curva donde se suelta el freno.",
+        "ejemplo": "En la tabla de frenadas, «Entrada» es la velocidad al empezar a frenar, «Salida» la de soltar el freno y «Pierde» la diferencia entre las dos."
+      }
     }
   },
   "Estado": {

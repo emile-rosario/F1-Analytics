@@ -15,7 +15,8 @@
   "Pie": {
     "aviso": "Data from OpenF1. Independent project, not affiliated with Formula 1 or the FIA.",
     "autor": "Made by Emile Rosario",
-    "estado": "Service status"
+    "estado": "Service status",
+    "glosario": "Glossary"
   },
   "Exportar": {
     "boton": "Download PNG",
@@ -30,6 +31,74 @@
       "minisectores": "the sections map",
       "estrategia": "the race strategy",
       "dispersion": "the tyre scatter chart"
+    }
+  },
+  "Glosario": {
+    "titulo": "Glossary",
+    "subtitulo": "What each term used on this site means, with an example.",
+    "ejemplo": "Example",
+    "indice": "Terms",
+    "terminos": {
+      "stint": {
+        "nombre": "Stint",
+        "definicion": "Each stretch of the race that a driver runs in one go on the same set of tyres, between two pit stops.",
+        "ejemplo": "A driver who stops once does two stints: starts on one tyre, changes halfway and finishes on another."
+      },
+      "compuesto": {
+        "nombre": "Compound",
+        "definicion": "The type of tyre. In the dry there are soft, medium and hard: the soft usually grips more but wears out sooner, and the hard lasts longer but is slower. For wet tracks there are intermediate and wet tyres.",
+        "ejemplo": "In the strategy chart each bar carries the letter of its compound: S (soft), M (medium), H (hard), I (intermediate) and W (wet)."
+      },
+      "edadGoma": {
+        "nombre": "Tyre age",
+        "definicion": "The laps a tyre has been used for. A new one starts at 0; a used one may come out with laps from before.",
+        "ejemplo": "A tyre that comes out with 4 laps from practice and does 10 in the race reaches age 14."
+      },
+      "vueltaLimpia": {
+        "nombre": "Clean lap",
+        "definicion": "A lap that is useful for measuring tyre wear. Dropped are the first lap, those under the safety car, the virtual safety car or a yellow or red flag, the lap into the pits, the lap out of them, and those more than {umbral, number}% slower than the driver's usual pace (their median), because of traffic or mistakes.",
+        "ejemplo": "If a driver does almost every lap in 90 s, one of 97 s because of traffic does not count."
+      },
+      "degradacion": {
+        "nombre": "Degradation",
+        "definicion": "How much time the tyre loses for each lap it wears. Here it is measured as the slope of the line that best fits lap time against tyre age, in seconds per lap. A stint with fewer than {minimo, number} clean laps is not measured.",
+        "ejemplo": "A degradation of 0.080 s per lap means each lap of use costs about 8 hundredths more than the one before. It is not the real wear of the tyre: traffic, temperature and track evolution get mixed in too."
+      },
+      "combustible": {
+        "nombre": "Fuel correction",
+        "definicion": "With a full tank the car is heavier and slower; as fuel burns it gets faster lap after lap even while the tyre wears. The correction removes that effect so it does not hide the wear, using a fixed approximation of {segundos, number} s per lap for every car.",
+        "ejemplo": "Uncorrected, a car that gains 0.03 s per lap from fuel and loses 0.08 s to the tyre seems to lose only 0.05 s."
+      },
+      "r2": {
+        "nombre": "R²",
+        "definicion": "A number from 0 to 1 that tells how closely lap times follow the degradation line. Near 1, times follow the line well; near 0, the line explains almost nothing and the degradation is unreliable.",
+        "ejemplo": "A stint with R² of 0.95 follows an almost clean line; one with 0.10 has very scattered laps, so its slope should not be trusted."
+      },
+      "safetyCar": {
+        "nombre": "Safety car",
+        "definicion": "The car that comes out onto the track after an accident so the drivers go slowly and bunched up. The virtual safety car (VSC) sends no car out: it makes everyone slow down.",
+        "ejemplo": "Laps under the safety car or VSC are dropped when measuring tyres, because nobody is at their normal pace."
+      },
+      "telemetria": {
+        "nombre": "Telemetry",
+        "definicion": "The data the car sends while it runs: speed, throttle, brake, gear… OpenF1 publishes it about 3.7 times per second.",
+        "ejemplo": "At 250 km/h that is one sample every ~20 m, so the charts cannot see details shorter than that."
+      },
+      "delta": {
+        "nombre": "Time difference (delta)",
+        "definicion": "How much time one driver is ahead of or behind another at each point of the lap, accumulated from the start line. Positive: the compared driver is slower than the reference. Negative: they are ahead.",
+        "ejemplo": "If at 1,000 m the difference is +0.150 s, the compared driver is 0.150 s behind; if at 1,200 m it is +0.100 s, they recovered 0.050 s in that stretch. It is an estimate from speed and can be off by a few hundredths of a second."
+      },
+      "tramo": {
+        "nombre": "Segment",
+        "definicion": "Each of the {tramos, number} equal-length parts the telemetry map splits the lap into. It is painted in the colour of the driver who was faster in that segment.",
+        "ejemplo": "They are not the official minisectors of the F1 broadcast: those change from one circuit to another and not every circuit has them in the public data."
+      },
+      "frenada": {
+        "nombre": "Braking zone",
+        "definicion": "A stretch of the lap with the brake pressed continuously for at least {metros, number} m (short touches do not count), tied to the corner where the brake is released.",
+        "ejemplo": "In the braking table, “Entry” is the speed when braking starts, “Exit” the speed when the brake is released and “Loses” the difference between the two."
+      }
     }
   },
   "Estado": {
