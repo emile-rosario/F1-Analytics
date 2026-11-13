@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import AvisoCircuitoNuevo from "@/components/AvisoCircuitoNuevo";
+import AyudaTerminos from "@/components/AyudaTerminos";
 import Conclusion from "@/components/Conclusion";
 import EstadoCarga from "@/components/EstadoCarga";
 import MapaCircuito, { type ModoMapa } from "@/components/MapaCircuito";
@@ -96,6 +97,7 @@ function Resultado({ analisis }: { analisis: AnalisisCircuito }) {
           <h2 id="titulo-frenadas" className="font-titulo text-3xl font-bold">
             {t("tabla.titulo")}
           </h2>
+          <AyudaTerminos claves={["frenada"]} />
           <TablaFrenadas frenadas={analisis.frenadas} />
         </section>
       )}

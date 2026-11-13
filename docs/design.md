@@ -96,6 +96,8 @@ Ambas de Google Fonts.
 | **Lower third** | Bloque de color con corte en ángulo + panel claro. Se usa para los pilotos de la telemetría, las tres preguntas del inicio y las conclusiones |
 | **Panel de piloto** | Barra fina del color del equipo + código (VER) + equipo + tiempo de vuelta |
 | **Diferencia** | Pieza morada en ángulo entre los dos pilotos, con la diferencia en segundos |
+| **Ayuda de términos** | Fila bajo el título de una sección o tabla: «Qué significa:» y un botón redondeado con borde por término (mínimo 44 px de alto). Al pulsar uno se abre debajo un panel de fondo `panel` con el nombre en negrita, la definición corta y «Ver en el glosario»; solo uno abierto a la vez |
+| **Término subrayado** | Palabra con subrayado punteado, dentro de las salvedades «Qué no mide este análisis». Al pulsarla, el mismo panel se abre al final de la viñeta o del párrafo, nunca en medio de la frase; Esc lo cierra y devuelve el foco |
 | **Botón de descarga** | Botón secundario «Descargar PNG» a la derecha, sobre cada gráfico (mapa del circuito; gráficas y mapa de tramos de la telemetría; estrategia y dispersión de gomas). Baja la imagen al doble de resolución, sobre el fondo de la web y con la leyenda; debajo, en gris, «F1 Analytics · Datos de OpenF1». No salen el cursor, el tooltip ni la banda de zoom. Al terminar dice «Imagen descargada.» |
 | **Conclusión** | Barra de acento + panel claro con un titular en Saira Condensed y una línea de detalle |
 | **Curva** | Número en un círculo blanco sobre el mapa, como en la transmisión |

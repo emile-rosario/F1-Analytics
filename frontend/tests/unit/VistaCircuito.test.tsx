@@ -309,3 +309,14 @@ describe("TarjetasPreguntas", () => {
     expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
   });
 });
+
+describe("ayuda del glosario", () => {
+  it("la tabla de frenadas explica qué es una frenada", async () => {
+    pintar(<VistaCircuito />);
+    const seccion = await screen.findByRole("region", { name: "Frenadas" });
+
+    await userEvent.click(within(seccion).getByRole("button", { name: "Frenada" }));
+
+    expect(within(seccion).getByText(/al menos 20 m/)).toBeInTheDocument();
+  });
+});

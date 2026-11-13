@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -749,5 +750,31 @@ describe("mapa de minisectores", () => {
     expect(
       screen.getByText(/La vuelta se parte en 25 tramos iguales\..*menor de 0,010 s se cuenta como empate\./),
     ).toBeInTheDocument();
+  });
+});
+
+describe("ayuda del glosario", () => {
+  it("las dos secciones ofrecen sus términos", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    const gruposEtiquetados = screen.getAllByRole("group", { name: "Qué significa" });
+    expect(gruposEtiquetados.map((g) => Array.from(g.querySelectorAll("button")).map((b) => b.textContent))).toEqual([
+      ["Diferencia de tiempo (delta)", "Telemetría"],
+      ["Tramo"],
+    ]);
+  });
+
+  it("las salvedades explican el delta, la telemetría y los tramos", async () => {
+    pintar();
+    await esperarAnalisis();
+
+    await userEvent.click(screen.getByRole("button", { name: "delta" }));
+    await userEvent.click(screen.getByRole("button", { name: "telemetría" }));
+    await userEvent.click(screen.getByRole("button", { name: "tramos" }));
+
+    expect(screen.getByText(/acumulado desde la meta/)).toBeInTheDocument();
+    expect(screen.getByText(/OpenF1 los publica unas 3,7 veces por segundo/)).toBeInTheDocument();
+    expect(screen.getByText(/25 partes de igual longitud/)).toBeInTheDocument();
   });
 });

@@ -38,6 +38,10 @@
     "subtitulo": "What each term used on this site means, with an example.",
     "ejemplo": "Example",
     "indice": "Terms",
+    "ayuda": {
+      "etiqueta": "What it means",
+      "verEnGlosario": "See it in the glossary"
+    },
     "terminos": {
       "stint": {
         "nombre": "Stint",
@@ -282,8 +286,8 @@
       "intro": "The slope of each stint is what the tyre «seems» to lose per lap, not its real wear. The data can't correct for these:",
       "trafico": "Traffic: running behind another car costs time that has nothing to do with the tyre.",
       "pista": "Temperature and track evolution: the surface gets faster with each lap and can hide wear, as happened in Qatar 2024.",
-      "combustible": "Fuel: the correction uses {segundos, number} s per lap for every car, which is an approximation.",
-      "limpias": "Only clean laps count: the first lap, safety car or flag laps, pit entry and exit laps and very slow ones are dropped."
+      "combustible": "<combustible>Fuel</combustible>: the correction uses {segundos, number} s per lap for every car, which is an approximation.",
+      "limpias": "Only <vueltaLimpia>clean laps</vueltaLimpia> count: the first lap, <safetyCar>safety car</safetyCar> or flag laps, pit entry and exit laps and very slow ones are dropped."
     }
   },
   "Telemetria": {
@@ -348,13 +352,13 @@
     },
     "limitaciones": {
       "titulo": "What this analysis does not measure",
-      "intro": "The delta says who was faster and where, with these caveats:",
-      "muestras": "Few samples: public telemetry has about 3.7 per second, one every ~20 m at 250 km/h.",
+      "intro": "The <delta>delta</delta> says who was faster and where, with these caveats:",
+      "muestras": "Few samples: public <telemetria>telemetry</telemetria> has about 3.7 per second, one every ~20 m at 250 km/h.",
       "picos": "Bumps in slow corners: the delta goes up and comes back down at heavy braking zones. That is partly sampling noise and the misalignment between the two laps; what matters is the level it settles at after the corner. To reduce it the delta is averaged over ~100 m windows, which removes the jaggedness but also rounds off real, sudden changes.",
       "exactitud": "Accuracy: the final delta is exact because it is fitted to each lap official time. Mid-lap it is off by about 0.04 s on average (0.13 s at most) against the official sector times.",
       "porque": "It does not say why: it shows who was faster in a stretch, not whether it was braking later, a better line or lifting off.",
       "condiciones": "Different conditions: with no segment picked, each driver uses their best lap of the session, which may come from another moment, on another tyre or with more fuel. Traffic is not corrected.",
-      "tramos": "The stretches have equal length; they are not the official mini-sectors of the broadcast."
+      "tramos": "The <tramo>stretches</tramo> have equal length; they are not the official mini-sectors of the broadcast."
     }
   },
   "Preguntas": {
