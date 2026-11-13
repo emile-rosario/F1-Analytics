@@ -478,3 +478,15 @@ test("descargar el mapa de tramos baja un PNG con contenido", async ({ page }) =
   expect(png.colores).toBeGreaterThan(5);
   await expect(page.getByTestId("punto-cursor")).toHaveCSS("visibility", "visible");
 });
+
+test("el panel explica el delta y las salvedades explican los tramos, cada uno con su definición", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/telemetria?${URL_COMPLETA}`);
+
+  await page.getByRole("button", { name: "Diferencia de tiempo (delta)", exact: true }).click();
+  await expect(page.getByText(/acumulado desde la meta/)).toBeVisible();
+
+  await page.getByText("Qué no mide este análisis").click();
+  await page.getByRole("button", { name: "tramos", exact: true }).click();
+  await expect(page.getByText(/25 partes de igual longitud/)).toBeVisible();
+});

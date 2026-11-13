@@ -616,3 +616,72 @@ describe("conclusión", () => {
     );
   });
 });
+
+describe("ayuda del glosario", () => {
+  const terminosDe = (seccion: HTMLElement) =>
+    Array.from(within(within(seccion).getByRole("group", { name: "Qué significa" })).getAllByRole("button")).map(
+      (boton) => boton.textContent,
+    );
+
+  it("cada sección ofrece los términos que usa", async () => {
+    pintar();
+    await screen.findByRole("heading", { name: "Estrategia de todos los pilotos" });
+
+    expect(terminosDe(screen.getByRole("region", { name: "Estrategia de todos los pilotos" }))).toEqual([
+      "Stint",
+      "Compuesto",
+    ]);
+    expect(terminosDe(screen.getByRole("region", { name: "Tiempo de vuelta contra edad de la goma" }))).toEqual([
+      "Edad de la goma",
+      "Vuelta limpia",
+      "Corrección por combustible",
+    ]);
+    expect(terminosDe(screen.getByRole("region", { name: "Degradación por stint" }))).toEqual([
+      "Degradación",
+      "R²",
+      "Stint",
+    ]);
+    expect(terminosDe(screen.getByRole("region", { name: "Degradación por compuesto" }))).toEqual([
+      "Compuesto",
+      "Degradación",
+      "Corrección por combustible",
+    ]);
+  });
+
+  it("la tabla de stints explica R² sin salir de la página", async () => {
+    pintar();
+    const tabla = await screen.findByRole("region", { name: "Degradación por stint" });
+
+    await userEvent.click(within(tabla).getByRole("button", { name: "R²" }));
+
+    expect(within(tabla).getByText(/número de 0 a 1/)).toBeInTheDocument();
+  });
+
+  it("las salvedades tienen sus términos subrayados, con la definición al final de la punto", async () => {
+    pintar();
+    await screen.findByRole("heading", { name: "Estrategia de todos los pilotos" });
+
+    await userEvent.click(screen.getByRole("button", { name: "vueltas limpias" }));
+    const punto = screen.getByRole("button", { name: "vueltas limpias" }).closest("li")!;
+    expect(within(punto).getByText(/Una vuelta que sirve para medir el desgaste/)).toBeInTheDocument();
+    // La frase queda entera: la definición va después de todo su texto, no en medio.
+    expect(punto.textContent).toMatch(/y las muy lentas\.Vuelta limpia:/);
+
+    // En una misma punto solo hay una definición abierta.
+    await userEvent.click(within(punto).getByRole("button", { name: "safety car" }));
+    expect(within(punto).queryByText(/Una vuelta que sirve para medir el desgaste/)).not.toBeInTheDocument();
+    expect(within(punto).getByText(/El coche que sale a pista tras un accidente/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("button", { name: "El combustible" }));
+    expect(screen.getByText(/Con el depósito lleno el coche pesa más/)).toBeInTheDocument();
+  });
+
+  it("en inglés los términos y las definiciones van en inglés", async () => {
+    pintar("en");
+    await screen.findByRole("heading", { name: "Every driver's strategy" });
+
+    await userEvent.click(screen.getByRole("button", { name: "clean laps" }));
+
+    expect(screen.getByText(/A lap that is useful for measuring tyre wear/)).toBeInTheDocument();
+  });
+});

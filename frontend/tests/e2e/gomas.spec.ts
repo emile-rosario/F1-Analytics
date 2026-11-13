@@ -268,3 +268,51 @@ test("descargar la dispersión baja un PNG con contenido y el nombre dice los pi
   const sinCorregir = await descargarYRevisar(page, "Descargar PNG de la dispersión de la goma");
   expect(sinCorregir.nombre).toBe("f1analytics-dispersion-9539-ver-nor-ham-sin-corregir.png");
 });
+
+test("un término de la tabla se abre sin salir de la página y su enlace lleva a la ficha del glosario", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/gomas?${URL_COMPLETA}`);
+  // Los nombres de las regiones se buscan exactos: la tabla tiene otra región con scroll que lleva el mismo texto.
+  const seccion = page.getByRole("region", { name: "Degradación por stint", exact: true });
+
+  await seccion.getByRole("button", { name: "R²", exact: true }).click();
+
+  await expect(seccion.getByText(/número de 0 a 1/)).toBeVisible();
+  await expect(page).toHaveURL(/\/es\/gomas\?/);
+
+  await seccion.getByRole("link", { name: "Ver en el glosario" }).click();
+
+  await expect(page).toHaveURL(/\/es\/glosario#r2$/);
+  await expect(page.locator("#r2")).toBeInViewport();
+});
+
+test("los términos de las salvedades se abren con el teclado y Esc devuelve el foco", async ({ page }) => {
+  await simularApi(page);
+  await page.goto(`/es/gomas?${URL_COMPLETA}`);
+  await page.getByText("Qué no mide este análisis").click();
+  const termino = page.getByRole("button", { name: "vueltas limpias", exact: true });
+
+  await termino.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByText(/Una vuelta que sirve para medir el desgaste/)).toBeVisible();
+
+  await page.keyboard.press("Escape");
+
+  await expect(page.getByText(/Una vuelta que sirve para medir el desgaste/)).toBeHidden();
+  await expect(termino).toBeFocused();
+});
+
+test("en el móvil la definición abierta no desborda la página", async ({ browser }) => {
+  const contexto = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: "en-US" });
+  const page = await contexto.newPage();
+  await simularApi(page);
+  await page.goto(`/en/gomas?${URL_COMPLETA}`);
+  const seccion = page.getByRole("region", { name: "Degradation by stint", exact: true });
+
+  await seccion.getByRole("button", { name: "Degradation", exact: true }).click();
+
+  await expect(seccion.getByText(/How much time the tyre loses/)).toBeVisible();
+  const desborda = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth);
+  expect(desborda).toBe(false);
+  await contexto.close();
+});
