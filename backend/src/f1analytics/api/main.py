@@ -9,7 +9,7 @@ from f1analytics.api.rutas import analisis, gomas, meta, telemetria
 
 
 def crear_app(origenes: list[str], origen_regex: str | None = None) -> FastAPI:
-    app = FastAPI(title="F1 Analytics API", version=config.VERSION)
+    app = FastAPI(title="Sector One API", version=config.VERSION)
 
     # Primero gzip y después CORS: así CORS queda por fuera y cubre también lo comprimido.
     app.add_middleware(GZipMiddleware, minimum_size=1_000)
