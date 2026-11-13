@@ -68,6 +68,15 @@ describe.each([
     expect(errores).not.toHaveBeenCalled();
   });
 
+  it("el ejemplo de compuesto usa las mismas letras que la estrategia", () => {
+    const ejemplo = mensajes.Glosario.terminos.compuesto.ejemplo;
+
+    for (const { nombre, letra } of Object.values(mensajes.Gomas.compuestos)) {
+      if (letra === "?") continue; // «Desconocida» no está en el ejemplo.
+      expect(ejemplo, nombre).toContain(`${letra} (${nombre.toLowerCase()})`);
+    }
+  });
+
   it("las definiciones muestran los números del backend con el formato del idioma", () => {
     const t = createTranslator({ locale: idioma, messages: mensajes, namespace: "Glosario" });
     // Cada mensaje usa solo algunos de los valores; el tipo de `t` exige exactamente los suyos.
