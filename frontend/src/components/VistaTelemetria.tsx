@@ -5,11 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import AvisoCircuitoNuevo from "@/components/AvisoCircuitoNuevo";
+import AyudaTerminos from "@/components/AyudaTerminos";
 import ConclusionTelemetria from "@/components/ConclusionTelemetria";
 import EstadoCarga from "@/components/EstadoCarga";
 import MapaMinisectores from "@/components/MapaMinisectores";
 import PanelTelemetria from "@/components/PanelTelemetria";
 import SelectorSesion, { leerEntero } from "@/components/SelectorSesion";
+import { terminosRicos } from "@/components/terminosRicos";
+import { ConTerminos } from "@/components/Termino";
 import { useCarga } from "@/hooks/useCarga";
 import { useConclusionTelemetria } from "@/hooks/useConclusionTelemetria";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -78,6 +81,7 @@ function Resultado({ analisis }: { analisis: AnalisisTelemetria }) {
         <h2 id="titulo-panel" className="font-titulo text-3xl font-bold">
           {t("seccionPanel")}
         </h2>
+        <AyudaTerminos claves={["delta", "telemetria"]} />
         <PanelTelemetria
           analisis={analisis}
           indice={indice}
@@ -92,6 +96,7 @@ function Resultado({ analisis }: { analisis: AnalisisTelemetria }) {
         <h2 id="titulo-mapa" className="font-titulo text-3xl font-bold">
           {t("mapa.titulo")}
         </h2>
+        <AyudaTerminos claves={["tramo"]} />
         {analisis.curvas.length === 0 && <AvisoCircuitoNuevo pagina="telemetria" />}
         <MapaMinisectores
           analisis={analisis}
@@ -112,14 +117,20 @@ function Resultado({ analisis }: { analisis: AnalisisTelemetria }) {
           {t("limitaciones.titulo")}
         </summary>
         <div className="mt-2 space-y-2 text-suave">
-          <p>{t("limitaciones.intro")}</p>
+          <p>
+            <ConTerminos>{t.rich("limitaciones.intro", terminosRicos)}</ConTerminos>
+          </p>
           <ul className="list-disc space-y-1 pl-6">
-            <li>{t("limitaciones.muestras")}</li>
+            <li>
+              <ConTerminos>{t.rich("limitaciones.muestras", terminosRicos)}</ConTerminos>
+            </li>
             <li>{t("limitaciones.picos")}</li>
             <li>{t("limitaciones.exactitud")}</li>
             <li>{t("limitaciones.porque")}</li>
             <li>{t("limitaciones.condiciones")}</li>
-            <li>{t("limitaciones.tramos")}</li>
+            <li>
+              <ConTerminos>{t.rich("limitaciones.tramos", terminosRicos)}</ConTerminos>
+            </li>
           </ul>
         </div>
       </details>

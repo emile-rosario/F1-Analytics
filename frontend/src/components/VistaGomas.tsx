@@ -4,12 +4,15 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import AyudaTerminos from "@/components/AyudaTerminos";
 import ConclusionGomas from "@/components/ConclusionGomas";
 import DispersionGomas from "@/components/DispersionGomas";
 import EstadoCarga from "@/components/EstadoCarga";
 import EstrategiaCarrera from "@/components/EstrategiaCarrera";
 import SelectorSesion, { leerEntero } from "@/components/SelectorSesion";
 import { TablaCompuestos, TablaStints } from "@/components/TablasDegradacion";
+import { terminosRicos } from "@/components/terminosRicos";
+import { ConTerminos } from "@/components/Termino";
 import { useCarga } from "@/hooks/useCarga";
 import { useConclusionGomas } from "@/hooks/useConclusionGomas";
 import { usePathname, useRouter } from "@/i18n/navigation";
@@ -56,6 +59,7 @@ function Resultado({
         <h2 id="titulo-estrategia" className="font-titulo text-3xl font-bold">
           {t("estrategia.titulo")}
         </h2>
+        <AyudaTerminos claves={["stint", "compuesto"]} />
         <EstrategiaCarrera
           sesion={analisis.sesion}
           estrategias={analisis.estrategias}
@@ -73,6 +77,7 @@ function Resultado({
         <h2 id="titulo-dispersion" className="font-titulo text-3xl font-bold">
           {t("dispersion.titulo")}
         </h2>
+        <AyudaTerminos claves={["edadGoma", "vueltaLimpia", "combustible"]} />
         <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
           <button
             type="button"
@@ -131,6 +136,7 @@ function Resultado({
         <h2 id="titulo-tabla-stints" className="font-titulo text-3xl font-bold">
           {t("tablas.stints.titulo")}
         </h2>
+        <AyudaTerminos claves={["degradacion", "r2", "stint"]} />
         <TablaStints
           analisis={analisis}
           elegidos={elegidos}
@@ -145,6 +151,7 @@ function Resultado({
         >
           {t("tablas.compuestos.titulo")}
         </h2>
+        <AyudaTerminos claves={["compuesto", "degradacion", "combustible"]} />
         <TablaCompuestos compuestos={analisis.compuestos} />
       </section>
 
@@ -161,11 +168,16 @@ function Resultado({
             <li>{t("limitaciones.trafico")}</li>
             <li>{t("limitaciones.pista")}</li>
             <li>
-              {t("limitaciones.combustible", {
-                segundos: analisis.segundos_combustible_por_vuelta,
-              })}
+              <ConTerminos>
+                {t.rich("limitaciones.combustible", {
+                  ...terminosRicos,
+                  segundos: analisis.segundos_combustible_por_vuelta,
+                })}
+              </ConTerminos>
             </li>
-            <li>{t("limitaciones.limpias")}</li>
+            <li>
+              <ConTerminos>{t.rich("limitaciones.limpias", terminosRicos)}</ConTerminos>
+            </li>
           </ul>
         </div>
       </details>

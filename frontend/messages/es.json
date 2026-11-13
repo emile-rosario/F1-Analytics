@@ -38,6 +38,10 @@
     "subtitulo": "Qué significa cada término que usa esta web, con un ejemplo.",
     "ejemplo": "Ejemplo",
     "indice": "Términos",
+    "ayuda": {
+      "etiqueta": "Qué significa",
+      "verEnGlosario": "Ver en el glosario"
+    },
     "terminos": {
       "stint": {
         "nombre": "Stint",
@@ -282,8 +286,8 @@
       "intro": "La pendiente de cada stint es lo que la goma «parece» perder por vuelta, no su desgaste real. Estas cosas no se pueden corregir con los datos que hay:",
       "trafico": "El tráfico: ir detrás de otro coche cuesta tiempo sin que la goma tenga que ver.",
       "pista": "La temperatura y la evolución de la pista: el asfalto mejora con las vueltas y puede tapar el desgaste, como pasó en Qatar 2024.",
-      "combustible": "El combustible: la corrección usa {segundos, number} s por vuelta para todos los coches, es una aproximación.",
-      "limpias": "Solo cuentan las vueltas limpias: se descartan la primera, las de safety car o bandera, la entrada y salida de boxes y las muy lentas."
+      "combustible": "<combustible>El combustible</combustible>: la corrección usa {segundos, number} s por vuelta para todos los coches, es una aproximación.",
+      "limpias": "Solo cuentan las <vueltaLimpia>vueltas limpias</vueltaLimpia>: se descartan la primera, las de <safetyCar>safety car</safetyCar> o bandera, la entrada y salida de boxes y las muy lentas."
     }
   },
   "Telemetria": {
@@ -348,13 +352,13 @@
     },
     "limitaciones": {
       "titulo": "Qué no mide este análisis",
-      "intro": "El delta dice quién fue más rápido y dónde, con estas salvedades:",
-      "muestras": "Pocas muestras: la telemetría pública trae unas 3,7 por segundo, una cada ~20 m a 250 km/h.",
+      "intro": "El <delta>delta</delta> dice quién fue más rápido y dónde, con estas salvedades:",
+      "muestras": "Pocas muestras: la <telemetria>telemetría</telemetria> pública trae unas 3,7 por segundo, una cada ~20 m a 250 km/h.",
       "picos": "Lomos en las curvas lentas: el delta sube y vuelve a bajar en las frenadas fuertes. Es en parte ruido de muestreo y de alineación de las dos vueltas; lo que cuenta es el nivel en que se estabiliza después de la curva. Para reducirlo el delta se promedia en ventanas de ~100 m, lo que quita el dentado pero también redondea los cambios reales y bruscos.",
       "exactitud": "Exactitud: el delta final es exacto porque se ajusta al tiempo oficial de cada vuelta. A mitad de vuelta se equivoca unos 0,04 s de media (0,13 s como máximo) contra los tiempos oficiales de sector.",
       "porque": "No dice por qué: muestra quién fue más rápido en un tramo, no si fue por frenar más tarde, trazar mejor o levantar el pie.",
       "condiciones": "Condiciones distintas: sin elegir segmento cada piloto usa su mejor vuelta de la sesión, que puede ser de otro momento, con otra goma o más combustible. El tráfico no se corrige.",
-      "tramos": "Los tramos son de igual longitud, no los minisectores oficiales de la transmisión."
+      "tramos": "Los <tramo>tramos</tramo> son de igual longitud, no los minisectores oficiales de la transmisión."
     }
   },
   "Preguntas": {
