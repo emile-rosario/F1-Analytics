@@ -24,14 +24,44 @@ export const COLORES = {
 
 const FUENTE = "Saira Condensed";
 
-/** Las tres barras inclinadas de la marca (mismo dibujo que `components/Logo.tsx`). */
-function Barras({ alto }: { alto: number }) {
+/** El monograma S1 (mismo dibujo que `components/Logo.tsx`): la S en el color del texto y el 1 como barra morada. */
+function Monograma({ alto }: { alto: number }) {
   return (
-    <svg width={(alto * 30) / 24} height={alto} viewBox="0 0 30 24">
-      <path d="M7 0h6l-5 24H2z" fill={COLORES.acento} />
-      <path d="M16 0h6l-5 24h-6z" fill={COLORES.verde} />
-      <path d="M25 0h5l-5 24h-6z" fill={COLORES.amarillo} />
+    <svg width={(alto * 125) / 100} height={alto} viewBox="0 0 125 100">
+      <g transform="translate(25 0) skewX(-14)">
+        <path
+          d="M28 0H64V20H28L20 28V40H46L64 58V72L36 100H0V80H36L44 72V60H18L0 42V28Z"
+          fill={COLORES.texto}
+        />
+        <rect x="78" y="0" width="22" height="100" fill={COLORES.acento} />
+      </g>
     </svg>
+  );
+}
+
+/**
+ * El logo: el monograma y «SECTOR ONE» en mayúsculas, Saira Condensed 800 inclinado 14°. Las
+ * mayúsculas miden cerca del 72 % del alto del monograma, de ahí que el cuerpo del texto sea
+ * casi igual a `alto`.
+ */
+function Logo({ nombre, alto }: { nombre: string; alto: number }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      <Monograma alto={alto} />
+      <div
+        style={{
+          display: "flex",
+          fontSize: alto,
+          fontWeight: 800,
+          lineHeight: 1,
+          marginLeft: Math.round(alto * 0.12),
+          textTransform: "uppercase",
+          transform: "skewX(-14deg)",
+        }}
+      >
+        {nombre}
+      </div>
+    </div>
   );
 }
 
@@ -72,10 +102,7 @@ export function TarjetaMarca({
       }}
     >
       <div style={{ display: "flex", flexDirection: "column", padding: "72px 80px 0" }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Barras alto={96} />
-          <div style={{ fontSize: 104, fontWeight: 800, marginLeft: 32, lineHeight: 1 }}>{nombre}</div>
-        </div>
+        <Logo nombre={nombre} alto={104} />
         <div
           style={{
             fontSize: 68,
@@ -176,10 +203,7 @@ export function TarjetaCircuito({
     >
       <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px 0" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Barras alto={36} />
-            <div style={{ fontSize: 38, fontWeight: 800, marginLeft: 14, lineHeight: 1 }}>{marca}</div>
-          </div>
+          <Logo nombre={marca} alto={44} />
           <div style={{ fontSize: 30, fontWeight: 500, color: COLORES.suave }}>{contexto}</div>
         </div>
 
